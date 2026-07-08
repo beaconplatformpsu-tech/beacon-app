@@ -1,0 +1,34 @@
+export const PROFICIENCY_WEIGHTS: Record<string, number> = {
+  Beginner: 1, 
+  Intermediate: 2, 
+  Advanced: 3, 
+  Expert: 4,
+};
+
+export function computeMatchScore(
+  pathId: string,
+  careerPathSkills: any,
+  skills: any,
+  userSkills: any[]
+): number {
+  const requiredSkills = Object.values(careerPathSkills).filter((cps: any) => cps.careerPathId === pathId);
+  
+  if (requiredSkills.length === 0) return 0;
+  
+  let totalScore = 0;
+  
+  requiredSkills.forEach((reqSkill: any) => {
+    const globalSkill = skills[reqSkill.skillId] || {};
+    const skillName = globalSkill.name?.toLowerCase();
+    const reqWeight = PROFICIENCY_WEIGHTS[reqSkill.minimumProficiencyLevel] || 2; // Default to Intermediate
+    
+    const userSkill = userSkills.find((us) => us.name?.toLowerCase() === skillName);
+    
+    if (userSkill) {
+      const userWeight = PROFICIENCY_WEIGHTS[userSkill.proficiency] || 1; // Default to Beginner
+      totalScore += Math.min(userWeight / reqWeight, 1);
+    }
+  });
+  
+  return Math.round((totalScore / requiredSkills.length) * 100);
+}

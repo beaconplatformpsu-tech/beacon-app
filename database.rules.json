@@ -1,0 +1,256 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    
+    "users": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["role", "createdAt", "accountStatus"],
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['email', 'role'])",
+        "role": {
+          ".validate": "root.child('users').child(auth.uid).child('role').val() === 'admin' || (!data.exists() && newData.val() === 'student') || newData.val() === data.val()"
+        },
+        "accountStatus": {
+          ".validate": "root.child('users').child(auth.uid).child('role').val() === 'admin' || (!data.exists() && newData.val() === 'active') || newData.val() === data.val()"
+        },
+        "createdAt": {
+          ".validate": "!data.exists() || newData.val() === data.val()"
+        },
+        "updatedByAdmin": {
+          ".validate": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "isAdmin": {
+          ".validate": "root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "emailVerified": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+
+    "tasks": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["dueDate", "status", "priority", "createdAt"],
+        "$taskId": {
+          ".validate": "newData.hasChildren(['id', 'title'])",
+          "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 255" },
+          "status": { ".validate": "!newData.exists() || newData.val() === 'Pending' || newData.val() === 'In Progress' || newData.val() === 'Completed'" },
+          "priority": { ".validate": "!newData.exists() || newData.val() === 'Low' || newData.val() === 'Medium' || newData.val() === 'High'" },
+          "createdAt": { ".validate": "!data.exists() || newData.val() === data.val()" }
+        }
+      }
+    },
+
+    "notes": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["createdAt", "updatedAt"]
+      }
+    },
+
+    "user_skills": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["createdAt"]
+      }
+    },
+
+    "recommendations": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["createdAt"]
+      }
+    },
+
+    "resources": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt", "updatedAt", "resourceType", "audienceLevel", "provider"],
+      "$resourceId": {
+        ".validate": "newData.hasChildren(['id', 'title'])",
+        "title": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
+        "url": { ".validate": "!newData.exists() || newData.val().beginsWith('https://') || newData.val().beginsWith('http://')" },
+        "isFree": { ".validate": "!newData.exists() || newData.isBoolean()" },
+        "resourceType": { 
+          ".validate": "!newData.exists() || newData.val() === 'Documentation' || newData.val() === 'Course' || newData.val() === 'Video' || newData.val() === 'Book' || newData.val() === 'Practice' || newData.val() === 'Project' || newData.val() === 'Article' || newData.val() === 'Tool' || newData.val() === 'Dataset' || newData.val() === 'Template' || newData.val() === 'Roadmap' || newData.val() === 'Interview Prep'" 
+        },
+        "audienceLevel": {
+          ".validate": "!newData.exists() || newData.val() === 'Beginner' || newData.val() === 'Intermediate' || newData.val() === 'Advanced' || newData.val() === 'All Levels'"
+        }
+      }
+    },
+
+    "skills": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["categoryId", "createdAt"]
+    },
+
+    "skill_categories": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt"]
+    },
+
+    "career_categories": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt"]
+    },
+
+    "career_paths": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["categoryId", "createdAt", "isActive"]
+    },
+
+    "career_path_skills": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["careerPathId", "skillId", "priority"]
+    },
+
+    "resource_by_skill": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "resource_by_career_path": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "resource_by_type": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "resource_by_academic_category": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "academic_resource_categories": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt"]
+    },
+
+    "academic_support_resources": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt", "categoryId"]
+    },
+
+    "platform_settings": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+    
+    "seed_meta": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    },
+
+    "support_messages": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt", "status"],
+      "$messageId": {
+        ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['subject', 'message', 'createdAt'])",
+        "subject": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150" },
+        "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000" },
+        "createdAt": { ".validate": "newData.isString()" }
+      }
+    },
+
+    "contact_messages": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt"],
+      "$messageId": {
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['name', 'email', 'message'])",
+        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150" },
+        "email": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 255" },
+        "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000" }
+      }
+    },
+
+    "cv_profiles": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["updatedAt", "createdAt"],
+        "personalInfo": {
+          "fullName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150" },
+          "email": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 255" },
+          "portfolioUrl": { ".validate": "!newData.exists() || newData.val() === '' || newData.val().beginsWith('http')" },
+          "githubUrl": { ".validate": "!newData.exists() || newData.val() === '' || newData.val().beginsWith('http')" },
+          "linkedinUrl": { ".validate": "!newData.exists() || newData.val() === '' || newData.val().beginsWith('http')" }
+        },
+        "experience": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        },
+        "education": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        },
+        "skills": {
+          ".validate": "!newData.exists() || newData.hasChildren()"
+        }
+      }
+    },
+
+    "cv_uploads": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["createdAt", "status"],
+        "$uploadId": {
+          ".validate": "newData.hasChildren(['uploadId', 'fileName', 'status'])",
+          "status": {
+            ".validate": "newData.val() === 'processing' || newData.val() === 'completed' || newData.val() === 'failed'"
+          }
+        }
+      }
+    },
+
+    "cv_analysis": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["atsScore", "careerMatchScore", "createdAt"],
+        ".validate": "newData.hasChildren(['atsScore', 'careerMatchScore'])",
+        "atsScore": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "careerMatchScore": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" }
+      }
+    },
+
+    "cv_exports": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".indexOn": ["createdAt", "status"],
+        "$exportId": {
+          ".validate": "newData.hasChildren(['exportId', 'filePath', 'status'])",
+          "status": {
+            ".validate": "newData.val() === 'completed' || newData.val() === 'failed'"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,89 @@
+# ─── Secrets & Environment ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.seeder
+.dev.vars
+service-account.json
+serviceAccountKey.json
+generated/
+generated/*.private.json
+
+# ─── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Build Output ─────────────────────────────────────────────────────────────
+.next/
+out/
+dist/
+dist-ssr/
+build/
+.output/
+.vinxi/
+.nitro/
+
+# ─── Package Manager Locks (keep only what your team uses) ────────────────────
+# Uncomment whichever lock file you do NOT use:
+# package-lock.json   # uncomment if you use bun/yarn
+# bun.lock            # uncomment if you use npm/yarn
+# yarn.lock           # uncomment if you use npm/bun
+
+# ─── Firebase ─────────────────────────────────────────────────────────────────
+.firebase/
+.firebaserc.local
+
+# ─── Next.js / SWC Cache ──────────────────────────────────────────────────────
+.swc/
+.tanstack/
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+npm-out.log
+npm-verbose.log
+npm-verbose-err.log
+
+# ─── Test / Coverage ──────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+__mocks__/
+
+# ─── Misc Generated Files ─────────────────────────────────────────────────────
+doc_output.txt
+fix-loaders.cjs
+scripts/
+scratch/
+
+# ─── OS Files ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─── Editor & IDE ─────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.iml
+
+# ─── Wrangler (Cloudflare) ────────────────────────────────────────────────────
+.wrangler/
+
+# ─── Explicitly keep the doc folder ──────────────────────────────────────────
+!doc/
+!doc/**

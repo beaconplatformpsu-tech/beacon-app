@@ -1,0 +1,179 @@
+
+@import "tailwindcss";
+@source "../";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-beam: var(--beam);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-arabic: 'Noto Kufi Arabic', sans-serif;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Beacon brand - light theme aligned with logo (deep navy + silver-white) */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.18 0.04 265);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.04 265);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.04 265);
+
+  /* Primary = deep navy from the logo */
+  --primary: #030131;
+  --primary-foreground: #ffffff;
+
+  --secondary: oklch(0.955 0.005 250);
+  --secondary-foreground: oklch(0.22 0.07 265);
+
+  --muted: oklch(0.955 0.005 250);
+  --muted-foreground: oklch(0.48 0.02 265);
+
+  /* Accent = refined steel-blue, harmonizes with navy */
+  --accent: oklch(0.55 0.12 255);
+  --accent-foreground: oklch(0.985 0.003 250);
+
+  /* Beam = soft cool light, matches the white beacon glow */
+  --beam: oklch(0.92 0.02 250);
+
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(0.985 0.003 250);
+
+  --border: oklch(0.22 0.07 265 / 12%);
+  --input: oklch(0.22 0.07 265 / 14%);
+  --ring: oklch(0.55 0.12 255);
+
+  /* Fonts provided by next/font */
+  --gradient-day: radial-gradient(
+      ellipse at 50% -20%,
+      oklch(1 0 0) 0%,
+      oklch(0.98 0.005 250) 50%,
+      oklch(0.94 0.012 255) 100%
+    );
+  --gradient-beam: linear-gradient(
+    180deg,
+    oklch(0.55 0.12 255 / 0.18) 0%,
+    oklch(0.55 0.12 255 / 0) 100%
+  );
+
+  --shadow-glow: 0 0 30px -10px oklch(0.22 0.07 265 / 0.15);
+  --shadow-card: 0 4px 24px -6px oklch(0.22 0.07 265 / 0.08), 0 1px 3px 0 oklch(0.22 0.07 265 / 0.04);
+}
+
+
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { font-family: var(--font-sans); }
+  body {
+    background: var(--gradient-day);
+    background-attachment: fixed;
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  [dir="rtl"],
+  [dir="rtl"] * {
+    font-family: var(--font-arabic), 'Noto Kufi Arabic', sans-serif !important;
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+}
+
+@layer utilities {
+  .font-ar {
+    font-family: var(--font-arabic), 'Noto Kufi Arabic', sans-serif;
+  }
+  .text-balance { text-wrap: balance; }
+  .bg-beam { background: var(--gradient-beam); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .grid-bg {
+    background-image:
+      linear-gradient(oklch(0.22 0.07 265 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.22 0.07 265 / 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+}
+
+@keyframes beam-sweep {
+  0%, 100% { opacity: 0.35; transform: translateX(-50%) rotate(-8deg); }
+  50% { opacity: 0.65; transform: translateX(-50%) rotate(8deg); }
+}
+.animate-beam { animation: beam-sweep 6s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float-slow 5s ease-in-out infinite; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 10px;
+  border: 2px solid var(--color-background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(from var(--color-primary) l c h / 0.9);
+}
+
+/* Toast Progress Bar */
+.toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--toast-progress-color, #fff);
+  animation: toast-progress 4s linear forwards;
+}
+
+.toast:hover::after {
+  animation-play-state: paused;
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
