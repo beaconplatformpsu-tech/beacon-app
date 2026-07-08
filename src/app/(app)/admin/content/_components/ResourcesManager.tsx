@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { FileText, Link as LinkIcon, Plus, Video, Trash2, Edit, AlertCircle, FileArchive, Edit2, UploadCloud, Loader2, Filter, BookOpen, MoreVertical, Database } from "lucide-react";
-import { storage } from "@/lib/firebase/config";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db } from "@/lib/firebase/config";
+import { storage, db } from "@/lib/firebase/config";
+import { uploadFileToFirebase } from "@/lib/firebase/storage";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { adminService } from "../../../../../features/admin/services/adminService";
@@ -96,10 +95,20 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
       let finalUrl = formData.url;
       if (uploadMode === "file" && fileToUpload) {
         const ext = fileToUpload.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const fileRef = storageRef(storage, `resources/${fileName}`);
-        await uploadBytes(fileRef, fileToUpload);
-        finalUrl = await getDownloadURL(fileRef);
+        const fileName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const path = `resources/${fileName}`;
+        
+        finalUrl = await uploadFileToFirebase(fileToUpload, path, {
+          maxSizeMB: 10,
+          allowedTypes: [
+            'application/pdf', 
+            'video/mp4', 
+            'application/zip', 
+            'application/x-zip-compressed',
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          ]
+        });
       }
 
       const payload = {
@@ -123,7 +132,7 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
       }
       setIsOpen(false);
     } catch (err: any) {
-      toast.error("Error", err?.message || "Failed to save resource.");
+      toast.error("Error", err.message || "Failed to save resource.");
     } finally {
       setLoading(false);
     }

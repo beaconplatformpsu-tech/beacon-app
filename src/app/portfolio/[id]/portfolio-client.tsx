@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/i18n/LanguageProvider";
+import type { Task, UserSkill, UserProfile } from "@/lib/types";
 
 // Lazy load the radar chart
 const SkillRadarChart = dynamic(
@@ -21,9 +22,9 @@ const SkillRadarChart = dynamic(
 
 export default function PortfolioClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [skills, setSkills] = useState<UserSkill[]>([]);
   const [error, setError] = useState(false);
   const t = useT();
 
@@ -48,7 +49,7 @@ export default function PortfolioClient({ id }: { id: string }) {
         // Fetch Tasks (Projects)
         const tasksSnap = await get(ref(db, `tasks/${id}`));
         if (tasksSnap.exists()) {
-          const allTasks: any[] = Object.values(tasksSnap.val());
+          const allTasks: Task[] = Object.values(tasksSnap.val());
           setTasks(allTasks.filter(t => t.status === "Completed"));
         }
       } catch (err) {
@@ -79,8 +80,8 @@ export default function PortfolioClient({ id }: { id: string }) {
   // Calculate radar data
   const CS_CATEGORIES = ["Languages", "Frontend & UI", "Backend & Databases", "DevOps & Cloud", "CS Fundamentals", "AI & Machine Learning"];
   const radarData = CS_CATEGORIES.map((cat) => {
-    const catSkills = skills.filter((s: any) => s.category === cat);
-    const score = catSkills.length ? catSkills.reduce((sum: any, s: any) => sum + s.progress, 0) / catSkills.length : 0;
+    const catSkills = skills.filter((s) => s.category === cat);
+    const score = catSkills.length ? catSkills.reduce((sum, s) => sum + s.progress, 0) / catSkills.length : 0;
     return { category: cat.split(" ")[0], score, fullMark: 100 };
   });
 
@@ -106,7 +107,7 @@ export default function PortfolioClient({ id }: { id: string }) {
                   {profile.displayName || t.portfolio.defaultName}
                 </h1>
                 <p className="text-xl text-muted-foreground mt-2 flex items-center justify-center md:justify-start gap-2">
-                  <GraduationCap className="h-5 w-5" /> {profile.major || t.portfolio.defaultMajor} &bull; {t.portfolio.classOf.replace("{year}", profile.graduationYear)}
+                  <GraduationCap className="h-5 w-5" /> {profile.major || t.portfolio.defaultMajor} &bull; {t.portfolio.classOf.replace("{year}", String(profile.graduationYear))}
                 </p>
               </div>
               <p className="text-foreground/80 max-w-2xl leading-relaxed mx-auto md:mx-0">
@@ -152,7 +153,7 @@ export default function PortfolioClient({ id }: { id: string }) {
               <CardTitle className="text-lg">{t.portfolio.topSkills}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {skills.sort((a: any, b: any) => b.progress - a.progress).slice(0, 8).map((sk: any, idx: number) => (
+              {skills.sort((a, b) => b.progress - a.progress).slice(0, 8).map((sk, idx) => (
                 <div key={idx} className="space-y-1.5">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{sk.name}</span>
@@ -192,7 +193,7 @@ export default function PortfolioClient({ id }: { id: string }) {
                     </p>
                   </CardContent>
                   <CardFooter className="pt-0 pb-4 text-xs text-muted-foreground flex items-center justify-between">
-                    <span>{t.portfolio.hourLifecycle.replace("{hours}", task.estimatedHours)}</span>
+                    <span>{t.portfolio.hourLifecycle.replace("{hours}", String(task.estimatedHours))}</span>
                     <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">{t.portfolio.completedBadge}</Badge>
                   </CardFooter>
                 </Card>

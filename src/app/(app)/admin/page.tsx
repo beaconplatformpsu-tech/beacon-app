@@ -19,8 +19,8 @@ export default function AdminDashboard() {
       try {
         const [usersSnap, resSnap, msgSnap] = await Promise.all([
           get(query(ref(db, "users"), limitToLast(100))),
-          get(query(ref(db, "career_resources"), limitToLast(100))),
-          get(query(ref(db, "contact_messages"), limitToLast(100)))
+          get(query(ref(db, "resources"), limitToLast(100))),
+          get(query(ref(db, "support_messages"), limitToLast(100)))
         ]);
 
         setUsersCount(usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0);
@@ -66,7 +66,14 @@ export default function AdminDashboard() {
             
             <div className="relative z-10 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{stat.label}</p>
+                <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                  {stat.label}
+                  {typeof stat.value === 'number' && stat.value >= 100 && (
+                    <span className="ml-2 text-[10px] font-normal lowercase tracking-normal text-muted-foreground opacity-70 bg-muted px-1.5 py-0.5 rounded-full">
+                      limited for perf
+                    </span>
+                  )}
+                </p>
                 {loading ? (
                   <div className="h-10 w-16 bg-muted rounded animate-pulse mt-2"></div>
                 ) : (

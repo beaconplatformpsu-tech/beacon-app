@@ -166,25 +166,16 @@
 
     "support_messages": {
       ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".indexOn": ["createdAt", "status"],
+      ".indexOn": ["createdAt", "status", "type"],
       "$messageId": {
-        ".write": "auth != null && (!data.exists() || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".validate": "newData.hasChildren(['subject', 'message', 'createdAt'])",
-        "subject": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150" },
+        ".write": "!data.exists() || (auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['message', 'type', 'createdAt'])",
+        "type": { ".validate": "newData.val() === 'contact' || newData.val() === 'feedback'" },
+        "subject": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 150)" },
         "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000" },
+        "name": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 150)" },
+        "email": { ".validate": "!newData.exists() || (newData.isString() && newData.val().length <= 255)" },
         "createdAt": { ".validate": "newData.isString()" }
-      }
-    },
-
-    "contact_messages": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".indexOn": ["createdAt"],
-      "$messageId": {
-        ".write": "!data.exists()",
-        ".validate": "newData.hasChildren(['name', 'email', 'message'])",
-        "name": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 150" },
-        "email": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 255" },
-        "message": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000" }
       }
     },
 

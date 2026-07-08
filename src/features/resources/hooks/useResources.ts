@@ -33,8 +33,8 @@ export const useResources = ({ skillId, careerPathId, academicCategoryId }: UseR
           setResources(results);
           setError(null);
         }
-      } catch (err: any) {
-        if (mounted) setError(err);
+      } catch (err) {
+        if (mounted) setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         if (mounted) setLoading(false);
       }

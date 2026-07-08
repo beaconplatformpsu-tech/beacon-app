@@ -36,8 +36,9 @@ export function Contact() {
     }
     setSubmitting(true);
     try {
-      await push(ref(db, "contact_messages"), {
+      await push(ref(db, "support_messages"), {
         ...parsed.data,
+        type: "contact",
         createdAt: new Date().toISOString(),
       });
       toast.success(t.contact.success, "We will get back to you shortly.");

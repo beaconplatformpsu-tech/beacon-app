@@ -2,7 +2,7 @@ import { ref, set, push, remove, update, serverTimestamp } from "firebase/databa
 import { db } from "@/lib/firebase/config";
 
 export const adminService = {
-  async createContent(adminUid: string, collection: string, payload: any) {
+  async createContent(adminUid: string, collection: string, payload: Record<string, unknown>) {
     if (!adminUid) throw new Error("Unauthorized");
     const collectionRef = ref(db, collection);
     const newRef = push(collectionRef);
@@ -15,7 +15,7 @@ export const adminService = {
     return newRef.key;
   },
 
-  async updateContent(adminUid: string, collection: string, id: string, payload: any) {
+  async updateContent(adminUid: string, collection: string, id: string, payload: Record<string, unknown>) {
     if (!adminUid) throw new Error("Unauthorized");
     const itemRef = ref(db, `${collection}/${id}`);
     await update(itemRef, {
@@ -51,9 +51,9 @@ export const adminService = {
     }
   },
 
-  async updatePlatformSettings(adminUid: string, payload: any) {
+  async updatePlatformSettings(adminUid: string, payload: Record<string, unknown>) {
     if (!adminUid) throw new Error("Unauthorized");
-    const settingsRef = ref(db, `settings/platform`);
+    const settingsRef = ref(db, `platform_settings`);
     await update(settingsRef, {
       ...payload,
       updatedByAdmin: adminUid,

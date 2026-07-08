@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 interface PriorityChartProps {
-  data: any[];
+  data: Array<{ name: string; value: number; color?: string }>;
 }
 
 export default function PriorityChart({ data }: PriorityChartProps) {

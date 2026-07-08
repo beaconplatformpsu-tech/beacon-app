@@ -20,6 +20,13 @@ export const userProfileSchema = z.object({
   createdAt: timestamp.optional(),
   accountStatus: z.enum(["active", "suspended"]).optional(),
   displayName: z.string().max(100).optional(),
+  bio: z.string().max(1000).optional(),
+  major: z.string().max(255).optional(),
+  academicLevel: z.string().max(100).optional(),
+  graduationYear: z.number().int().optional(),
+  github: httpsUrl.optional(),
+  linkedin: httpsUrl.optional(),
+  photoURL: httpsUrl.optional(),
 });
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
@@ -81,6 +88,7 @@ export const userSkillSchema = z.object({
   proficiency: skillProficiencySchema,
   progress: z.number().min(0).max(100),
   evidenceLink: httpsUrl.optional(),
+  category: z.string().optional(),
   lastPracticed: timestamp.optional(),
   createdAt: timestamp.optional(),
 });

@@ -3,7 +3,7 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface ProficiencyChartProps {
-  data: any[];
+  data: Array<{ name: string; value: number; color?: string }>;
 }
 
 export default function ProficiencyChart({ data }: ProficiencyChartProps) {

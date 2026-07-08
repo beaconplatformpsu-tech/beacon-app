@@ -23,6 +23,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/i18n/LanguageProvider";
+import type { CareerPath, Skill, CareerResource, UserSkill, CareerOpportunity } from "@/lib/types";
+import type { CareerPathSkillType } from "@/lib/validation";
+
+// Extended type for backwards compatibility with untyped minimumProficiencyLevel
+type ExtendedCareerPathSkill = CareerPathSkillType & { minimumProficiencyLevel?: string; importanceLevel?: string; name?: string };
 
 // ── Lazy load markdown - only needed when AI recommendation is shown ──────
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -33,14 +38,14 @@ export default function CareerPathsPage() {
   const [sortByMatch, setSortByMatch] = useState(true);
   const t = useT();
 
-  const [careerPaths, setCareerPaths] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any>({});
-  const [careerPathSkills, setCareerPathSkills] = useState<any>({});
-  const [resources, setResources] = useState<any>({});
-  const [userSkills, setUserSkills] = useState<any[]>([]);
+  const [careerPaths, setCareerPaths] = useState<CareerPath[]>([]);
+  const [skills, setSkills] = useState<Record<string, Skill>>({});
+  const [careerPathSkills, setCareerPathSkills] = useState<Record<string, ExtendedCareerPathSkill>>({});
+  const [resources, setResources] = useState<Record<string, CareerResource>>({});
+  const [userSkills, setUserSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
-  const [cvAnalysis, setCvAnalysis] = useState<any>(null);
+  const [cvAnalysis, setCvAnalysis] = useState<Record<string, unknown> | null>(null);
   const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // CV Upload disabled during migration 
   };
@@ -49,7 +54,7 @@ export default function CareerPathsPage() {
   const [aiError, setAiError] = useState<string | null>(null);
 
   // Real-world internships state
-  const [internships, setInternships] = useState<Record<string, any[]>>({});
+  const [internships, setInternships] = useState<Record<string, CareerOpportunity[]>>({});
   const [loadingInternships, setLoadingInternships] = useState<Record<string, boolean>>({});
 
   // ── Data Fetching: static content loaded once via get(), user skills via onValue ──
@@ -77,7 +82,7 @@ export default function CareerPathsPage() {
     const uSkillsRef = ref(db, `user_skills/${session.uid}`);
     const unsubscribe = onValue(uSkillsRef, (snap) => {
       const data = snap.val() || {};
-      const list = Object.keys(data).map((k) => ({ id: k, ...data[k] }));
+      const list = Object.keys(data).map((k) => ({ id: k, ...(data[k] as object) } as UserSkill));
       setUserSkills(list);
       setLoading(false);
     });
@@ -107,11 +112,11 @@ export default function CareerPathsPage() {
   // ── Skill Gap + Resources Helpers ────────────────────────────────────────
   const getSkillsGapAnalysis = (pathId: string) => {
     const required = Object.values(careerPathSkills)
-      .filter((cps: any) => cps.careerPathId === pathId)
-      .map((cps: any) => {
+      .filter((cps) => cps.careerPathId === pathId)
+      .map((cps) => {
         const globalSkill = skills[cps.skillId] || {};
         const userSkill = userSkills.find((us) => us.name?.toLowerCase() === globalSkill.name?.toLowerCase());
-        const reqWeight = PROFICIENCY_WEIGHTS[cps.minimumProficiencyLevel] || 2;
+        const reqWeight = (cps.minimumProficiencyLevel && PROFICIENCY_WEIGHTS[cps.minimumProficiencyLevel]) || 2;
         const userWeight = userSkill ? (PROFICIENCY_WEIGHTS[userSkill.proficiency] || 1) : 0;
         return {
           ...cps, ...globalSkill,
@@ -124,7 +129,7 @@ export default function CareerPathsPage() {
   };
 
   const getResourcesForPath = (pathId: string) =>
-    Object.values(resources).filter((res: any) => res.careerPathId === pathId);
+    Object.values(resources).filter((res) => res.careerPathId === pathId);
 
   // ── AI Generation ────────────────────────────────────────────────────────
   const generateAiRecommendation = async () => {
@@ -145,8 +150,9 @@ export default function CareerPathsPage() {
       }, 1000);
       return;
 
-    } catch (err: any) {
-      setAiError(err.message || "Network error. Please try again.");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setAiError(errorMessage || "Network error. Please try again.");
     } finally {
       setIsGeneratingAi(false);
     }
@@ -319,7 +325,7 @@ export default function CareerPathsPage() {
                         </h3>
                         {gapAnalysis.acquired.length > 0 ? (
                           <div className="space-y-3">
-                            {gapAnalysis.acquired.map((sk: any, idx: number) => (
+                            {gapAnalysis.acquired.map((sk, idx: number) => (
                               <div key={idx} className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 flex justify-between items-center group hover:bg-emerald-500/10 transition-colors shadow-sm">
                                 <div>
                                   <div className="font-semibold text-sm flex items-center gap-2">
@@ -343,7 +349,7 @@ export default function CareerPathsPage() {
                         </h3>
                         {gapAnalysis.missing.length > 0 ? (
                           <div className="space-y-3">
-                            {gapAnalysis.missing.map((sk: any, idx: number) => (
+                            {gapAnalysis.missing.map((sk, idx: number) => (
                               <div key={idx} className="bg-background border border-border rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm hover:border-amber-500/30 transition-colors">
                                 <div>
                                   <div className="font-semibold text-sm flex items-center gap-2">
@@ -383,11 +389,11 @@ export default function CareerPathsPage() {
                       <p className="text-sm text-muted-foreground pb-2">{t.career.learningPathsDesc}</p>
                       {pathResources.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          {pathResources.map((res: any, idx: number) => (
+                          {pathResources.map((res, idx: number) => (
                             <a href={res.url} target="_blank" rel="noreferrer" key={idx} className="group block bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm hover:shadow-glow transition-all hover:-translate-y-1">
-                              {res.imageUrl && (
+                              {res.coverUrl && (
                                 <div className="h-32 w-full overflow-hidden relative border-b border-border/50">
-                                  <Image src={res.imageUrl} alt={res.title} fill className="object-cover transition-transform group-hover:scale-105 duration-700" />
+                                  <Image src={res.coverUrl} alt={res.title} fill className="object-cover transition-transform group-hover:scale-105 duration-700" />
                                 </div>
                               )}
                               <div className="p-4 space-y-2">
@@ -430,9 +436,9 @@ export default function CareerPathsPage() {
                                 <div className="flex justify-between items-start gap-2">
                                   <CardTitle className="text-base flex items-center gap-2">
                                     {job.title} 
-                                    {job.generatedByAI && <Sparkles className="h-4 w-4 text-primary" />}
+                                    {Boolean(job.generatedByAI) && <Sparkles className="h-4 w-4 text-primary" />}
                                   </CardTitle>
-                                  <Badge className={job.matchPercentage >= 80 ? 'bg-emerald-500 hover:bg-emerald-600' : job.matchPercentage < 50 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-primary'}>
+                                  <Badge className={Number(job.matchPercentage) >= 80 ? 'bg-emerald-500 hover:bg-emerald-600' : Number(job.matchPercentage) < 50 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-primary'}>
                                     {job.matchPercentage}% {t.career.match}
                                   </Badge>
                                 </div>
@@ -441,7 +447,7 @@ export default function CareerPathsPage() {
                                 </CardDescription>
                               </CardHeader>
                               <CardContent className="flex-1 text-sm text-muted-foreground flex flex-col gap-2">
-                                <p className="line-clamp-3">{job.description}</p>
+                                <p className="line-clamp-3">{job.description || ""}</p>
                                 
                                 {job.missingSkills && job.missingSkills.length > 0 && (
                                   <div className="text-xs pt-2 border-t border-border/50">
@@ -458,7 +464,7 @@ export default function CareerPathsPage() {
                               </CardContent>
                               <CardFooter className="pt-0">
                                 <a href={job.applicationUrl || job.sourceUrl} target="_blank" rel="noreferrer" className="w-full">
-                                  {job.isVerified ? (
+                                  {Boolean(job.isVerified) ? (
                                     <Button variant="outline" className="w-full gap-2 border-emerald-500/20 hover:bg-emerald-500/10 hover:text-emerald-600">
                                       {t.career.applyNow} <ExternalLink className="h-3 w-3" />
                                     </Button>
@@ -485,13 +491,13 @@ export default function CareerPathsPage() {
                           <div className="flex-1">
                             <p className="text-sm font-medium mb-3">You have analyzed your CV for this role.</p>
                             <div className="flex gap-4">
-                               <div className="bg-primary/10 px-4 py-2 rounded-lg border border-primary/20">
+                              <div className="bg-primary/10 px-4 py-2 rounded-lg border border-primary/20">
                                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary block mb-1">ATS Score</span>
-                                 <span className="font-display font-bold text-2xl">{cvAnalysis.atsScore}/100</span>
+                                 <span className="font-display font-bold text-2xl">{String(cvAnalysis.atsScore)}/100</span>
                                </div>
                                <div className="bg-emerald-500/10 px-4 py-2 rounded-lg border border-emerald-500/20">
                                  <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 block mb-1">Match Score</span>
-                                 <span className="font-display font-bold text-2xl text-emerald-600">{cvAnalysis.careerMatchScore}/100</span>
+                                 <span className="font-display font-bold text-2xl text-emerald-600">{String(cvAnalysis.careerMatchScore)}/100</span>
                                </div>
                             </div>
                           </div>

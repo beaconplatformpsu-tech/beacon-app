@@ -172,9 +172,8 @@ export function SiteHeader() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            {/* Language + Sign-in - desktop/tablet (sm+) */}
+            {/* Sign-in + Language - desktop/tablet (sm+) */}
             <div className="hidden sm:flex items-center gap-2">
-              <LanguageToggle className="max-md:border-primary-foreground/30 max-md:text-primary-foreground/90 max-md:hover:text-primary-foreground md:border-border/60 md:text-foreground/70 md:hover:text-foreground" />
               {!loading && (
                 session ? (
                   <div className="flex items-center gap-2">
@@ -219,6 +218,7 @@ export function SiteHeader() {
                   </Button>
                 )
               )}
+              <LanguageToggle className="max-md:border-primary-foreground/30 max-md:text-primary-foreground/90 max-md:hover:text-primary-foreground md:border-border/60 md:text-foreground/70 md:hover:text-foreground" />
             </div>
 
             {/* Hamburger - mobile/tablet (below lg) */}

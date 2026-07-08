@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useT } from "@/i18n/LanguageProvider";
+import type { UserSkill, Task } from "@/lib/types";
 
 type Recommendation = {
   id?: string;
@@ -54,7 +55,7 @@ export default function RecommendationsPage() {
         const recList = Object.keys(data).map(key => ({
           id: key,
           ...data[key]
-        })).sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
+        })).sort((a: Recommendation, b: Recommendation) => (b.createdAt || 0) - (a.createdAt || 0));
         setRecommendations(recList);
       } else {
         setRecommendations([]);
@@ -84,10 +85,10 @@ export default function RecommendationsPage() {
       
       const major = userData.major || "Computer Science";
       const careerLevel = userData.careerLevel || "Student";
-      const skillsList = Object.values(skillsData).map((s: any) => `${s.name}`).join(", ") || "No specific technical skills yet";
-      const tasksList = Object.values(tasksData)
-         .filter((t: any) => t.status !== "Completed")
-         .map((t: any) => `'${t.title}' (${t.priority} priority)`)
+      const skillsList = Object.values(skillsData as Record<string, UserSkill>).map((s) => `${s.name}`).join(", ") || "No specific technical skills yet";
+      const tasksList = Object.values(tasksData as Record<string, Task>)
+         .filter((t) => t.status !== "Completed")
+         .map((t) => `'${t.title}' (${t.priority} priority)`)
          .join(", ") || "No active tasks";
 
       // Supabase edge functions are disabled.
@@ -108,9 +109,10 @@ export default function RecommendationsPage() {
       
       // toast.success(t.recommendations.success, t.recommendations.generatedSuccess);
 
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || t.recommendations.failedGenerate);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage || t.recommendations.failedGenerate);
       toast.error(t.recommendations.error, t.recommendations.couldNotGenerate);
     } finally {
       setGenerating(false);

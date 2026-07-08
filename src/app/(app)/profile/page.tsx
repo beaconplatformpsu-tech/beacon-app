@@ -8,8 +8,7 @@ import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { ref, get, update } from "firebase/database";
 import { db, auth } from "@/lib/firebase/config";
-import { storage } from "@/lib/firebase/config";
-import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+import { uploadFileToFirebase } from "@/lib/firebase/storage";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useT } from "@/i18n/LanguageProvider";
+import type { Task, UserSkill } from "@/lib/types";
 
 
 
@@ -40,8 +40,8 @@ export default function ProfilePage() {
     photoURL: ""
   });
 
-  const [skills, setSkills] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [skills, setSkills] = useState<UserSkill[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     if (!session?.uid) return;
@@ -71,7 +71,7 @@ export default function ProfilePage() {
         // Fetch tasks
         const tasksSnap = await get(ref(db, `tasks/${session.uid}`));
         if (tasksSnap.exists()) {
-          const allTasks: any[] = Object.values(tasksSnap.val());
+          const allTasks: Task[] = Object.values(tasksSnap.val());
           setTasks(allTasks.filter(t => t.status === "Completed"));
         }
 
@@ -120,13 +120,14 @@ export default function ProfilePage() {
         return verifyBeforeUpdateEmail(auth.currentUser!, emailInput);
       });
       toast.success(t.profile.verifyEmailSent, t.profile.verifyEmailSentDesc);
-    } catch (err: any) {
-      if (err.code === "auth/requires-recent-login") {
+    } catch (err) {
+      const error = err as { code?: string; message?: string };
+      if (error.code === "auth/requires-recent-login") {
         toast.error(t.profile.requiresRecentLogin, t.profile.requiresRecentLoginDesc);
-      } else if (err.code === "auth/email-already-in-use") {
+      } else if (error.code === "auth/email-already-in-use") {
         toast.error(t.profile.emailInUse, t.profile.emailInUseDesc);
       } else {
-        toast.error(t.profile.updateFailed, err.message);
+        toast.error(t.profile.updateFailed, error.message || String(err));
       }
     } finally {
       setUpdatingEmail(false);
@@ -163,14 +164,14 @@ export default function ProfilePage() {
     
     setSaving(true);
     try {
-      let photoURL = "";
-      if (file) {
-        const ext = file.name.split(".").pop();
-        const fileName = `${session.uid}-${Date.now()}.${ext}`;
-        const fileRef = storageRef(storage, `avatars/${fileName}`);
-        await uploadBytes(fileRef, file);
-        photoURL = await getDownloadURL(fileRef);
-      }
+      const ext = file.name.split(".").pop();
+      const fileName = `${session.uid}-${Date.now()}.${ext}`;
+      const path = `users/${session.uid}/avatars/${fileName}`;
+      
+      const photoURL = await uploadFileToFirebase(file, path, {
+        maxSizeMB: 5,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      });
       
       await update(ref(db, `users/${session.uid}`), { photoURL });
       
@@ -184,7 +185,8 @@ export default function ProfilePage() {
       toast.success(t.profile.imageUpdated, t.profile.avatarSaved);
     } catch (err) {
       console.error(err);
-      toast.error(t.profile.uploadFailed, t.profile.couldNotUpload);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(t.profile.uploadFailed, errorMessage || t.profile.couldNotUpload);
     } finally {
       setSaving(false);
     }

@@ -40,10 +40,11 @@ export function FeedbackModal() {
 
     setLoading(true);
     try {
-      const feedbacksRef = ref(db, 'feedbacks');
+      const feedbacksRef = ref(db, 'support_messages');
       const newFeedbackRef = push(feedbacksRef);
       await set(newFeedbackRef, {
         userId: session.uid,
+        type: 'feedback',
         subject,
         message,
         rating,
@@ -151,11 +152,20 @@ export function FeedbackModal() {
 }
 
 // Inline Badge component for self-containment if not imported properly
-function Badge({ variant = "default", className = "", ...props }: any) {
-  const base = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
-  const variants: any = {
-    default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-    outline: "text-foreground",
+function Badge({ variant = "default", className = "", ...props }: React.HTMLAttributes<HTMLSpanElement> & { variant?: string }) {
+  const baseStyle = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
+  const variants: Record<string, string> = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/80",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/80",
+    outline: "text-foreground border border-input hover:bg-accent hover:text-accent-foreground",
+    success: "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25",
+    warning: "bg-amber-500/15 text-amber-600 hover:bg-amber-500/25",
+    blue: "bg-blue-500/15 text-blue-600 hover:bg-blue-500/25",
+    purple: "bg-purple-500/15 text-purple-600 hover:bg-purple-500/25",
   };
-  return <div className={`${base} ${variants[variant]} ${className}`} {...props} />;
+  
+  return (
+    <span className={`${baseStyle} ${variants[variant] || variants.default} ${className}`} {...props} />
+  );
 }

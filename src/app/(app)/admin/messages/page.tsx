@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Mail, Search, Trash2, Calendar, MessageSquare, Loader2, Mailbox } from "lucide-react";
-import { ref, onValue, remove } from "firebase/database";
+import { ref, onValue, remove, query, limitToLast } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
@@ -46,8 +46,9 @@ export default function AdminMessagesPage() {
   const t = useT();
 
   useEffect(() => {
-    const messagesRef = ref(db, "contact_messages");
-    const unsubscribe = onValue(messagesRef, (snapshot) => {
+    // Limit to the most recent 200 messages for performance
+    const messagesQuery = query(ref(db, "support_messages"), limitToLast(200));
+    const unsubscribe = onValue(messagesQuery, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const messageList = Object.keys(data).map(key => ({
@@ -75,7 +76,7 @@ export default function AdminMessagesPage() {
     if (!confirm(t.adminMessages.deleteConfirmTitle)) return;
     if (!session?.uid) return;
     try {
-      await adminService.deleteContent(session.uid, "contact_messages", id);
+      await adminService.deleteContent(session.uid, "support_messages", id);
       toast.info(t.adminMessages.messageDeleted, t.adminMessages.messageRemoved);
     } catch (err) {
       toast.error(t.adminMessages.deleteFailed, t.adminMessages.couldNotDelete);
@@ -84,9 +85,9 @@ export default function AdminMessagesPage() {
 
   const filteredMessages = useMemo(() => {
     return messages.filter(m => 
-      m.name.toLowerCase().includes(search.toLowerCase()) || 
-      m.email.toLowerCase().includes(search.toLowerCase()) ||
-      m.message.toLowerCase().includes(search.toLowerCase())
+      (m.name || "").toLowerCase().includes(search.toLowerCase()) || 
+      (m.email || "").toLowerCase().includes(search.toLowerCase()) ||
+      (m.message || "").toLowerCase().includes(search.toLowerCase())
     );
   }, [messages, search]);
 

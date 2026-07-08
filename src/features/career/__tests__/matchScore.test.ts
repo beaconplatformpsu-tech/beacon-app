@@ -2,9 +2,9 @@ import { computeMatchScore } from '../utils/matchScore';
 
 describe('computeMatchScore', () => {
   const mockCareerPathSkills = {
-    cps1: { careerPathId: 'p1', skillId: 's1', minimumProficiencyLevel: 'Intermediate' },
-    cps2: { careerPathId: 'p1', skillId: 's2', minimumProficiencyLevel: 'Advanced' },
-    cps3: { careerPathId: 'p2', skillId: 's1', minimumProficiencyLevel: 'Beginner' }
+    cps1: { careerPathId: 'p1', skillId: 's1', minimumProficiencyLevel: 'Intermediate', priority: 'Core' as const },
+    cps2: { careerPathId: 'p1', skillId: 's2', minimumProficiencyLevel: 'Advanced', priority: 'Core' as const },
+    cps3: { careerPathId: 'p2', skillId: 's1', minimumProficiencyLevel: 'Beginner', priority: 'Core' as const }
   };
 
   const mockSkills = {
@@ -23,8 +23,8 @@ describe('computeMatchScore', () => {
   });
 
   it('calculates partial score when user has some skills', () => {
-    const userSkills = [
-      { name: 'React', proficiency: 'Beginner' } // Weight 1 / Required 2 (Intermediate) = 0.5
+    const userSkills: any[] = [
+      { id: '1', skillId: 's1', progress: 50, name: 'React', proficiency: 'Beginner' } // Weight 1 / Required 2 (Intermediate) = 0.5
     ];
     
     // Path 1 requires s1(React) and s2(Node).
@@ -35,8 +35,8 @@ describe('computeMatchScore', () => {
   });
 
   it('caps skill score at 100% even if user exceeds requirements', () => {
-    const userSkills = [
-      { name: 'React', proficiency: 'Expert' } // Weight 4 / Required 1 (Beginner) = 4 -> capped at 1
+    const userSkills: any[] = [
+      { id: '1', skillId: 's1', progress: 100, name: 'React', proficiency: 'Expert' } // Weight 4 / Required 1 (Beginner) = 4 -> capped at 1
     ];
     
     // Path 2 requires only s1(React).
@@ -45,9 +45,9 @@ describe('computeMatchScore', () => {
   });
 
   it('calculates full score when all skills are met perfectly', () => {
-    const userSkills = [
-      { name: 'React', proficiency: 'Intermediate' },
-      { name: 'Node.js', proficiency: 'Advanced' }
+    const userSkills: any[] = [
+      { id: '1', skillId: 's1', progress: 50, name: 'React', proficiency: 'Intermediate' },
+      { id: '2', skillId: 's2', progress: 80, name: 'Node.js', proficiency: 'Advanced' }
     ];
     
     const score = computeMatchScore('p1', mockCareerPathSkills, mockSkills, userSkills);

@@ -30,14 +30,15 @@ export const skillService = {
   },
 
   /**
-   * Helper to strictly parse skill records with fallbacks
+   * Helper to map raw DB data to valid UserSkills, filtering corrupt records
    */
-  parseUserSkills(data: any): UserSkill[] {
+  parseUserSkills(data: Record<string, unknown> | null): UserSkill[] {
+    if (!data) return [];
     const validSkills: UserSkill[] = [];
     Object.keys(data).forEach(key => {
       const raw = {
         id: key,
-        ...data[key]
+        ...(data[key] as Record<string, unknown>)
       };
       
       const result = userSkillSchema.safeParse(raw);
@@ -47,7 +48,7 @@ export const skillService = {
         console.warn(`UserSkill ${key} failed validation, mapping to fallback:`, result.error);
         validSkills.push({
           id: key,
-          skillId: data[key].skillId || "unknown",
+          skillId: (data[key] as Record<string, unknown>)?.skillId as string || "unknown",
           name: "⚠️ Corrupted Skill Data",
           proficiency: "Beginner",
           progress: 0,

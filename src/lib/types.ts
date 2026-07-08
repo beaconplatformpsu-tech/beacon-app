@@ -61,6 +61,7 @@ export interface CareerOpportunity {
   id: string;
   title: string;
   company: string;
+  description?: string;
   location?: string;
   type?: string;
   sourceUrl: string;

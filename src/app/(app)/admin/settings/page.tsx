@@ -59,14 +59,15 @@ export default function AdminSettingsPage() {
     try {
       await adminService.updatePlatformSettings(session.uid, settings);
       toast.success(t.adminSettings.settingsSaved, t.adminSettings.configUpdated);
-    } catch (error: any) {
-      toast.error(t.adminSettings.saveFailed, error.message || t.adminSettings.saveError);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      toast.error(t.adminSettings.saveFailed, errorMessage || t.adminSettings.saveError);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | boolean) => {
     setSettings(prev => ({ ...prev, [field]: value }));
   };
 

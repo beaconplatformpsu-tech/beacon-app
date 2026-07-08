@@ -122,7 +122,7 @@ export function TaskDialog({ onSave }: TaskDialogProps) {
                 id="priority"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={newTask.priority}
-                onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as any })}
+                onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as Task["priority"] })}
               >
                 {(Object.keys(t.tasks.priorities) as Array<keyof typeof t.tasks.priorities>).map((key) => (
                   <option key={key} value={key}>{t.tasks.priorities[key]}</option>

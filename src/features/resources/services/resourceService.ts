@@ -72,50 +72,29 @@ export class ResourceService {
    * Fetch resources for a career path, automatically falling back to legacy paths if needed.
    */
   static async getResourcesByCareerPath(careerPathId: string): Promise<Resource[]> {
-    // 1. Try new normalized index first
     const indexSnapshot = await get(ref(db, `resource_by_career_path/${careerPathId}`));
-    if (indexSnapshot.exists()) {
-      const resourceIds = Object.keys(indexSnapshot.val());
-      return await this.fetchMany(resourceIds);
-    }
-
-    // 2. Legacy fallback
-    const legacySnapshot = await get(ref(db, 'career_resources'));
-    if (!legacySnapshot.exists()) return [];
-
-    const allLegacy: Record<string, any> = legacySnapshot.val();
-    const matches = Object.values(allLegacy).filter(r => 
-      r.careerPathIds && r.careerPathIds.includes(careerPathId)
-    );
+    if (!indexSnapshot.exists()) return [];
     
-    return matches.map(m => resourceSchema.parse(m));
+    const resourceIds = Object.keys(indexSnapshot.val());
+    return await this.fetchMany(resourceIds);
   }
 
   /**
    * Fetch resources for an academic category, automatically falling back to legacy paths.
    */
   static async getResourcesByAcademicCategory(categoryId: string): Promise<Resource[]> {
-    // 1. Try new normalized index first
     const indexSnapshot = await get(ref(db, `resource_by_academic_category/${categoryId}`));
-    if (indexSnapshot.exists()) {
-      const resourceIds = Object.keys(indexSnapshot.val());
-      return await this.fetchMany(resourceIds);
-    }
-
-    // 2. Legacy fallback
-    const legacySnapshot = await get(ref(db, 'academic_support_resources'));
-    if (!legacySnapshot.exists()) return [];
-
-    const allLegacy: Record<string, any> = legacySnapshot.val();
-    const matches = Object.values(allLegacy).filter(r => 
-      r.academicCategoryIds && r.academicCategoryIds.includes(categoryId)
-    );
-
-    return matches.map(m => resourceSchema.parse(m));
+    if (!indexSnapshot.exists()) return [];
+    
+    const resourceIds = Object.keys(indexSnapshot.val());
+    return await this.fetchMany(resourceIds);
   }
 
   private static async fetchMany(ids: string[]): Promise<Resource[]> {
-    const promises = ids.map(id => get(ref(db, `resources/${id}`)));
+    // Limit to 50 to avoid expensive unbounded fetch loops. 
+    // Future: implement cursor-based pagination if > 50 is needed.
+    const limitedIds = ids.slice(0, 50);
+    const promises = limitedIds.map(id => get(ref(db, `resources/${id}`)));
     const results = await Promise.all(promises);
     
     const resources: Resource[] = [];

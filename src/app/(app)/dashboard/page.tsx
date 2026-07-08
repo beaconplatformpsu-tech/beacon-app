@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { 
   CheckSquare, BookOpen, Clock, TrendingUp, Sparkles, ChevronRight, 
@@ -78,30 +78,38 @@ export default function DashboardPage() {
     };
   }, [session?.uid]);
 
-  // Derived Data
-  const pendingTasks = tasks.filter(t => t.status !== "Completed");
-  const overdueTasks = pendingTasks.filter(t => t.dueDate && isPast(new Date(t.dueDate)) && !isToday(new Date(t.dueDate)));
-  const upcomingTasks = pendingTasks
-    .filter(t => t.dueDate && !isPast(new Date(t.dueDate)))
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    .slice(0, 4);
+  // Derived Data (Memoized for performance)
+  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== "Completed"), [tasks]);
+  
+  const overdueTasks = useMemo(() => 
+    pendingTasks.filter(t => t.dueDate && isPast(new Date(t.dueDate)) && !isToday(new Date(t.dueDate))),
+  [pendingTasks]);
+  
+  const upcomingTasks = useMemo(() => 
+    pendingTasks
+      .filter(t => t.dueDate && !isPast(new Date(t.dueDate)))
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .slice(0, 4),
+  [pendingTasks]);
 
-  const proficiencyData = [
+  const proficiencyData = useMemo(() => [
     { name: "Beginner", value: skills.filter(s => s.proficiency === "Beginner").length, color: "#94a3b8" },
     { name: "Intermediate", value: skills.filter(s => s.proficiency === "Intermediate").length, color: "#3b82f6" },
     { name: "Advanced", value: skills.filter(s => s.proficiency === "Advanced").length, color: "#8b5cf6" },
     { name: "Expert", value: skills.filter(s => s.proficiency === "Expert").length, color: "#ec4899" },
-  ];
+  ], [skills]);
 
-  const latestRec = recommendations[0];
+  const latestRec = useMemo(() => recommendations[0], [recommendations]);
 
-  const stats = [
+  const stats = useMemo(() => [
     { label: "Pending Tasks", value: loadingTasks ? "-" : pendingTasks.length, icon: CheckSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Acquired Skills", value: loadingSkills ? "-" : skills.length, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Saved Notes", value: loadingNotes ? "-" : notes.length, icon: BookOpen, color: "text-sky-500", bg: "bg-sky-500/10" },
-  ];
+  ], [loadingTasks, pendingTasks.length, loadingSkills, skills.length, loadingNotes, notes.length]);
 
-  const isFreshAccount = !loadingTasks && !loadingSkills && tasks.length === 0 && skills.length === 0;
+  const isFreshAccount = useMemo(() => 
+    !loadingTasks && !loadingSkills && tasks.length === 0 && skills.length === 0,
+  [loadingTasks, loadingSkills, tasks.length, skills.length]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-12">
