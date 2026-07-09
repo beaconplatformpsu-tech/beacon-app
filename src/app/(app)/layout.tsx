@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !session) {
       toast.warning(t.layout.authRequired, t.layout.pleaseLogin);
-      router.push("/auth");
+      router.push("/auth/login");
     }
   }, [session, loading, router, toast]);
   if (loading || !session) {

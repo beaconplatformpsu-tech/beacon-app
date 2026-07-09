@@ -89,7 +89,7 @@ export function SiteHeader() {
     try {
       await signOut(auth);
       setMenuOpen(false);
-      router.push("/auth");
+      router.push("/auth/login");
     } finally {
       setSigningOut(false);
     }
@@ -214,11 +214,10 @@ export function SiteHeader() {
                     size="sm"
                     className="rounded-full px-5 font-medium shadow-sm"
                   >
-                    <Link href="/auth">{t.actions.signIn}</Link>
+                    <Link href="/auth/login">{t.actions.signIn}</Link>
                   </Button>
                 )
               )}
-              <LanguageToggle className="max-md:border-primary-foreground/30 max-md:text-primary-foreground/90 max-md:hover:text-primary-foreground md:border-border/60 md:text-foreground/70 md:hover:text-foreground" />
             </div>
 
             {/* Hamburger - mobile/tablet (below lg) */}
@@ -234,6 +233,9 @@ export function SiteHeader() {
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
+
+            {/* Language Toggle - Far Right */}
+            <LanguageToggle className="max-md:border-primary-foreground/30 max-md:text-primary-foreground/90 max-md:hover:text-primary-foreground md:border-border/60 md:text-foreground/70 md:hover:text-foreground" />
           </div>
 
         </div>
@@ -291,11 +293,8 @@ export function SiteHeader() {
               </Link>
             )}
 
-            {/* Language + Auth - mobile only (below sm these appear in nav bar, above sm they appear in header) */}
+            {/* Auth - mobile only */}
             <div className="sm:hidden flex items-center justify-center gap-4 px-1 pb-2 pt-2">
-              <div className="w-32 flex justify-center">
-                <LanguageToggle className="w-full justify-center" />
-              </div>
               {!loading && (
                 session ? (
                   <div className="w-32 flex justify-center">
@@ -318,7 +317,7 @@ export function SiteHeader() {
                       size="sm"
                       className="w-full rounded-full"
                     >
-                      <Link href="/auth" onClick={() => setMenuOpen(false)}>
+                      <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
                         {t.actions.signIn}
                       </Link>
                     </Button>

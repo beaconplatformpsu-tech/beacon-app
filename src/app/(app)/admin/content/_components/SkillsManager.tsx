@@ -42,17 +42,17 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
 
   const handleDelete = async (id: string) => {
     if (!session?.uid) return;
-    try { await adminService.deleteContent(session.uid, "skills", id); toast.success("Deleted", "Skill removed."); }
-    catch { toast.error("Error", "Failed to delete."); }
+    try { await adminService.deleteContent(session.uid, "public_content/skills", id); toast.success("Deleted", "Skill removed."); }
+    catch { toast.error("Error", "Could not delete."); }
   };
 
-  const handleSubmit = async () => {
+  const handleSave = async () => {
     if (!formData.name) { toast.warning("Validation", "Skill name is required."); return; }
     setLoading(true);
     try {
       if (!session?.uid) return;
-      if (editingId) { await adminService.updateContent(session.uid, "skills", editingId, formData); toast.success("Updated", "Skill updated."); }
-      else { await adminService.createContent(session.uid, "skills", formData); toast.success("Created", "Skill created."); }
+      if (editingId) { await adminService.updateContent(session.uid, "public_content/skills", editingId, formData); toast.success("Updated", "Skill updated."); }
+      else { await adminService.createContent(session.uid, "public_content/skills", formData); toast.success("Created", "Skill created."); }
       setIsOpen(false);
     } catch { toast.error("Error", "Failed to save."); }
     finally { setLoading(false); }
@@ -180,7 +180,7 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsOpen(false)} disabled={loading} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleSubmit} disabled={loading} className="rounded-xl px-6">
+            <Button onClick={handleSave} disabled={loading} className="rounded-xl px-6">
               {loading ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Saving...</span> : "Save Skill"}
             </Button>
           </DialogFooter>

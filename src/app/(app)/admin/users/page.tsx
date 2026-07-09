@@ -55,13 +55,21 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const usersRef = ref(db, "users");
-    const unsubscribe = onValue(usersRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const usersList = Object.keys(data).map(key => ({
-          uid: key,
-          ...data[key]
-        })) as UserData[];
+    const metaRef = ref(db, "user_admin_meta");
+    let usersData: any = null;
+    let metaData: any = null;
+
+    const processUsers = () => {
+      if (usersData && metaData) {
+        const usersList = Object.keys(usersData).map(key => {
+          const profile = usersData[key]?.profile || {};
+          const meta = metaData[key] || {};
+          return {
+            uid: key,
+            ...profile,
+            ...meta
+          };
+        }) as UserData[];
         
         // Sort admins first, then newest
         usersList.sort((a, b) => {
@@ -70,17 +78,31 @@ export default function AdminUsersPage() {
         });
         
         setUsers(usersList);
-      } else {
+        setLoading(false);
+      } else if (usersData !== null && metaData !== null && (Object.keys(usersData).length === 0 || Object.keys(metaData).length === 0)) {
         setUsers([]);
+        setLoading(false);
       }
-      setLoading(false);
+    };
+
+    const unsubUsers = onValue(usersRef, (snapshot) => {
+      usersData = snapshot.val() || {};
+      processUsers();
     }, (error) => {
       console.error("Error fetching users:", error);
       toast.error("Failed to load user data");
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const unsubMeta = onValue(metaRef, (snapshot) => {
+      metaData = snapshot.val() || {};
+      processUsers();
+    });
+
+    return () => {
+      unsubUsers();
+      unsubMeta();
+    };
   }, [toast]);
 
   const toggleUserRole = async (user: UserData) => {

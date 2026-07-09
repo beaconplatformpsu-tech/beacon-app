@@ -17,6 +17,7 @@ jest.mock("firebase/database", () => {
       return jest.fn(); // Unsubscribe mock
     }),
     update: jest.fn(),
+    serverTimestamp: jest.fn(() => 'mock-timestamp')
   };
 });
 

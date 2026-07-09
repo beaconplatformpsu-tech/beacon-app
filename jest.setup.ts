@@ -50,6 +50,7 @@ jest.mock('firebase/database', () => ({
   orderByChild: jest.fn(),
   equalTo: jest.fn(),
   limitToFirst: jest.fn(),
+  limitToLast: jest.fn(),
   onValue: jest.fn((ref, callback) => {
     callback({ 
       val: () => null,

@@ -8,7 +8,7 @@ export const recommendationService = {
    * Subscribe to live recommendations updates safely
    */
   subscribeToRecommendations(uid: string, callback: (recommendations: Recommendation[]) => void): () => void {
-    const recsRef = ref(db, `recommendations/${uid}`);
+    const recsRef = ref(db, `user_private/${uid}/recommendations`);
     const unsubscribe = onValue(recsRef, (snapshot) => {
       if (!snapshot.exists()) {
         callback([]);

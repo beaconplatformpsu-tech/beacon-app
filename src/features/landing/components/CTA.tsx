@@ -23,7 +23,7 @@ export function CTA() {
           <div className="relative mt-8 flex flex-wrap justify-center gap-3">
             {!loading && (
               <Link
-                href={session ? (role === "admin" ? "/admin" : "/dashboard") : "/auth"}
+                href={session ? (role === "admin" ? "/admin" : "/dashboard") : "/auth/login"}
                 className="rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow"
               >
                 {session ? t.nav.dashboard : t.actions.createAccount}

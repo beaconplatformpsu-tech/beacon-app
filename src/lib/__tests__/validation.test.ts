@@ -106,4 +106,65 @@ describe('Zod Validation Schemas', () => {
       }
     });
   });
+
+  describe('userProfileSchema', () => {
+    const { userProfileSchema } = require('../validation');
+    
+    it('validates a correct user profile', () => {
+      const validProfile = {
+        uid: 'u1',
+        email: 'test@example.com',
+        role: 'student',
+        emailVerified: true
+      };
+
+      const result = userProfileSchema.safeParse(validProfile);
+      expect(result.success).toBe(true);
+    });
+
+    it('fails on invalid role', () => {
+      const invalidProfile = {
+        uid: 'u2',
+        email: 'test@example.com',
+        role: 'superadmin', // Invalid
+        emailVerified: true
+      };
+
+      const result = userProfileSchema.safeParse(invalidProfile);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('resourceSchema', () => {
+    const { resourceSchema } = require('../validation');
+
+    it('validates a correct resource', () => {
+      const validResource = {
+        id: 'r1',
+        title: 'Learn React',
+        url: 'https://react.dev',
+        resourceType: 'Documentation',
+        audienceLevel: 'Beginner',
+        isFree: true
+      };
+
+      const result = resourceSchema.safeParse(validResource);
+      expect(result.success).toBe(true);
+    });
+
+    it('fails on invalid url scheme', () => {
+      const invalidResource = {
+        id: 'r2',
+        title: 'Bad URL Resource',
+        url: 'http://react.dev', // Must be https
+        resourceType: 'Documentation'
+      };
+
+      const result = resourceSchema.safeParse(invalidResource);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.format().url?._errors[0]).toMatch(/HTTPS/);
+      }
+    });
+  });
 });

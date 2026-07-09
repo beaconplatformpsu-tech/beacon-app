@@ -63,10 +63,10 @@ export default function CareerPathsPage() {
 
     // Fetch static admin-defined content once (no real-time listener needed)
     Promise.all([
-      get(ref(db, "career_paths")),
-      get(ref(db, "skills")),
-      get(ref(db, "career_path_skills")),
-      get(ref(db, "career_resources")),
+      get(ref(db, "public_content/career_paths")),
+      get(ref(db, "public_content/skills")),
+      get(ref(db, "relations/career_path_skills")),
+      get(ref(db, "public_content/resources")),
     ]).then(([pathsSnap, skillsSnap, cpSkillsSnap, resSnap]) => {
       setCareerPaths(
         pathsSnap.exists()
@@ -74,12 +74,24 @@ export default function CareerPathsPage() {
           : []
       );
       setSkills(skillsSnap.val() || {});
-      setCareerPathSkills(cpSkillsSnap.val() || {});
+      
+      const cpSkillsRaw = cpSkillsSnap.val() || {};
+      const flatCpSkills: Record<string, any> = {};
+      Object.keys(cpSkillsRaw).forEach(pathId => {
+        Object.keys(cpSkillsRaw[pathId]).forEach(skillId => {
+          flatCpSkills[`${pathId}_${skillId}`] = {
+            careerPathId: pathId,
+            skillId,
+            ...cpSkillsRaw[pathId][skillId]
+          };
+        });
+      });
+      setCareerPathSkills(flatCpSkills);
       setResources(resSnap.val() || {});
     });
 
     // User skills use onValue because the user can add skills and want to see scores update live
-    const uSkillsRef = ref(db, `user_skills/${session.uid}`);
+    const uSkillsRef = ref(db, `user_private/${session.uid}/user_skills`);
     const unsubscribe = onValue(uSkillsRef, (snap) => {
       const data = snap.val() || {};
       const list = Object.keys(data).map((k) => ({ id: k, ...(data[k] as object) } as UserSkill));
@@ -129,7 +141,7 @@ export default function CareerPathsPage() {
   };
 
   const getResourcesForPath = (pathId: string) =>
-    Object.values(resources).filter((res) => res.careerPathId === pathId);
+    Object.values(resources).filter((res) => res.careerPathIds?.includes(pathId));
 
   // ── AI Generation ────────────────────────────────────────────────────────
   const generateAiRecommendation = async () => {

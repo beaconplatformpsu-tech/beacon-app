@@ -31,7 +31,7 @@ export function Hero() {
             <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-3">
               {!loading && (
                 <Link
-                  href={session ? (role === "admin" ? "/admin" : "/dashboard") : "/auth"}
+                  href={session ? (role === "admin" ? "/admin" : "/dashboard") : "/auth/login"}
                   className="rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:-translate-y-0.5 shadow-glow shadow-primary/30"
                 >
                   {session ? t.nav.dashboard : t.actions.startJourney}

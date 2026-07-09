@@ -19,7 +19,7 @@ export default function AdminDashboard() {
       try {
         const [usersSnap, resSnap, msgSnap] = await Promise.all([
           get(query(ref(db, "users"), limitToLast(100))),
-          get(query(ref(db, "resources"), limitToLast(100))),
+          get(query(ref(db, "public_content/resources"), limitToLast(100))),
           get(query(ref(db, "support_messages"), limitToLast(100)))
         ]);
 

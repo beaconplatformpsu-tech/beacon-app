@@ -33,12 +33,10 @@ export const adminService = {
 
   async toggleCareerPathSkill(adminUid: string, pathId: string, skillId: string, linked: boolean) {
     if (!adminUid) throw new Error("Unauthorized");
-    const linkId = `${pathId}_${skillId}`;
-    const linkRef = ref(db, `career_path_skills/${linkId}`);
+    const linkRef = ref(db, `relations/career_path_skills/${pathId}/${skillId}`);
     
     if (linked) {
       await set(linkRef, {
-        id: linkId,
         careerPathId: pathId,
         skillId: skillId,
         minimumProficiencyLevel: "Beginner",
@@ -53,7 +51,7 @@ export const adminService = {
 
   async updatePlatformSettings(adminUid: string, payload: Record<string, unknown>) {
     if (!adminUid) throw new Error("Unauthorized");
-    const settingsRef = ref(db, `platform_settings`);
+    const settingsRef = ref(db, `platform_settings/public`);
     await update(settingsRef, {
       ...payload,
       updatedByAdmin: adminUid,
@@ -63,7 +61,7 @@ export const adminService = {
 
   async updateUserRole(adminUid: string, targetUid: string, role: string) {
     if (!adminUid) throw new Error("Unauthorized");
-    const userRef = ref(db, `users/${targetUid}`);
+    const userRef = ref(db, `user_admin_meta/${targetUid}`);
     await update(userRef, {
       role,
       updatedByAdmin: adminUid,
@@ -73,7 +71,7 @@ export const adminService = {
 
   async updateAccountStatus(adminUid: string, targetUid: string, status: string) {
     if (!adminUid) throw new Error("Unauthorized");
-    const userRef = ref(db, `users/${targetUid}`);
+    const userRef = ref(db, `user_admin_meta/${targetUid}`);
     await update(userRef, {
       accountStatus: status,
       updatedByAdmin: adminUid,

@@ -23,12 +23,12 @@ jest.mock("firebase/database", () => ({
         exists: () => true,
         val: () => ({ user1: {}, user2: {}, user3: {} }),
       };
-    } else if (refPath === "resources") {
+    } else if (refPath === "public_content/resources") {
       return {
         exists: () => true,
         val: () => ({ res1: {}, res2: {}, res3: {}, res4: {}, res5: {} }),
       };
-    } else if (refPath === "support_messages") {
+    } else if (refPath === "system/support_messages") {
       return {
         exists: () => true,
         val: () => ({ msg1: {} }),

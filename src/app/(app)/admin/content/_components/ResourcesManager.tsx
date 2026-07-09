@@ -81,7 +81,7 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
 
   const handleDelete = async (id: string) => {
     if (!session?.uid) return;
-    try { await adminService.deleteContent(session.uid, "career_resources", id); toast.success("Deleted", "Resource removed."); }
+    try { await adminService.deleteContent(session.uid, "public_content/resources", id); toast.success("Deleted", "Resource removed."); }
     catch { toast.error("Error", "Failed to delete."); }
   };
 
@@ -124,10 +124,10 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
 
       if (!session?.uid) return;
       if (editingId) {
-        await adminService.updateContent(session.uid, "career_resources", editingId, payload);
+        await adminService.updateContent(session.uid, "public_content/resources", editingId, payload);
         toast.success("Updated", "Resource updated.");
       } else {
-        await adminService.createContent(session.uid, "career_resources", payload);
+        await adminService.createContent(session.uid, "public_content/resources", payload);
         toast.success("Created", "Resource created.");
       }
       setIsOpen(false);

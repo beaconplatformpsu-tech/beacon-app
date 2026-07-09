@@ -48,7 +48,7 @@ export default function RecommendationsPage() {
   useEffect(() => {
     if (!session?.uid) return;
     
-    const recsRef = ref(db, `recommendations/${session.uid}`);
+    const recsRef = ref(db, `user_private/${session.uid}/recommendations`);
     const unsubscribe = onValue(recsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -75,9 +75,9 @@ export default function RecommendationsPage() {
     try {
 
       // Fetch user context
-      const userSnap = await get(ref(db, `users/${session.uid}`));
-      const skillsSnap = await get(ref(db, `user_skills/${session.uid}`));
-      const tasksSnap = await get(ref(db, `tasks/${session.uid}`));
+      const userSnap = await get(ref(db, `users/${session.uid}/profile`));
+      const skillsSnap = await get(ref(db, `user_private/${session.uid}/user_skills`));
+      const tasksSnap = await get(ref(db, `user_private/${session.uid}/tasks`));
       
       const userData = userSnap.val() || {};
       const skillsData = skillsSnap.val() || {};
@@ -97,7 +97,7 @@ export default function RecommendationsPage() {
       const parsedRecs = data;
       
       // Save to Firebase
-      const recsRef = ref(db, `recommendations/${session.uid}`);
+      const recsRef = ref(db, `user_private/${session.uid}/recommendations`);
       for (const rec of parsedRecs) {
         const newRef = push(recsRef);
         await set(newRef, {
@@ -122,7 +122,7 @@ export default function RecommendationsPage() {
   const deleteRecommendation = async (id: string) => {
     if (!session?.uid) return;
     try {
-      await remove(ref(db, `recommendations/${session.uid}/${id}`));
+      await remove(ref(db, `user_private/${session.uid}/recommendations/${id}`));
       toast.success(t.recommendations.removed, t.recommendations.dismissed);
     } catch (e) {
       console.error(e);
@@ -144,11 +144,11 @@ export default function RecommendationsPage() {
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         createdAt: new Date().toISOString(),
       };
-      await push(ref(db, `tasks/${session.uid}`), newTask);
+      await push(ref(db, `user_private/${session.uid}/tasks`), newTask);
       toast.success(t.recommendations.taskCreated, t.recommendations.taskAdded);
       // Auto-dismiss the recommendation
       if (rec.id) {
-        await remove(ref(db, `recommendations/${session.uid}/${rec.id}`));
+        await remove(ref(db, `user_private/${session.uid}/recommendations/${rec.id}`));
       }
     } catch (e) {
       console.error(e);

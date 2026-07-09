@@ -25,22 +25,22 @@ export default function AdminContentPage() {
     let done = 0;
     const check = () => { done++; if (done >= 4) setLoading(false); };
 
-    const unsubCat = onValue(ref(db, "career_categories"), s => {
+    const unsubCat = onValue(ref(db, "public_content/career_categories"), s => {
       const d = s.val() || {};
       setCategories(Object.keys(d).map(k => ({ id: k, ...d[k] })));
       check();
     });
-    const unsubPaths = onValue(ref(db, "career_paths"), s => {
+    const unsubPaths = onValue(ref(db, "public_content/career_paths"), s => {
       const d = s.val() || {};
       setPaths(Object.keys(d).map(k => ({ id: k, ...d[k] })));
       check();
     });
-    const unsubSkills = onValue(ref(db, "skills"), s => {
+    const unsubSkills = onValue(ref(db, "public_content/skills"), s => {
       const d = s.val() || {};
       setSkills(Object.keys(d).map(k => ({ id: k, ...d[k] })));
       check();
     });
-    const unsubRes = onValue(ref(db, "career_resources"), s => {
+    const unsubRes = onValue(ref(db, "public_content/resources"), s => {
       const d = s.val() || {};
       setResources(Object.keys(d).map(k => ({ id: k, ...d[k] })));
       check();

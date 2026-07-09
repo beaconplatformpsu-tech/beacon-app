@@ -29,7 +29,7 @@ export function useCurrentUserRole() {
       }
 
       try {
-        const roleSnap = await get(ref(db, `users/${firebaseUser.uid}/role`));
+        const roleSnap = await get(ref(db, `user_admin_meta/${firebaseUser.uid}/role`));
         const storedRole = roleSnap.exists() ? (roleSnap.val() as AppRole) : "student";
         setRole(storedRole);
       } catch {

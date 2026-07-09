@@ -12,11 +12,13 @@
     "format": "prettier --write .",
     "test": "jest",
     "seed:dry": "npx tsx scripts/seed/index.ts --dry-run",
-    "seed:write": "npx tsx scripts/seed/index.ts --write",
+    "seed:dev": "npx tsx scripts/seed/index.ts --write",
+    "seed:reset:dev": "npx tsx scripts/seed/index.ts --write --force",
     "seed:users": "npx tsx scripts/seed/index.ts --write --only users",
     "seed:public": "npx tsx scripts/seed/index.ts --write --only public",
-    "seed:resources": "npx tsx scripts/seed/index.ts --dry-run --only resources",
-    "seed:verify": "npx tsx scripts/seed/validateSeed.ts"
+    "seed:resources": "npx tsx scripts/seed/index.ts --write --only resources",
+    "seed:verify": "npx tsx scripts/seed/validateSeed.ts",
+    "seed:validate": "npx tsx scripts/seed/validateJson.ts"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",

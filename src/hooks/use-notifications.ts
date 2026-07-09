@@ -21,7 +21,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!session?.uid) return;
 
-    const notifRef = ref(db, `notifications/${session.uid}`);
+    const notifRef = ref(db, `user_private/${session.uid}/notifications`);
     const unsubscribe = onValue(notifRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -56,7 +56,7 @@ export function useNotifications() {
   const markAllAsRead = async () => {
     if (!session?.uid) return;
     try {
-      const updates: Record<string, any> = {};
+      const updates: Record<string, boolean> = {};
       notifications.filter(n => !n.read).forEach(n => {
         updates[`${n.id}/read`] = true;
       });

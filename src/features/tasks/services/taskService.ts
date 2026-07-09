@@ -8,7 +8,7 @@ export const taskService = {
    * Fetch all tasks for a specific user
    */
   async getTasks(uid: string): Promise<Task[]> {
-    const snapshot = await get(ref(db, `tasks/${uid}`));
+    const snapshot = await get(ref(db, `user_private/${uid}/tasks`));
     if (!snapshot.exists()) return [];
     
     const data = snapshot.val();
@@ -22,7 +22,7 @@ export const taskService = {
    * Subscribe to live tasks updates for a specific user
    */
   subscribeToTasks(uid: string, callback: (tasks: Task[]) => void): () => void {
-    const tasksRef = ref(db, `tasks/${uid}`);
+    const tasksRef = ref(db, `user_private/${uid}/tasks`);
     const unsubscribe = onValue(tasksRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -65,7 +65,7 @@ export const taskService = {
    * Create a new task
    */
   async createTask(uid: string, taskInput: Partial<Task>): Promise<string> {
-    const newTaskRef = push(ref(db, `tasks/${uid}`));
+    const newTaskRef = push(ref(db, `user_private/${uid}/tasks`));
     await update(newTaskRef, {
       ...taskInput,
       createdAt: new Date().toISOString()
@@ -78,7 +78,7 @@ export const taskService = {
    */
   async updateProgress(uid: string, taskId: string, progress: number): Promise<void> {
     const status = progress === 100 ? "Completed" : progress > 0 ? "In Progress" : "Pending";
-    await update(ref(db, `tasks/${uid}/${taskId}`), { 
+    await update(ref(db, `user_private/${uid}/tasks/${taskId}`), { 
       progress, 
       status,
       updatedAt: new Date().toISOString() 
@@ -89,6 +89,6 @@ export const taskService = {
    * Delete a task
    */
   async deleteTask(uid: string, taskId: string): Promise<void> {
-    await remove(ref(db, `tasks/${uid}/${taskId}`));
+    await remove(ref(db, `user_private/${uid}/tasks/${taskId}`));
   }
 };

@@ -21,6 +21,8 @@ jest.mock("firebase/database", () => {
       return jest.fn(); // Unsubscribe mock
     }),
     remove: jest.fn(),
+    query: jest.fn((ref) => ref),
+    limitToLast: jest.fn(),
   };
 });
 

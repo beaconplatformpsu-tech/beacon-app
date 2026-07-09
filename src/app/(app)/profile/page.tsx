@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
     const fetchData = async () => {
       try {
-        const snapshot = await get(ref(db, `users/${session.uid}`));
+        const snapshot = await get(ref(db, `users/${session.uid}/profile`));
         if (snapshot.exists()) {
           const data = snapshot.val();
           setProfile(prev => ({
@@ -63,13 +63,13 @@ export default function ProfilePage() {
         setEmailInput(session.email || "");
 
         // Fetch skills
-        const skillsSnap = await get(ref(db, `user_skills/${session.uid}`));
+        const skillsSnap = await get(ref(db, `user_private/${session.uid}/user_skills`));
         if (skillsSnap.exists()) {
           setSkills(Object.values(skillsSnap.val()));
         }
 
         // Fetch tasks
-        const tasksSnap = await get(ref(db, `tasks/${session.uid}`));
+        const tasksSnap = await get(ref(db, `user_private/${session.uid}/tasks`));
         if (tasksSnap.exists()) {
           const allTasks: Task[] = Object.values(tasksSnap.val());
           setTasks(allTasks.filter(t => t.status === "Completed"));
@@ -139,7 +139,7 @@ export default function ProfilePage() {
     setSaving(true);
     
     try {
-      await update(ref(db, `users/${session.uid}`), {
+      await update(ref(db, `users/${session.uid}/profile`), {
         ...profile,
         updatedAt: new Date().toISOString()
       });
@@ -173,7 +173,7 @@ export default function ProfilePage() {
         allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       });
       
-      await update(ref(db, `users/${session.uid}`), { photoURL });
+      await update(ref(db, `users/${session.uid}/profile`), { photoURL });
       
       if (auth.currentUser) {
         import("firebase/auth").then(({ updateProfile }) => {

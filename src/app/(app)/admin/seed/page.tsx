@@ -27,10 +27,10 @@ export default function AdminSeedMonitorPage() {
     async function fetchStats() {
       try {
         const [metaSnap, resourcesSnap, skillsSnap, pathsSnap] = await Promise.all([
-          get(ref(db, "seed_meta/lastOrchestratorRunAt")),
-          get(ref(db, "resources")),
-          get(ref(db, "skills")),
-          get(ref(db, "career_paths"))
+          get(ref(db, "system/seed_meta/lastOrchestratorRunAt")),
+          get(ref(db, "public_content/resources")),
+          get(ref(db, "public_content/skills")),
+          get(ref(db, "public_content/career_paths"))
         ]);
 
         setStats({

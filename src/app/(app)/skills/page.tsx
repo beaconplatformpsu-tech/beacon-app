@@ -72,7 +72,7 @@ export default function SkillsPage() {
       return;
     }
     try {
-      await push(ref(db, `user_skills/${session?.uid}`), {
+      await push(ref(db, `user_private/${session?.uid}/user_skills`), {
         ...skill,
         progress: parseInt(skill.progress?.toString() || "0", 10),
         createdAt: new Date().toISOString(),
@@ -89,7 +89,7 @@ export default function SkillsPage() {
     const proficiency = profMap.find(([min]) => newProgress >= min)?.[1] ?? "Beginner";
     const skill = skills.find((s) => s.id === skillId);
     try {
-      await update(ref(db, `user_skills/${session?.uid}/${skillId}`), {
+      await update(ref(db, `user_private/${session?.uid}/user_skills/${skillId}`), {
         progress: Number(newProgress),
         proficiency,
         lastPracticed: new Date().toISOString(),
@@ -109,7 +109,7 @@ export default function SkillsPage() {
 
   const handleDeleteSkill = async (skillId: string) => {
     try {
-      await remove(ref(db, `user_skills/${session?.uid}/${skillId}`));
+      await remove(ref(db, `user_private/${session?.uid}/user_skills/${skillId}`));
       toast.info(t.skills.toastRemoved, t.skills.toastRemovedDesc);
     } catch {
       toast.error(t.skills.toastError, t.skills.toastDeleteFail);

@@ -32,11 +32,12 @@ export default function SupportPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
   useEffect(() => {
-    const resourcesRef = ref(db, "academic_support_resources");
+    const resourcesRef = ref(db, "public_content/resources");
     const unsubscribe = onValue(resourcesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        setAcademicResources(Object.keys(data).map(key => ({ id: key, ...data[key] })));
+        const allRes = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        setAcademicResources(allRes.filter(r => r.academicCategoryIds && r.academicCategoryIds.length > 0));
       } else {
         setAcademicResources([]);
       }

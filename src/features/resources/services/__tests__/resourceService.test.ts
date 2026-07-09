@@ -2,30 +2,39 @@ import { ResourceService } from '../resourceService';
 import { get, ref } from 'firebase/database';
 import { db } from '@/lib/firebase/config';
 
-// Mock the validation schemas to just pass through
-jest.mock('../../schemas/resourceSchema', () => ({
-  resourceSchema: {
-    safeParse: jest.fn((data) => ({ success: true, data })),
-    parse: jest.fn((data) => data)
-  }
-}));
+import * as types from '../../types';
+
+// Use spyOn to bypass schema validation without module path issues
+jest.spyOn(types.resourceSchema, 'safeParse').mockImplementation((data: any) => ({ success: true, data } as any));
 
 const mockResource1 = {
   id: 'r1',
   title: 'React Basics',
+  slug: 'react-basics',
+  description: 'A basic course on React.',
+  url: 'https://react.dev',
+  provider: 'Meta',
   resourceType: 'Video',
   audienceLevel: 'Beginner',
   skillIds: ['s1'],
-  careerPathIds: ['cp1']
+  careerPathIds: ['cp1'],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 };
 
 const mockResource2 = {
   id: 'r2',
   title: 'Advanced Typescript',
+  slug: 'advanced-typescript',
+  description: 'An advanced course on TS.',
+  url: 'https://typescriptlang.org',
+  provider: 'Microsoft',
   resourceType: 'Course',
   audienceLevel: 'Advanced',
   skillIds: ['s2'],
-  careerPathIds: ['cp1']
+  careerPathIds: ['cp1'],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 };
 
 describe('ResourceService Filtering', () => {

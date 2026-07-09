@@ -61,7 +61,7 @@ export const recommendationEngine = {
     
     for (const skillId of gaps) {
       // Find resources targeting this skill
-      const matching = allResources.filter(r => r.skillId === skillId);
+      const matching = allResources.filter(r => r.skillIds?.includes(skillId));
       
       if (matching.length === 0) continue;
       

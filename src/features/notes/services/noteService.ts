@@ -8,7 +8,7 @@ export const noteService = {
    * Subscribe to live notes updates for a specific user
    */
   subscribeToNotes(uid: string, callback: (notes: Note[]) => void): () => void {
-    const notesRef = ref(db, `notes/${uid}`);
+    const notesRef = ref(db, `user_private/${uid}/notes`);
     const unsubscribe = onValue(notesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -59,7 +59,7 @@ export const noteService = {
    * Create a new note
    */
   async createNote(uid: string, noteInput: Partial<Note>): Promise<string> {
-    const newNoteRef = push(ref(db, `notes/${uid}`));
+    const newNoteRef = push(ref(db, `user_private/${uid}/notes`));
     await update(newNoteRef, {
       ...noteInput,
       createdAt: new Date().toISOString()
@@ -71,7 +71,7 @@ export const noteService = {
    * Update note content
    */
   async updateNote(uid: string, noteId: string, content: string): Promise<void> {
-    await update(ref(db, `notes/${uid}/${noteId}`), { 
+    await update(ref(db, `user_private/${uid}/notes/${noteId}`), { 
       content,
       updatedAt: new Date().toISOString() 
     });
@@ -81,13 +81,13 @@ export const noteService = {
    * Toggle note pin status
    */
   async togglePin(uid: string, noteId: string, isPinned: boolean): Promise<void> {
-    await update(ref(db, `notes/${uid}/${noteId}`), { isPinned });
+    await update(ref(db, `user_private/${uid}/notes/${noteId}`), { isPinned });
   },
 
   /**
    * Delete a note
    */
   async deleteNote(uid: string, noteId: string): Promise<void> {
-    await remove(ref(db, `notes/${uid}/${noteId}`));
+    await remove(ref(db, `user_private/${uid}/notes/${noteId}`));
   }
 };
