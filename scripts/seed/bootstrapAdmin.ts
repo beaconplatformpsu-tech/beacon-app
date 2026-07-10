@@ -1,109 +1,115 @@
 import { getFirebaseAdmin } from "./firebaseAdmin";
-import dotenv from "dotenv";
-import path from "path";
-
-dotenv.config({ path: path.resolve(process.cwd(), ".env.seeder") });
+import { getBootstrapAdminConfig } from "./config";
 
 async function bootstrapAdmin() {
-  const adminEmail = process.env.SEED_ADMIN_EMAIL;
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  const adminDisplayName = process.env.SEED_ADMIN_DISPLAY_NAME || "Super Admin";
-
-  if (!adminEmail || !adminPassword) {
-    console.error("❌ Missing SEED_ADMIN_EMAIL or SEED_ADMIN_PASSWORD in .env.seeder");
-    process.exit(1);
-  }
+  const config = getBootstrapAdminConfig();
 
   const adminApp = getFirebaseAdmin();
   const auth = adminApp.auth();
   const db = adminApp.database();
 
-  console.log("⏳ Bootstrapping Super Admin...");
+  const adminEmail = config.SEED_ADMIN_EMAIL;
+  const adminPassword = config.SEED_ADMIN_PASSWORD;
+  const adminDisplayName = config.SEED_ADMIN_DISPLAY_NAME;
+
+  console.log("⏳ Bootstrapping Beacon Super Admin...");
 
   let uid: string;
 
   try {
     const userRecord = await auth.getUserByEmail(adminEmail);
     uid = userRecord.uid;
-    console.log(`✅ Found existing user with email ${adminEmail} (UID: ${uid}). Updating...`);
+
     await auth.updateUser(uid, {
       password: adminPassword,
       displayName: adminDisplayName,
-      emailVerified: true
+      emailVerified: true,
+      disabled: false,
     });
+
+    console.log(`✅ Updated existing admin auth user: ${adminEmail}`);
   } catch (error: any) {
-    if (error.code === 'auth/user-not-found') {
-      console.log(`✅ Creating new user with email ${adminEmail}...`);
-      const userRecord = await auth.createUser({
-        email: adminEmail,
-        password: adminPassword,
-        displayName: adminDisplayName,
-        emailVerified: true
-      });
-      uid = userRecord.uid;
-    } else {
-      console.error("❌ Error fetching/creating user:", error);
+    if (error.code !== "auth/user-not-found") {
+      console.error("❌ Failed to lookup admin user:", error);
       process.exit(1);
     }
+
+    const userRecord = await auth.createUser({
+      email: adminEmail,
+      password: adminPassword,
+      displayName: adminDisplayName,
+      emailVerified: true,
+      disabled: false,
+    });
+
+    uid = userRecord.uid;
+    console.log(`✅ Created admin auth user: ${adminEmail}`);
   }
 
   const timestamp = new Date().toISOString();
 
-  // 1. Set Custom Claims
   const permissions = {
     canManageContent: true,
     canManageUsers: true,
     canManageSupport: true,
     canViewStats: true,
     canViewPrivateStudentData: true,
-    canRunSystemActions: true
+    canRunSystemActions: true,
   };
 
   await auth.setCustomUserClaims(uid, {
     role: "super_admin",
-    permissions
+    permissions,
   });
-  console.log("✅ Set Custom User Claims.");
 
-  // 2. Write to users/{uid}
-  await db.ref(`users/${uid}`).update({
+  await db.ref(`users/${uid}`).set({
     profile: {
       uid,
       email: adminEmail,
       displayName: adminDisplayName,
+      bio: "",
+      major: "",
+      academicLevel: "",
+      graduationYear: null,
+      preferredCareerPathId: null,
+      github: "",
+      linkedin: "",
+      photoURL: "",
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     },
     preferences: {
       theme: "system",
       language: "en",
       emailNotifications: true,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     },
     onboarding: {
       hasCompletedProfile: true,
       hasSelectedCareerPath: false,
       completedSteps: ["profile"],
-      updatedAt: timestamp
+      updatedAt: timestamp,
     },
     createdAt: timestamp,
-    updatedAt: timestamp
+    updatedAt: timestamp,
   });
-  console.log(`✅ Wrote to /users/${uid}`);
 
-  // 3. Write to user_admin_meta/{uid}
   await db.ref(`user_admin_meta/${uid}`).set({
     role: "super_admin",
     permissions,
     accountStatus: "active",
     emailVerified: true,
     createdAt: timestamp,
-    updatedAt: timestamp
+    updatedAt: timestamp,
   });
-  console.log(`✅ Wrote to /user_admin_meta/${uid}`);
 
-  console.log("\n🎉 Super Admin bootstrap complete!");
-  process.exit(0);
+  console.log("✅ Super Admin custom claims set.");
+  console.log(`✅ /users/${uid} created.`);
+  console.log(`✅ /user_admin_meta/${uid} created.`);
+  console.log("✅ Bootstrap complete.");
 }
 
-bootstrapAdmin().catch(console.error);
+bootstrapAdmin().catch((error) => {
+  console.error("❌ Bootstrap failed:", error);
+  process.exit(1);
+});

@@ -16,108 +16,130 @@ const dryRun = args.includes("--dry-run");
 const write = args.includes("--write");
 const force = args.includes("--force");
 
-async function run() {
-  console.log("=========================================");
-  console.log(`🚀 Beacon Professional Seed v2`);
-  console.log(`Mode:  ${write ? "WRITE" : "DRY-RUN"}`);
-  console.log(`Force: ${force}`);
-  console.log("=========================================\n");
-
+function buildPayload() {
   const timestamp = new Date().toISOString();
 
-  // Construct payload
-  let payload: Record<string, any> = {};
-
-  // 1. Public Content
-  payload["public_content/skill_categories"] = skillCategories;
-  payload["public_content/career_categories"] = careerCategories;
-  payload["public_content/academic_categories"] = academicCategories;
-  payload["public_content/skills"] = skills;
-  payload["public_content/career_paths"] = careerPaths;
-  payload["public_content/resources"] = resources;
-  payload["public_content/learning_paths"] = learningPaths;
-  payload["public_content/practice_tasks"] = practiceTasks;
-  payload["public_content/projects"] = projects;
-  payload["public_content/quizzes"] = quizzes;
-  payload["public_content/announcements"] = announcements;
-
-  // 2. Relations
-  payload["relations/career_path_skills"] = careerPathSkills;
-  payload["relations/learning_path_steps"] = learningPathSteps;
-
-  // 3. Indexes
   const indexes = generateIndexes();
-  payload["indexes"] = indexes;
-
-  // 5. Stats
   const stats = generateStats();
-  payload["stats"] = stats;
 
-  // 4. System
-  payload["system/quiz_answer_keys"] = quizAnswerKeys;
-  payload["system/seed_meta/professional_seed_v2"] = {
-    seedName: "professional_seed_v2",
-    version: "2.0.0",
-    environment: "dev",
-    seededAt: timestamp,
-    resourcesCount: stats.resourcesCount,
-    skillsCount: stats.skillsCount,
-    careerPathsCount: stats.careerPathsCount,
-    academicCategoriesCount: stats.academicCategoriesCount,
-    careerCategoriesCount: stats.careerCategoriesCount,
-    skillCategoriesCount: stats.skillCategoriesCount,
-    generatedBy: "seed_script"
+  return {
+    "public_content/skill_categories": skillCategories,
+    "public_content/career_categories": careerCategories,
+    "public_content/academic_categories": academicCategories,
+    "public_content/skills": skills,
+    "public_content/career_paths": careerPaths,
+    "public_content/resources": resources,
+    "public_content/learning_paths": learningPaths,
+    "public_content/practice_tasks": practiceTasks,
+    "public_content/projects": projects,
+    "public_content/quizzes": quizzes,
+    "public_content/announcements": announcements,
+
+    "relations/career_path_skills": careerPathSkills,
+    "relations/learning_path_steps": learningPathSteps,
+
+    indexes,
+
+    stats,
+
+    "platform_settings": platformSettings,
+
+    "system/quiz_answer_keys": quizAnswerKeys,
+
+    "system/seed_meta/professional_seed_v2": {
+      seedName: "professional_seed_v2",
+      version: "2.0.0",
+      environment: "dev",
+      seededAt: timestamp,
+      resourcesCount: stats.resourcesCount,
+      skillsCount: stats.skillsCount,
+      careerPathsCount: stats.careerPathsCount,
+      academicCategoriesCount: stats.academicCategoriesCount,
+      careerCategoriesCount: stats.careerCategoriesCount,
+      skillCategoriesCount: stats.skillCategoriesCount,
+      generatedBy: "scripts/seed/index.ts",
+    },
+
+    "system/migration_meta/professional_seed_v2": {
+      id: "professional_seed_v2",
+      migrationName: "professional_seed_v2",
+      status: "completed",
+      appliedAt: timestamp,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      logs: ["Professional platform seed payload generated."],
+    },
   };
+}
 
-  // 6. Platform Settings
-  payload["platform_settings"] = platformSettings;
+async function run() {
+  console.log("=========================================");
+  console.log(" Beacon Professional Seed v2");
+  console.log(` Mode: ${write ? "WRITE" : "DRY-RUN"}`);
+  console.log(` Force reset: ${force}`);
+  console.log("=========================================\n");
 
-  // Validate the entire payload
-  console.log("⏳ Validating payload strictly against Database Contract v1...");
+  const payload = buildPayload();
+
+  console.log("⏳ Validating payload...");
   const errors = validateSeedPayload(payload);
+
   if (errors.length > 0) {
-    console.error("❌ Validation Failed with the following errors:");
-    errors.forEach(e => console.error(` - ${e}`));
+    console.error("❌ Validation failed:");
+    errors.forEach((error) => console.error(` - ${error}`));
     process.exit(1);
   }
-  console.log("✅ Payload strictly validated successfully!");
+
+  console.log("✅ Validation passed.");
+
+  const stats = payload.stats;
+
+  console.log("\nSeed summary:");
+  console.log(` - Skill categories: ${stats.skillCategoriesCount}`);
+  console.log(` - Career categories: ${stats.careerCategoriesCount}`);
+  console.log(` - Academic categories: ${stats.academicCategoriesCount}`);
+  console.log(` - Skills: ${stats.skillsCount}`);
+  console.log(` - Career paths: ${stats.careerPathsCount}`);
+  console.log(` - Resources: ${stats.resourcesCount}`);
+  console.log(` - Payload size: ${JSON.stringify(payload).length} bytes`);
 
   if (dryRun || !write) {
-    console.log("✅ Dry run complete. No data was written.");
-    console.log(`Payload size: ${JSON.stringify(payload).length} bytes`);
-    console.log(`Entities generated:`);
-    console.log(` - Skills: ${stats.skillsCount}`);
-    console.log(` - Career Paths: ${stats.careerPathsCount}`);
-    console.log(` - Resources: ${stats.resourcesCount}`);
-    process.exit(0);
+    console.log("\n✅ Dry run complete. No data was written.");
+    return;
   }
 
-  // Write Mode
-  console.log("⏳ Connecting to Firebase Realtime Database...");
-  
+  const admin = getFirebaseAdmin();
+  const db = admin.database();
+
   if (force) {
-    console.log("⚠️ FORCE flag detected. Clearing seed roots before writing...");
-    const admin = getFirebaseAdmin();
-    const db = admin.database();
-    // Only clear controlled roots
-    const rootsToClear = ["public_content", "indexes", "relations", "stats", "system/quiz_answer_keys", "system/seed_meta"];
+    console.log("\n⚠️ Safe dev reset enabled. Clearing controlled seed paths only...");
+
+    const rootsToClear = [
+      "public_content",
+      "indexes",
+      "relations",
+      "stats",
+      "platform_settings",
+      "system/quiz_answer_keys",
+      "system/seed_meta",
+      "system/migration_meta",
+    ];
+
     for (const root of rootsToClear) {
       await db.ref(root).remove();
       console.log(` - Cleared /${root}`);
     }
+
+    console.log("✅ Safe seed roots cleared.");
   }
 
-  console.log("⏳ Writing new data...");
-  try {
-    const admin = getFirebaseAdmin();
-    await admin.database().ref().update(payload);
-    console.log("✅ Database successfully updated!");
-  } catch (err) {
-    console.error("❌ Failed to update database:", err);
-    process.exit(1);
-  }
+  console.log("\n⏳ Writing seed payload...");
+  await db.ref().update(payload);
 
-  process.exit(0);
+  console.log("✅ Realtime Database seeded successfully.");
 }
 
-run();
+run().catch((error) => {
+  console.error("❌ Seed failed:", error);
+  process.exit(1);
+});

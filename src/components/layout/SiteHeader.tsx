@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -209,12 +211,8 @@ export function SiteHeader() {
                     </DropdownMenu>
                   </div>
                 ) : (
-                  <Button
-                    onClick={() => router.push("/auth/login")}
-                    size="sm"
-                    className="rounded-full px-5 font-medium shadow-sm"
-                  >
-                    {t.actions.signIn}
+                  <Button asChild size="sm" className="rounded-full px-5 font-medium shadow-sm">
+                    <Link href="/auth/login">{t.actions.signIn}</Link>
                   </Button>
                 )
               )}
@@ -312,14 +310,10 @@ export function SiteHeader() {
                   </div>
                 ) : (
                   <div className="w-32 flex justify-center">
-                    <Button 
-                      className="w-full rounded-xl shadow-md"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push("/auth/login");
-                      }}
-                    >
-                      {t.actions.signIn}
+                    <Button asChild className="w-full rounded-xl shadow-md">
+                      <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
+                        {t.actions.signIn}
+                      </Link>
                     </Button>
                   </div>
                 )
