@@ -15,7 +15,6 @@ const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const write = args.includes("--write");
 const force = args.includes("--force");
-const users = args.includes("--users");
 
 async function run() {
   console.log("=========================================");
@@ -50,17 +49,25 @@ async function run() {
   const indexes = generateIndexes();
   payload["indexes"] = indexes;
 
-  // 4. System
-  payload["system/quiz_answer_keys"] = quizAnswerKeys;
-  payload["system/seed_meta"] = {
-    lastRunAt: timestamp,
-    version: "2.0.0",
-    forced: force,
-  };
-
   // 5. Stats
   const stats = generateStats();
   payload["stats"] = stats;
+
+  // 4. System
+  payload["system/quiz_answer_keys"] = quizAnswerKeys;
+  payload["system/seed_meta/professional_seed_v2"] = {
+    seedName: "professional_seed_v2",
+    version: "2.0.0",
+    environment: "dev",
+    seededAt: timestamp,
+    resourcesCount: stats.resourcesCount,
+    skillsCount: stats.skillsCount,
+    careerPathsCount: stats.careerPathsCount,
+    academicCategoriesCount: stats.academicCategoriesCount,
+    careerCategoriesCount: stats.careerCategoriesCount,
+    skillCategoriesCount: stats.skillCategoriesCount,
+    generatedBy: "seed_script"
+  };
 
   // 6. Platform Settings
   payload["platform_settings"] = platformSettings;

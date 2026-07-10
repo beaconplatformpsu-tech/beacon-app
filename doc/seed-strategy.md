@@ -34,7 +34,10 @@ The professional seed focuses entirely on platform structure, metadata, and core
 | `npm run seed:validate` | Performs strict validation checks on the memory payload without connecting to the DB. |
 | `npm run seed:dry` | Builds the payload, validates it, and prints size and entity counts. **Safe.** |
 | `npm run seed:dev` | Writes the validated payload to the database. Overwrites matching paths but leaves user data intact. |
-| `npm run seed:reset:dev` | **DANGER**: Clears specific roots (`public_content`, `indexes`, `relations`, `stats`, `system/seed_meta`, `system/migration_meta`, `system/quiz_answer_keys`) and pushes a fresh payload. It **MUST NOT** clear: `users`, `user_private`, `system/admin_logs`, or `system/ai_usage_logs`. |
+| `npm run seed:reset:dev` | **DANGER**: Clears specific roots (`public_content`, `indexes`, `relations`, `stats`, `system/seed_meta`, `system/quiz_answer_keys`) and pushes a fresh payload. It **MUST NOT** clear: `users`, `user_private`, or `user_admin_meta`. |
+| `npm run seed:bootstrap:admin` | Bootstraps the first `super_admin` in Firebase Auth and Realtime DB. Run this once on empty projects. |
+| `npm run seed:demo:users` | Creates demo student accounts and their associated profiles, tasks, and notes. Safe to run repeatedly. |
+| `npm run seed:verify` | Verifies that the deployed seed matches the codebase schema and has all necessary relations. |
 
 ## Updating Seed Content
 Seed content is statically defined inside `scripts/seed/masterData/`.

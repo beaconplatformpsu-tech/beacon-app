@@ -62,8 +62,8 @@
         "notes": {
           ".indexOn": ["createdAt", "updatedAt", "isPinned"]
         },
-        "user_skills": {
-          ".indexOn": ["skillId", "proficiency", "progress"]
+        "skill_progress": {
+          ".indexOn": ["skillId", "status", "progress"]
         },
         "cv_profile": {
           ".indexOn": ["updatedAt"]
@@ -97,7 +97,7 @@
     "platform_settings": {
       "public": {
         ".read": true,
-        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       },
       "private": {
         ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
@@ -111,19 +111,25 @@
     },
 
     "system": {
-      ".read": false,
-      ".write": false,
+      "seed_meta": {
+        ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
+      },
+      "migration_meta": {
+        ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
+      },
       "quiz_answer_keys": {
-        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
-        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+        ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       },
       "admin_logs": {
         ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
         ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
       },
       "ai_usage_logs": {
-        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
-        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+        ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       }
     }
   }

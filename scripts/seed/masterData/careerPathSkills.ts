@@ -18,12 +18,12 @@ export const getCareerPathSkills = (timestamp: string): Record<string, any> => {
     { careerPathId: "path_backend_developer", skillId: "skill_docker", importanceLevel: "optional", minimumProficiencyLevel: "beginner", learningOrder: 6 },
 
     // Fullstack
-    { careerPathId: "path_fullstack_developer", skillId: "skill_javascript", importanceLevel: "core", minimumProficiencyLevel: "advanced", learningOrder: 1 },
-    { careerPathId: "path_fullstack_developer", skillId: "skill_react", importanceLevel: "core", minimumProficiencyLevel: "intermediate", learningOrder: 2 },
-    { careerPathId: "path_fullstack_developer", skillId: "skill_nodejs", importanceLevel: "core", minimumProficiencyLevel: "intermediate", learningOrder: 3 },
-    { careerPathId: "path_fullstack_developer", skillId: "skill_sql", importanceLevel: "important", minimumProficiencyLevel: "intermediate", learningOrder: 4 },
-    { careerPathId: "path_fullstack_developer", skillId: "skill_nextjs", importanceLevel: "important", minimumProficiencyLevel: "beginner", learningOrder: 5 },
-    { careerPathId: "path_fullstack_developer", skillId: "skill_git", importanceLevel: "important", minimumProficiencyLevel: "intermediate", learningOrder: 6 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_javascript", importanceLevel: "core", minimumProficiencyLevel: "advanced", learningOrder: 1 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_react", importanceLevel: "core", minimumProficiencyLevel: "intermediate", learningOrder: 2 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_nodejs", importanceLevel: "core", minimumProficiencyLevel: "intermediate", learningOrder: 3 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_sql", importanceLevel: "important", minimumProficiencyLevel: "intermediate", learningOrder: 4 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_nextjs", importanceLevel: "important", minimumProficiencyLevel: "beginner", learningOrder: 5 },
+    { careerPathId: "path_fullstack_dev", skillId: "skill_git", importanceLevel: "important", minimumProficiencyLevel: "intermediate", learningOrder: 6 },
 
     // Mobile
     { careerPathId: "path_mobile_developer", skillId: "skill_javascript", importanceLevel: "core", minimumProficiencyLevel: "intermediate", learningOrder: 1 },

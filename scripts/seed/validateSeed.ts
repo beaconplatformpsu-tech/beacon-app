@@ -150,5 +150,48 @@ export function validateSeedPayload(payload: Record<string, any>): string[] {
     errors.push(`Stats resourcesCount (${stats.resourcesCount}) does not match actual length (${Object.keys(resources).length})`);
   }
 
+  // 9. Projects
+  const projects = payload["public_content/projects"] || publicContent.projects || {};
+  Object.values(projects).forEach((proj: any) => {
+    trackId(proj.id, "Project");
+    requireArray(proj, `Project ${proj.id}`, "skillIds");
+    requireArray(proj, `Project ${proj.id}`, "careerPathIds");
+  });
+
+  // 10. Relations
+  const careerPathSkills = relations["career_path_skills"] || {};
+  Object.entries(careerPathSkills).forEach(([cpId, cpSkills]: any) => {
+    if (!careerPaths[cpId]) errors.push(`career_path_skills relation uses invalid careerPathId: ${cpId}`);
+    Object.keys(cpSkills).forEach((skillId: string) => {
+      if (!skills[skillId]) errors.push(`career_path_skills relation for ${cpId} uses invalid skillId: ${skillId}`);
+    });
+  });
+
+  const learningPathSteps = relations["learning_path_steps"] || {};
+  const learningPathsData = payload["public_content/learning_paths"] || publicContent.learning_paths || {};
+  const practiceTasks = payload["public_content/practice_tasks"] || publicContent.practice_tasks || {};
+  Object.entries(learningPathSteps).forEach(([lpId, lpSteps]: any) => {
+    if (!learningPathsData[lpId]) errors.push(`learning_path_steps relation uses invalid learningPathId: ${lpId}`);
+    Object.values(lpSteps).forEach((step: any) => {
+      if (step.type === "resource" && (!step.resourceId || !resources[step.resourceId])) errors.push(`Step ${step.id} has invalid resourceId`);
+      if (step.type === "practice_task" && (!step.practiceTaskId || !practiceTasks[step.practiceTaskId])) errors.push(`Step ${step.id} has invalid practiceTaskId`);
+      if (step.type === "quiz" && (!step.quizId || !quizzes[step.quizId])) errors.push(`Step ${step.id} has invalid quizId`);
+      if (step.type === "project" && (!step.projectId || !projects[step.projectId])) errors.push(`Step ${step.id} has invalid projectId`);
+    });
+  });
+
+  // 11. Legacy Paths & Enums
+  if (payload["public_content/academic_support_resources"] || publicContent.academic_support_resources) {
+    errors.push("Payload contains legacy path academic_support_resources");
+  }
+  if (payload["user_skills"]) {
+    errors.push("Payload contains legacy path user_skills");
+  }
+
+  // 12. Resource Enums
+  Object.values(resources).forEach((res: any) => {
+    if (res.resourceType === "book") errors.push(`Resource ${res.id} uses invalid resourceType 'book'`);
+  });
+
   return errors;
 }
