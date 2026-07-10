@@ -210,11 +210,11 @@ export function SiteHeader() {
                   </div>
                 ) : (
                   <Button
-                    asChild
+                    onClick={() => router.push("/auth/login")}
                     size="sm"
                     className="rounded-full px-5 font-medium shadow-sm"
                   >
-                    <Link href="/auth/login">{t.actions.signIn}</Link>
+                    {t.actions.signIn}
                   </Button>
                 )
               )}
@@ -312,14 +312,14 @@ export function SiteHeader() {
                   </div>
                 ) : (
                   <div className="w-32 flex justify-center">
-                    <Button
-                      asChild
-                      size="sm"
-                      className="w-full rounded-full"
+                    <Button 
+                      className="w-full rounded-xl shadow-md"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        router.push("/auth/login");
+                      }}
                     >
-                      <Link href="/auth/login" onClick={() => setMenuOpen(false)}>
-                        {t.actions.signIn}
-                      </Link>
+                      {t.actions.signIn}
                     </Button>
                   </div>
                 )
