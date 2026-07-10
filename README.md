@@ -67,10 +67,23 @@ The platform uses a heavily structured Firebase Realtime Database. We provide ro
 Note: Before running any seeder, you must configure a .env.seeder file with your Firebase Admin credentials.
 
 Useful Seed Commands:
-- npm run seed:dry - Validate the seed payload in memory (safe, no database writes).
-- npm run seed:dev - Backup the database, then write the full payload to Firebase.
-- npm run seed:indexes - Dynamically rebuild all database indexes from live data.
-- npm run seed:verify - Run a rigorous post-seed validation suite against the live database.
+
+| Command | Description |
+|---|---|
+| `npm run seed:dry` | Validate the full seed payload in memory — no database writes. |
+| `npm run seed:validate` | Alias for `seed:dry`. Runs the same dry-run validation. |
+| `npm run seed:dev` | Write the full public content seed payload to Firebase RTDB. |
+| `npm run seed:reset:dev` | Clear all controlled seed paths, then re-seed from scratch (`--force`). |
+| `npm run seed:bootstrap:admin` | Create or update the Super Admin Auth user and write RBAC metadata. Run this once during first-time setup. |
+| `npm run seed:demo:users` | Seed a demo student user (optional — do not run against production). |
+| `npm run seed:verify` | Run post-seed verification checks against the live database. |
+
+**First-time setup order:**
+```bash
+npm run seed:reset:dev        # Clear + seed all public content
+npm run seed:bootstrap:admin  # Create the Super Admin user
+npm run seed:verify           # Confirm everything is in place
+```
 
 For a complete map of the database structure, rules, and security policies, please read:
 doc/database-architecture.md
