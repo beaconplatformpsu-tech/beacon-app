@@ -1,22 +1,9 @@
-import { validateSeedData } from '../validateSeed';
+import { validateSeedPayload } from "../validateSeed";
 
-jest.mock('firebase-admin', () => ({
-  credential: { cert: jest.fn() },
-  initializeApp: jest.fn(),
-  database: jest.fn(() => ({
-    ref: jest.fn(() => ({
-      get: jest.fn().mockResolvedValue({
-        val: () => ({
-          test: 'data'
-        })
-      })
-    }))
-  })),
-}));
-
-describe('validateSeed', () => {
-  it('validates the structure correctly', async () => {
-    // This is a placeholder test for the validation logic in seed
-    expect(true).toBe(true);
+describe("validateSeedPayload", () => {
+  it("returns errors for an incomplete payload", () => {
+    const errors = validateSeedPayload({});
+    expect(Array.isArray(errors)).toBe(true);
+    expect(errors.length).toBeGreaterThan(0);
   });
 });

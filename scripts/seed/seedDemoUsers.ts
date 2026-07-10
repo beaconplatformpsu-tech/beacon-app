@@ -1,7 +1,9 @@
 import { getFirebaseAdmin } from "./firebaseAdmin";
-import { config } from "./config";
+import { getDemoUsersConfig } from "./config";
 
 export async function seedDemoUsers(dryRun: boolean): Promise<void> {
+  const config = getDemoUsersConfig();
+
   console.log("=========================================");
   console.log(`🔥 Starting Demo Users Seeder (${dryRun ? "DRY-RUN" : "WRITE"} mode)`);
   console.log("=========================================\n");
