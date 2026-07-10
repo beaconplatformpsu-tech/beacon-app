@@ -1,13 +1,15 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { SkillCard } from "../_components/SkillCard";
-import type { Skill } from "@/lib/types";
+import type { UserSkill } from "@/lib/types";
+import { SkillProficiency } from "@/lib/validation";
 
 describe("SkillCard", () => {
-  const mockSkill: Skill = {
+  const mockSkill: UserSkill = {
     id: "test-skill-1",
+    skillId: "test-skill-1",
     name: "React",
     category: "Frontend & UI",
-    proficiency: "Intermediate",
+    proficiency: "Intermediate" as SkillProficiency,
     progress: 50,
   };
 

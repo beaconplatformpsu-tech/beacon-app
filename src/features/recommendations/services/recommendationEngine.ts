@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { 
   UserSkillType, 
-  CareerPathSkillType, 
+  ExtendedCareerPathSkill, 
   ResourceTypeData, 
   CareerPathType 
 } from "@/lib/validation";
@@ -23,7 +23,7 @@ export const recommendationEngine = {
    */
   findSkillGaps(
     userSkills: UserSkillType[],
-    pathSkills: CareerPathSkillType[]
+    pathSkills: ExtendedCareerPathSkill[]
   ): string[] {
     const gaps: string[] = [];
     
@@ -70,15 +70,15 @@ export const recommendationEngine = {
       
       if (userProficiencyAvg <= 1.5) {
         // Prefer Beginner or Documentation/Courses
-        const beginnerMatch = matching.find(r => r.audienceLevel === "Beginner" || r.resourceType === "Course");
+        const beginnerMatch = matching.find(r => r.difficultyLevel === "Beginner" || r.resourceType === "Course");
         if (beginnerMatch) selected = beginnerMatch;
       } else if (userProficiencyAvg <= 2.5) {
         // Prefer Practice or Projects
-        const interMatch = matching.find(r => r.resourceType === "Practice" || r.resourceType === "Project");
+        const interMatch = matching.find(r => r.resourceType === "Practice" || r.resourceType === "Checklist");
         if (interMatch) selected = interMatch;
       } else {
         // Prefer Advanced or Interview Prep
-        const advMatch = matching.find(r => r.audienceLevel === "Advanced" || r.resourceType === "Interview Prep");
+        const advMatch = matching.find(r => r.difficultyLevel === "Advanced" || r.resourceType === "Guide");
         if (advMatch) selected = advMatch;
       }
       
@@ -97,7 +97,7 @@ export const recommendationEngine = {
    */
   async generateRecommendation(
     userSkills: UserSkillType[],
-    pathSkills: CareerPathSkillType[],
+    pathSkills: ExtendedCareerPathSkill[],
     careerPath: CareerPathType,
     allResources: ResourceTypeData[]
   ): Promise<EngineRecommendation | null> {

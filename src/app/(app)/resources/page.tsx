@@ -43,7 +43,7 @@ export default function ResourcesPage() {
     return resources.filter(res => {
       if (search && !res.title.toLowerCase().includes(search.toLowerCase()) && !res.provider?.toLowerCase().includes(search.toLowerCase())) return false;
       if (selectedType !== "all" && res.resourceType !== selectedType) return false;
-      if (selectedLevel !== "all" && res.audienceLevel !== selectedLevel) return false;
+      if (selectedLevel !== "all" && res.difficultyLevel !== selectedLevel) return false;
       if (onlyFree && !res.isFree) return false;
       return true;
     });
@@ -51,7 +51,7 @@ export default function ResourcesPage() {
 
   // We can't generate uniqueTypes from just the subset of loaded resources if it's limited to 100 or filtered by type.
   // Hardcoding the types array based on standard library types is safer and avoids massive DB reads just for dropdown options.
-  const uniqueTypes = ["Document", "Video", "Course", "Article", "Tool", "Book", "Practice"];
+  const uniqueTypes = ["Documentation", "Course", "Article", "Tool", "Practice", "Guide", "Roadmap", "Template", "Checklist"];
   const uniqueLevels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
 
   return (

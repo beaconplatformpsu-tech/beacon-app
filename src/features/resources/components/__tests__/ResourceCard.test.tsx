@@ -22,20 +22,19 @@ const mockResource: Resource = {
   description: 'This is a test resource description',
   url: 'https://example.com',
   provider: 'TestProvider',
-  resourceType: 'Video',
+  sourceType: 'external',
+  resourceType: 'Course',
   isFree: true,
   createdAt: '2023-01-01T00:00:00Z',
   updatedAt: '2023-01-01T00:00:00Z',
   tags: ['react', 'testing'],
-  audienceLevel: 'Beginner' as any,
+  difficultyLevel: 'Beginner' as any,
   language: 'en',
   estimatedDuration: '10 mins',
-  coverUrl: 'https://example.com/cover.jpg',
   skillIds: [],
   careerPathIds: [],
   academicCategoryIds: [],
   qualityScore: 100,
-  createdBy: 'system',
   isActive: true,
 };
 
@@ -51,7 +50,7 @@ describe('ResourceCard', () => {
     expect(screen.getByText('TestProvider')).toBeInTheDocument();
     expect(screen.getByText('This is a test resource description')).toBeInTheDocument();
     expect(screen.getByText('Free')).toBeInTheDocument();
-    expect(screen.getByText('Video')).toBeInTheDocument();
+    expect(screen.getByText('Course')).toBeInTheDocument();
     
     // Tags
     expect(screen.getByText('react')).toBeInTheDocument();

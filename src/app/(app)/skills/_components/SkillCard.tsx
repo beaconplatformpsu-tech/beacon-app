@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import type { Skill } from "@/lib/types";
+import type { UserSkill } from "@/lib/types";
 import { useT } from "@/i18n/LanguageProvider";
 
 export function getCategoryConfig(category: string) {
@@ -30,13 +30,13 @@ export function getProficiencyColor(proficiency: string) {
 }
 
 interface SkillCardProps {
-  skill: any;
+  skill: UserSkill;
   onUpdateProgress: (skillId: string, current: number, amount: number) => Promise<void>;
   onDelete: (skillId: string) => Promise<void>;
 }
 
 export function SkillCard({ skill, onUpdateProgress, onDelete }: SkillCardProps) {
-  const config = getCategoryConfig(skill.category);
+  const config = getCategoryConfig(skill.category || "Languages");
   const Icon = config.icon;
   const isExpert = skill.proficiency === "Expert";
   const t = useT();

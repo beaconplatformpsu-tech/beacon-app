@@ -7,7 +7,7 @@ describe('computeMatchScore', () => {
     cps3: { careerPathId: 'p2', skillId: 's1', minimumProficiencyLevel: 'beginner', importanceLevel: 'core' }
   };
 
-  const mockSkills = {
+  const mockSkills: any = {
     s1: { id: 's1', name: 'React' },
     s2: { id: 's2', name: 'Node.js' }
   };

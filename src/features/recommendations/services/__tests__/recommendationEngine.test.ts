@@ -20,17 +20,17 @@ describe('RecommendationEngine', () => {
   const mockResources: any[] = [
     {
       id: 'r1', title: 'React for Beginners', resourceType: 'Course',
-      audienceLevel: 'Beginner' as any, skillIds: ['s1'],
+      difficultyLevel: 'Beginner' as any, skillIds: ['s1'],
       url: 'http://r1', slug: 'r1', provider: 'Test', isFree: true, createdAt: '', updatedAt: '', description: ''
     } as Resource,
     {
       id: 'r2', title: 'Advanced React', resourceType: 'Course',
-      audienceLevel: 'Advanced' as any, skillIds: ['s1'],
+      difficultyLevel: 'Advanced' as any, skillIds: ['s1'],
       url: 'http://r2', slug: 'r2', provider: 'Test', isFree: true, createdAt: '', updatedAt: '', description: ''
     } as Resource,
     {
       id: 'r3', title: 'Intro to Node.js', resourceType: 'Documentation',
-      audienceLevel: 'Beginner' as any, skillIds: ['s2'],
+      difficultyLevel: 'Beginner' as any, skillIds: ['s2'],
       url: 'http://r3', slug: 'r3', provider: 'Test', isFree: true, createdAt: '', updatedAt: '', description: ''
     } as Resource
   ];

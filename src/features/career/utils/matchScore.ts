@@ -1,4 +1,4 @@
-import type { UserSkillType as UserSkill, SkillType as Skill, CareerPathSkillType } from "@/lib/validation";
+import type { UserSkillType as UserSkill, SkillType as Skill, ExtendedCareerPathSkill } from "@/lib/validation";
 
 export const PROFICIENCY_WEIGHTS: Record<string, number> = {
   Beginner: 1, 
@@ -7,8 +7,6 @@ export const PROFICIENCY_WEIGHTS: Record<string, number> = {
   Expert: 4,
 };
 
-// Extended type for backwards compatibility with untyped minimumProficiencyLevel
-type ExtendedCareerPathSkill = CareerPathSkillType & { minimumProficiencyLevel?: string };
 
 export function computeMatchScore(
   pathId: string,

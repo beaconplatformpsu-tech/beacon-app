@@ -13,20 +13,16 @@ import { useT } from "@/i18n/LanguageProvider";
 
 const TypeIcon = ({ type }: { type: Resource["resourceType"] }) => {
   switch (type) {
-    case "Video":
     case "Course":
       return <Video className="w-4 h-4" />;
     case "Documentation":
     case "Article":
       return <FileText className="w-4 h-4" />;
     case "Practice":
-    case "Project":
       return <Code className="w-4 h-4" />;
     case "Checklist":
     case "Roadmap":
       return <CheckSquare className="w-4 h-4" />;
-    case "Book":
-      return <BookOpen className="w-4 h-4" />;
     default:
       return <Presentation className="w-4 h-4" />;
   }
@@ -59,17 +55,7 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
   // Safe fallback UI components
   return (
     <Card className="flex flex-col h-full overflow-hidden hover:shadow-md transition-shadow">
-      {resource.coverUrl && (
-        <div className="w-full h-32 bg-muted/50 relative overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={resource.coverUrl} 
-            alt={resource.title}
-            className="w-full h-full object-cover"
-            onError={(e) => (e.currentTarget.style.display = 'none')}
-          />
-        </div>
-      )}
+
       
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start gap-2 mb-2">
@@ -106,8 +92,8 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
         </div>
         
         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2 border-t pt-2">
-          {resource.audienceLevel && (
-            <span>• {resource.audienceLevel}</span>
+          {resource.difficultyLevel && (
+            <span>• {resource.difficultyLevel}</span>
           )}
           {resource.estimatedDuration && (
             <span className="flex items-center gap-1">

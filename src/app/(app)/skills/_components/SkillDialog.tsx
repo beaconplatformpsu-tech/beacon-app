@@ -13,10 +13,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Skill, CSCategory } from "@/lib/types";
+import type { UserSkill, Category } from "@/lib/types";
 import { useT } from "@/i18n/LanguageProvider";
 
-const DEFAULT_SKILL: Partial<Skill> = {
+const DEFAULT_SKILL: Partial<UserSkill> = {
   name: "",
   category: "Languages",
   proficiency: "Beginner",
@@ -24,13 +24,13 @@ const DEFAULT_SKILL: Partial<Skill> = {
 };
 
 interface SkillDialogProps {
-  onSave: (skill: Partial<Skill>) => Promise<void>;
+  onSave: (skill: Partial<UserSkill>) => Promise<void>;
   children?: React.ReactNode;
 }
 
 export function SkillDialog({ onSave, children }: SkillDialogProps) {
   const [open, setOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState<Partial<Skill>>(DEFAULT_SKILL);
+  const [newSkill, setNewSkill] = useState<Partial<UserSkill>>(DEFAULT_SKILL);
   const t = useT();
 
   const handleSave = async () => {
@@ -68,7 +68,7 @@ export function SkillDialog({ onSave, children }: SkillDialogProps) {
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={newSkill.category}
-                onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value as CSCategory })}
+                onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
               >
                 {(Object.keys(t.skills.domains) as Array<keyof typeof t.skills.domains>).map((key) => (
                   <option key={key} value={key}>{t.skills.domains[key]}</option>

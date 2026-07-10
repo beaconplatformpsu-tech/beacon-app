@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CSCategory, Skill } from "@/lib/types";
+import type { Category, UserSkill } from "@/lib/types";
 import { useT } from "@/i18n/LanguageProvider";
 
 // ── Lazy load the radar chart (it pulls in recharts - not needed on first paint) ──
@@ -25,7 +25,7 @@ const SkillRadarChart = dynamic(
   { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-xl" /> }
 );
 
-const CS_CATEGORIES: CSCategory[] = [
+const CS_CATEGORIES: string[] = [
   "Languages",
   "Frontend & UI",
   "Backend & Databases",
@@ -66,7 +66,7 @@ export default function SkillsPage() {
   );
 
   // ── Mutations ────────────────────────────────────────────────────────────
-  const handleAddSkill = async (skill: Partial<Skill>) => {
+  const handleAddSkill = async (skill: Partial<UserSkill>) => {
     if (!skill.name) {
       toast.warning(t.skills.missingFields, t.skills.missingFieldsDesc);
       return;
