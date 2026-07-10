@@ -30,6 +30,161 @@ export const quizzes: Record<ID, Quiz> = {
     createdAt: now,
     updatedAt: now,
   }
+,
+  "quiz_auto_1": {
+    id: "quiz_auto_1",
+    title: "Generated Quiz 1",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_2": {
+    id: "quiz_auto_2",
+    title: "Generated Quiz 2",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_3": {
+    id: "quiz_auto_3",
+    title: "Generated Quiz 3",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_4": {
+    id: "quiz_auto_4",
+    title: "Generated Quiz 4",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_5": {
+    id: "quiz_auto_5",
+    title: "Generated Quiz 5",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_6": {
+    id: "quiz_auto_6",
+    title: "Generated Quiz 6",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "quiz_auto_7": {
+    id: "quiz_auto_7",
+    title: "Generated Quiz 7",
+    description: "A professional quiz generated for MVP seeding.",
+    skillIds: ["skill_javascript", "skill_react"],
+    difficultyLevel: "intermediate",
+    questions: {
+      "q1": {
+        id: "q1",
+        questionText: "What is the output of 2 + 2?",
+        options: ["3", "4", "5", "6"]
+      },
+      "q2": {
+        id: "q2",
+        questionText: "Which of the following is a Javascript framework?",
+        options: ["React", "Laravel", "Django", "Flask"]
+      }
+    },
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };
 
 export const quizAnswerKeys: Record<ID, QuizAnswerKey> = {
@@ -43,6 +198,105 @@ export const quizAnswerKeys: Record<ID, QuizAnswerKey> = {
       "q2": {
         correctOptionIndex: 1,
         explanation: "Keys help React track list item identity during reconciliation to optimize rendering."
+      }
+    },
+    updatedAt: now,
+  }
+,
+  "quiz_auto_1": {
+    quizId: "quiz_auto_1",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_2": {
+    quizId: "quiz_auto_2",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_3": {
+    quizId: "quiz_auto_3",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_4": {
+    quizId: "quiz_auto_4",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_5": {
+    quizId: "quiz_auto_5",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_6": {
+    quizId: "quiz_auto_6",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
+      }
+    },
+    updatedAt: now,
+  },
+  "quiz_auto_7": {
+    quizId: "quiz_auto_7",
+    questions: {
+      "q1": {
+        correctOptionIndex: 1,
+        explanation: "2 + 2 = 4."
+      },
+      "q2": {
+        correctOptionIndex: 0,
+        explanation: "React is a Javascript library/framework."
       }
     },
     updatedAt: now,

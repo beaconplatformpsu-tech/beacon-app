@@ -13,7 +13,19 @@ The professional seed focuses entirely on platform structure, metadata, and core
 ## Security & Protective Boundaries
 - **No Production Users**: The standard seed command does not seed fake users or clear the `/users` and `/user_private` roots.
 - **Quiz Protection**: The `public_content/quizzes` root contains questions and options only. The `system/quiz_answer_keys` root securely houses the `correctOptionIndex` and explanations, making it impossible for standard client connections to cheat.
-- **Strict Validation**: The `npm run seed:validate` script guarantees that no legacy schemas slip through, no dummy data (like `example.com`) is injected, and all relations/indexes match 100% with the provided arrays.
+- **Strict Validation**: The `npm run seed:validate` script guarantees the following:
+  - No legacy paths (e.g., `Skill.name`).
+  - No duplicate IDs or duplicate slugs within collections.
+  - No dummy content or `example.com` URLs.
+  - No invalid enum values.
+  - No missing required arrays.
+  - All relation/index references strictly match existing entities.
+  - Every public quiz has a matching system quiz_answer_keys record.
+  - Public quizzes do not expose `correctOptionIndex` or `explanation`.
+  - `system/quiz_answer_keys` is not public-readable.
+  - `platform_settings/private` contains no keys, tokens, passwords, or secrets.
+  - `AIUsageLog` does not contain raw prompt strings.
+  - `FileReference` does not contain permanent `signedUrl`.
 
 ## Seed Commands
 
@@ -22,7 +34,7 @@ The professional seed focuses entirely on platform structure, metadata, and core
 | `npm run seed:validate` | Performs strict validation checks on the memory payload without connecting to the DB. |
 | `npm run seed:dry` | Builds the payload, validates it, and prints size and entity counts. **Safe.** |
 | `npm run seed:dev` | Writes the validated payload to the database. Overwrites matching paths but leaves user data intact. |
-| `npm run seed:reset:dev` | **DANGER**: Wipes `public_content`, `indexes`, `relations`, `stats`, and `system` nodes entirely, then pushes a completely fresh payload. Does *not* wipe users. |
+| `npm run seed:reset:dev` | **DANGER**: Clears specific roots (`public_content`, `indexes`, `relations`, `stats`, `system/seed_meta`, `system/migration_meta`, `system/quiz_answer_keys`) and pushes a fresh payload. It **MUST NOT** clear: `users`, `user_private`, `system/admin_logs`, or `system/ai_usage_logs`. |
 
 ## Updating Seed Content
 Seed content is statically defined inside `scripts/seed/masterData/`.

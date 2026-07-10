@@ -7,12 +7,11 @@ export interface BaseEntity {
   createdAt?: ISOString;
   updatedAt?: ISOString;
 }
-
 export interface FileReference {
   provider: "supabase" | "firebase";
   bucket: string;
   path: string;
-  publicUrl?: string; // Do not store permanent signed URLs here
+  publicUrl?: string; 
   mimeType: string;
   sizeBytes: number;
   fileName: string;
@@ -26,8 +25,8 @@ export interface FileReference {
 export interface Category extends BaseEntity {
   slug: string;
   title: string;
-  description?: string;
-  sortOrder?: number;
+  description: string; // Seed v2 must produce this
+  sortOrder: number;   // Seed v2 must produce this
   isActive: boolean;
 }
 
@@ -47,7 +46,7 @@ export interface CareerPath extends BaseEntity {
   title: string;
   description?: string;
   longDescription?: string;
-  categoryId?: ID;
+  categoryId: ID; // Required for indexes
   industryDomain?: string;
   demandLevel?: "very_high" | "high" | "medium" | "low";
   requiredEducation?: string;
@@ -61,7 +60,7 @@ export interface Resource extends BaseEntity {
   title: string;
   description?: string;
   longDescription?: string;
-  provider?: string;
+  provider: string; // Required for resources (use "Beacon" for internal)
   url?: string;
   sourceType: "internal" | "external";
   resourceType: "documentation" | "course" | "guide" | "practice" | "article" | "tool" | "roadmap" | "template" | "checklist";
@@ -384,11 +383,6 @@ export interface SupportMessage extends BaseEntity {
   status: "pending" | "in_progress" | "resolved" | "closed";
   type: "bug" | "feature_request" | "general" | "content_issue";
 }
-
-// ─────────────────────────────────────────────
-// System / Global (/platform_settings, /stats, /system)
-// ─────────────────────────────────────────────
-
 export interface PlatformSettings {
   public: {
     maintenanceMode: boolean;

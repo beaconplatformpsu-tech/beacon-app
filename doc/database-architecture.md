@@ -27,7 +27,15 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
   /resources_by_skill
   /resources_by_type
   /resources_by_level
-  ...
+  /resources_by_career_path
+  /resources_by_academic_category
+  /skills_by_category
+  /career_paths_by_category
+  /learning_paths_by_career_path
+  /projects_by_skill
+  /projects_by_career_path
+  /quizzes_by_skill
+  /practice_tasks_by_skill
 
 /relations
   /career_path_skills
@@ -111,6 +119,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 **Write:** Profile Owner + Super Admins.
 - Sub-collections like `/recommendations` and `/cv_analysis` keep AI outputs strictly private.
 - **Data Ownership Rules:** A user completely owns their `/user_private/{uid}` tree. Shared or collaborative nodes must exist at the root level (e.g., `/shared_projects`), not inside a user's private tree.
+- Content Admins and Support Admins cannot access private student data (`cv_analysis`, `notes`, etc.).
 
 ## 6. Admin-Only Paths (`/user_admin_meta/{uid}`)
 **Purpose:** Controls application-level authorization and status.
@@ -119,6 +128,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 - Defines roles: `super_admin`, `content_admin`, `advisor`, `support_admin`, `student`.
 - Granular permissions define explicit capabilities (`canManageContent`, `canManageUsers`, etc.).
 - Default role fallback is `student`.
+- Support Admins can manage support messages but cannot manage users or read private student data.
 
 ## 7. System Paths (`/system` & `/platform_settings`)
 **Purpose:** Stores application global state, configuration, and secure logic maps.

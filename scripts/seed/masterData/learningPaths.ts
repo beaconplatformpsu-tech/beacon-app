@@ -25,6 +25,40 @@ export const learningPaths: Record<ID, LearningPath> = {
     createdAt: now,
     updatedAt: now,
   }
+,
+  "lp_devops_mastery": {
+    id: "lp_devops_mastery",
+    title: "DevOps Engineering Mastery",
+    description: "Go from basics to advanced DevOps practices including Docker, Kubernetes, and CI/CD.",
+    careerPathId: "path_cloud_architect",
+    difficultyLevel: "advanced",
+    estimatedDuration: "60 hours",
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "lp_data_science_intro": {
+    id: "lp_data_science_intro",
+    title: "Introduction to Data Science",
+    description: "Learn Python, Pandas, and basic Machine Learning algorithms.",
+    careerPathId: "path_data_scientist",
+    difficultyLevel: "beginner",
+    estimatedDuration: "40 hours",
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "lp_cloud_architecture": {
+    id: "lp_cloud_architecture",
+    title: "Cloud Architecture Foundations",
+    description: "Understand scalable cloud design using AWS.",
+    careerPathId: "path_cloud_architect",
+    difficultyLevel: "intermediate",
+    estimatedDuration: "50 hours",
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };
 
 export const learningPathSteps: Record<ID, Record<ID, LearningPathStep>> = {

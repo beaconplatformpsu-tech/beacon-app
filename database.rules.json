@@ -5,7 +5,7 @@
 
     "public_content": {
       ".read": true,
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
       "resources": {
         ".indexOn": ["createdAt", "updatedAt", "resourceType", "difficultyLevel", "provider", "sourceType"]
       },
@@ -31,31 +31,31 @@
 
     "indexes": {
       ".read": true,
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
+      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
     },
 
     "relations": {
       ".read": true,
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
       "career_path_skills": {
         ".indexOn": ["importanceLevel", "minimumProficiencyLevel", "learningOrder"]
       }
     },
 
     "users": {
-      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageUsers').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
       ".indexOn": ["createdAt"],
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')"
+        ".read": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageUsers').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageUsers').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       }
     },
 
     "user_private": {
-      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canViewPrivateStudentData').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
+        ".read": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('permissions').child('canViewPrivateStudentData').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
         "tasks": {
           ".indexOn": ["dueDate", "status", "priority", "createdAt"]
         },
@@ -78,38 +78,53 @@
     },
 
     "user_admin_meta": {
-      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
-      ".indexOn": ["role", "accountStatus", "createdAt"]
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
+      ".indexOn": ["role", "accountStatus", "createdAt"],
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+      }
     },
 
     "support_messages": {
-      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageSupport').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
       ".indexOn": ["createdAt", "status", "type"],
       "$messageId": {
-        ".write": "!data.exists() || (auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && (!data.exists() || root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageSupport').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       }
     },
 
     "platform_settings": {
       "public": {
         ".read": true,
-        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       },
       "private": {
-        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
-        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
+        ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
       }
     },
 
     "stats": {
       ".read": true,
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
+      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
     },
 
     "system": {
-      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
+      ".read": false,
+      ".write": false,
+      "quiz_answer_keys": {
+        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+      },
+      "admin_logs": {
+        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+      },
+      "ai_usage_logs": {
+        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'"
+      }
     }
   }
 }
