@@ -119,7 +119,7 @@ export default function LoginPage() {
             />
 
             <div className="mt-2 text-right rtl:text-left">
-              <Link href="/auth/reset-password" className="text-xs font-medium text-primary hover:underline">
+              <Link href="/auth/forgot-password" className="text-xs font-medium text-primary hover:underline">
                 {t.auth.forgotLink}
               </Link>
             </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
         <div className="flex justify-center pt-4 border-t border-border mt-8">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !email || !password || !!errors.email || !!errors.password}
             className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60"
           >
             {loading ? (

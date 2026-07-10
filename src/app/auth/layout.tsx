@@ -17,10 +17,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="absolute left-1/2 top-0 h-full w-[50vw] bg-beam animate-beam blur-3xl" />
       </div>
 
+      <div className="absolute top-6 right-6 z-50 rtl:right-auto rtl:left-6">
+        <LanguageToggle />
+      </div>
+
       <div className={`relative mx-auto flex min-h-screen flex-col px-6 py-10 justify-center transition-all duration-500 w-full ${isSignup ? "max-w-3xl" : "max-w-md"}`}>
-        <div className={`flex justify-end mb-3 ${isSignup ? "mr-auto ml-auto w-full" : ""}`}>
-          <LanguageToggle />
-        </div>
 
         <div className={`rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-500 mx-auto w-full`}>
           <div className="mb-6 flex flex-col items-center gap-3">

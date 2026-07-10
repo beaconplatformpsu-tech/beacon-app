@@ -323,7 +323,8 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={handleNextStep}
-              className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow flex items-center justify-center gap-2"
+              disabled={!form.name || !form.email || !form.password || !form.confirmPassword || !!errors.name || !!errors.email || !!errors.password || !!errors.confirmPassword}
+              className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="h-4 w-4" />
             </button>
@@ -338,7 +339,7 @@ export default function RegisterPage() {
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !form.academicLevel || !form.department || !!errors.academicLevel || !!errors.department || !!errors.github || !!errors.linkedin}
                 className="flex-1 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 {loading ? <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span> : <span className="whitespace-nowrap">Complete Registration</span>} <Check className="h-4 w-4" />
