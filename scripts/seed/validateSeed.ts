@@ -1,4 +1,5 @@
-type SeedPayload = Record<string, any>;
+type SeedPayload = Record<string, unknown>;
+type UnknownRecord = Record<string, unknown>;
 type BooleanIndex = Record<string, Record<string, true>>;
 
 const VALID_RESOURCE_TYPES = new Set([
@@ -17,79 +18,126 @@ const VALID_LEVELS = new Set(["beginner", "intermediate", "advanced", "expert", 
 const VALID_IMPORTANCE = new Set(["core", "important", "optional"]);
 const VALID_STEP_TYPES = new Set(["resource", "practice_task", "quiz", "project", "milestone"]);
 
-function getNode(payload: SeedPayload, path: string, fallback: any = {}) {
-  if (payload[path] !== undefined) return payload[path];
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asRecord(value: unknown): UnknownRecord {
+  return isRecord(value) ? value : {};
+}
+
+function getNode(payload: SeedPayload, path: string, fallback: UnknownRecord = {}): UnknownRecord {
+  const direct = payload[path];
+
+  if (isRecord(direct)) {
+    return direct;
+  }
 
   const parts = path.split("/");
-  let current: any = payload;
+  let current: unknown = payload;
 
   for (const part of parts) {
-    if (current?.[part] === undefined) return fallback;
+    if (!isRecord(current) || current[part] === undefined) {
+      return fallback;
+    }
+
     current = current[part];
   }
 
-  return current ?? fallback;
+  return isRecord(current) ? current : fallback;
+}
+
+function getString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function getNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function getBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function getArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function hasOwn(obj: unknown, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj || {}, key);
+}
+
+function hasDuplicate(values: string[]): boolean {
+  return new Set(values).size !== values.length;
 }
 
 function addIndex(index: BooleanIndex, primaryId?: string, secondaryId?: string) {
   if (!primaryId || !secondaryId) return;
-  if (!index[primaryId]) index[primaryId] = {};
+
+  if (!index[primaryId]) {
+    index[primaryId] = {};
+  }
+
   index[primaryId][secondaryId] = true;
 }
 
 function sortIndex(index: BooleanIndex): BooleanIndex {
   const sorted: BooleanIndex = {};
-  for (const key of Object.keys(index).sort()) {
+
+  for (const key of Object.keys(index || {}).sort()) {
     sorted[key] = {};
-    for (const child of Object.keys(index[key]).sort()) {
+
+    for (const child of Object.keys(index[key] || {}).sort()) {
       sorted[key][child] = true;
     }
   }
+
   return sorted;
 }
 
+function normalizeBooleanIndex(value: unknown): BooleanIndex {
+  const source = asRecord(value);
+  const normalized: BooleanIndex = {};
 
-function compareIndex(name: string, expected: BooleanIndex, actual: BooleanIndex, errors: string[]) {
+  for (const [primaryId, children] of Object.entries(source)) {
+    if (!isRecord(children)) continue;
+
+    for (const [secondaryId, enabled] of Object.entries(children)) {
+      if (enabled === true) {
+        addIndex(normalized, primaryId, secondaryId);
+      }
+    }
+  }
+
+  return normalized;
+}
+
+function compareIndex(name: string, expected: BooleanIndex, actualRaw: unknown, errors: string[]) {
   const expectedSorted = sortIndex(expected || {});
-  const actualSorted = sortIndex(actual || {});
+  const actualSorted = sortIndex(normalizeBooleanIndex(actualRaw));
 
   if (JSON.stringify(expectedSorted) !== JSON.stringify(actualSorted)) {
     errors.push(`Index mismatch for ${name}`);
   }
 }
 
-function hasDuplicate(values: string[]) {
-  return new Set(values).size !== values.length;
+function collectionValues(collection: UnknownRecord): UnknownRecord[] {
+  return Object.values(collection).filter(isRecord);
 }
 
-function hasOwn(obj: any, key: string) {
-  return Object.prototype.hasOwnProperty.call(obj || {}, key);
+function collectionEntries(collection: UnknownRecord): [string, UnknownRecord][] {
+  return Object.entries(collection).filter((entry): entry is [string, UnknownRecord] => isRecord(entry[1]));
 }
 
-export function validateSeedPayload(payload: SeedPayload): string[] {
-  const errors: string[] = [];
+function objectCount(collection: UnknownRecord): number {
+  return Object.keys(collection || {}).length;
+}
 
-  const publicContent = getNode(payload, "public_content", {});
-  const skillCategories = getNode(payload, "public_content/skill_categories", publicContent.skill_categories || {});
-  const careerCategories = getNode(payload, "public_content/career_categories", publicContent.career_categories || {});
-  const academicCategories = getNode(payload, "public_content/academic_categories", publicContent.academic_categories || {});
-  const skills = getNode(payload, "public_content/skills", publicContent.skills || {});
-  const careerPaths = getNode(payload, "public_content/career_paths", publicContent.career_paths || {});
-  const resources = getNode(payload, "public_content/resources", publicContent.resources || {});
-  const learningPaths = getNode(payload, "public_content/learning_paths", publicContent.learning_paths || {});
-  const practiceTasks = getNode(payload, "public_content/practice_tasks", publicContent.practice_tasks || {});
-  const quizzes = getNode(payload, "public_content/quizzes", publicContent.quizzes || {});
-  const projects = getNode(payload, "public_content/projects", publicContent.projects || {});
-  const announcements = getNode(payload, "public_content/announcements", publicContent.announcements || {});
-  const relations = getNode(payload, "relations", {});
-  const careerPathSkills = getNode(payload, "relations/career_path_skills", relations.career_path_skills || {});
-  const learningPathSteps = getNode(payload, "relations/learning_path_steps", relations.learning_path_steps || {});
-  const indexes = getNode(payload, "indexes", {});
-  const stats = getNode(payload, "stats", {});
-  const platformSettings = getNode(payload, "platform_settings", {});
-  const answerKeys = getNode(payload, "system/quiz_answer_keys", {});
-  const aiLogs = getNode(payload, "system/ai_usage_logs", {});
-
+function validateNoForbiddenContent(payload: SeedPayload, errors: string[]) {
   const serialized = JSON.stringify(payload);
   const lower = serialized.toLowerCase();
 
@@ -118,171 +166,547 @@ export function validateSeedPayload(payload: SeedPayload): string[] {
     }
   }
 
-  if (serialized.includes("signedUrl")) errors.push("Payload contains signedUrl. Store only stable storage metadata, not permanent signed URLs.");
-  if (lower.includes("correctoptionindex") && lower.includes("public_content") && JSON.stringify(quizzes).toLowerCase().includes("correctoptionindex")) {
-    errors.push("Public quizzes expose correctOptionIndex.");
+  if (serialized.includes("signedUrl")) {
+    errors.push("Payload contains signedUrl. Store only stable storage metadata, not permanent signed URLs.");
   }
+}
 
-  const platformPrivate = JSON.stringify(platformSettings.private || {}).toLowerCase();
-  for (const token of ["apikey", "api_key", "secret", "token", "password", "credential", "private_key"]) {
-    if (platformPrivate.includes(token)) errors.push(`platform_settings/private contains suspected secret token: ${token}`);
-  }
+function validateNoSecrets(platformSettings: UnknownRecord, errors: string[]) {
+  const privateSettings = asRecord(platformSettings.private);
+  const privateSerialized = JSON.stringify(privateSettings).toLowerCase();
 
-  Object.values(aiLogs).forEach((log: any) => {
-    if (hasOwn(log, "prompt") || hasOwn(log, "rawPrompt")) {
-      errors.push(`AI usage log ${log.id || "unknown"} contains raw prompt data.`);
+  const forbiddenSecretTokens = [
+    "apikey",
+    "api_key",
+    "secret",
+    "token",
+    "password",
+    "credential",
+    "private_key",
+    "service_role",
+  ];
+
+  for (const token of forbiddenSecretTokens) {
+    if (privateSerialized.includes(token)) {
+      errors.push(`platform_settings/private contains suspected secret token: ${token}`);
     }
-  });
+  }
+}
 
+function validateEntityBase(
+  entity: UnknownRecord,
+  collection: string,
+  errors: string[],
+  options: { requireSlug?: boolean; requireTitle?: boolean; requireIsActive?: boolean } = {}
+) {
+  const requireSlug = options.requireSlug ?? true;
+  const requireTitle = options.requireTitle ?? true;
+  const requireIsActive = options.requireIsActive ?? true;
+
+  const id = getString(entity.id);
+
+  if (!id) {
+    errors.push(`${collection} entity is missing id`);
+  }
+
+  if (requireSlug && !getString(entity.slug)) {
+    errors.push(`${collection} ${id || "unknown"} is missing slug`);
+  }
+
+  if (requireTitle && !getString(entity.title)) {
+    errors.push(`${collection} ${id || "unknown"} is missing title`);
+  }
+
+  if (requireIsActive && getBoolean(entity.isActive) === undefined) {
+    errors.push(`${collection} ${id || "unknown"} is missing boolean isActive`);
+  }
+
+  if (!getString(entity.createdAt)) {
+    errors.push(`${collection} ${id || "unknown"} is missing createdAt`);
+  }
+
+  if (!getString(entity.updatedAt)) {
+    errors.push(`${collection} ${id || "unknown"} is missing updatedAt`);
+  }
+}
+
+function validateUniqueIdsAndSlugs(
+  collections: Array<{ name: string; data: UnknownRecord; requireSlug: boolean }>,
+  errors: string[]
+) {
   const idOwners = new Map<string, string>();
   const slugOwners = new Map<string, string>();
 
-  function trackEntity(entity: any, collection: string, requireSlug = true) {
-    if (!entity?.id) errors.push(`${collection} entity is missing id`);
-    if (entity?.id) {
-      const owner = idOwners.get(entity.id);
-      if (owner) errors.push(`Duplicate id ${entity.id} in ${collection}; already used by ${owner}`);
-      idOwners.set(entity.id, collection);
-    }
+  for (const collection of collections) {
+    for (const entity of collectionValues(collection.data)) {
+      const id = getString(entity.id);
+      const slug = getString(entity.slug);
 
-    if (requireSlug) {
-      if (!entity?.slug) errors.push(`${collection} ${entity?.id || "unknown"} is missing slug`);
-      if (entity?.slug) {
-        const slugKey = `${collection}:${entity.slug}`;
+      if (id) {
+        const owner = idOwners.get(id);
+
+        if (owner) {
+          errors.push(`Duplicate id ${id} in ${collection.name}; already used by ${owner}`);
+        }
+
+        idOwners.set(id, collection.name);
+      }
+
+      if (collection.requireSlug && slug) {
+        const slugKey = `${collection.name}:${slug}`;
         const owner = slugOwners.get(slugKey);
-        if (owner) errors.push(`Duplicate slug ${entity.slug} within ${collection}`);
-        slugOwners.set(slugKey, entity.id);
+
+        if (owner) {
+          errors.push(`Duplicate slug ${slug} within ${collection.name}; already used by ${owner}`);
+        }
+
+        slugOwners.set(slugKey, id);
       }
     }
+  }
+}
 
-    if (!entity?.title) errors.push(`${collection} ${entity?.id || "unknown"} is missing title`);
-    if (entity?.isActive !== true && entity?.isActive !== false) errors.push(`${collection} ${entity?.id || "unknown"} is missing boolean isActive`);
-    if (!entity?.createdAt) errors.push(`${collection} ${entity?.id || "unknown"} is missing createdAt`);
-    if (!entity?.updatedAt) errors.push(`${collection} ${entity?.id || "unknown"} is missing updatedAt`);
+export function validateSeedPayload(payload: SeedPayload): string[] {
+  const errors: string[] = [];
+
+  const publicContent = getNode(payload, "public_content", {});
+  const skillCategories = getNode(payload, "public_content/skill_categories", asRecord(publicContent.skill_categories));
+  const careerCategories = getNode(payload, "public_content/career_categories", asRecord(publicContent.career_categories));
+  const academicCategories = getNode(payload, "public_content/academic_categories", asRecord(publicContent.academic_categories));
+  const skills = getNode(payload, "public_content/skills", asRecord(publicContent.skills));
+  const careerPaths = getNode(payload, "public_content/career_paths", asRecord(publicContent.career_paths));
+  const resources = getNode(payload, "public_content/resources", asRecord(publicContent.resources));
+  const learningPaths = getNode(payload, "public_content/learning_paths", asRecord(publicContent.learning_paths));
+  const practiceTasks = getNode(payload, "public_content/practice_tasks", asRecord(publicContent.practice_tasks));
+  const quizzes = getNode(payload, "public_content/quizzes", asRecord(publicContent.quizzes));
+  const projects = getNode(payload, "public_content/projects", asRecord(publicContent.projects));
+  const announcements = getNode(payload, "public_content/announcements", asRecord(publicContent.announcements));
+
+  const relations = getNode(payload, "relations", {});
+  const careerPathSkills = getNode(payload, "relations/career_path_skills", asRecord(relations.career_path_skills));
+  const learningPathSteps = getNode(payload, "relations/learning_path_steps", asRecord(relations.learning_path_steps));
+
+  const indexes = getNode(payload, "indexes", {});
+  const stats = getNode(payload, "stats", {});
+  const platformSettings = getNode(payload, "platform_settings", {});
+  const answerKeys = getNode(payload, "system/quiz_answer_keys", {});
+  const aiLogs = getNode(payload, "system/ai_usage_logs", {});
+
+  validateNoForbiddenContent(payload, errors);
+  validateNoSecrets(platformSettings, errors);
+
+  for (const log of collectionValues(aiLogs)) {
+    if (hasOwn(log, "prompt") || hasOwn(log, "rawPrompt") || hasOwn(log, "fullPrompt")) {
+      errors.push(`AI usage log ${getString(log.id) || "unknown"} contains raw prompt data.`);
+    }
   }
 
-  Object.values(skillCategories).forEach((cat: any) => {
-    trackEntity(cat, "skill_categories");
-    if (typeof cat.description !== "string" || !cat.description.trim()) errors.push(`Skill category ${cat.id} is missing description`);
-    if (typeof cat.sortOrder !== "number") errors.push(`Skill category ${cat.id} is missing numeric sortOrder`);
-  });
+  validateUniqueIdsAndSlugs(
+    [
+      { name: "skill_categories", data: skillCategories, requireSlug: true },
+      { name: "career_categories", data: careerCategories, requireSlug: true },
+      { name: "academic_categories", data: academicCategories, requireSlug: true },
+      { name: "skills", data: skills, requireSlug: true },
+      { name: "career_paths", data: careerPaths, requireSlug: true },
+      { name: "resources", data: resources, requireSlug: true },
+      { name: "learning_paths", data: learningPaths, requireSlug: false },
+      { name: "practice_tasks", data: practiceTasks, requireSlug: false },
+      { name: "projects", data: projects, requireSlug: false },
+      { name: "quizzes", data: quizzes, requireSlug: false },
+      { name: "announcements", data: announcements, requireSlug: false },
+    ],
+    errors
+  );
 
-  Object.values(careerCategories).forEach((cat: any) => {
-    trackEntity(cat, "career_categories");
-    if (typeof cat.description !== "string" || !cat.description.trim()) errors.push(`Career category ${cat.id} is missing description`);
-    if (typeof cat.sortOrder !== "number") errors.push(`Career category ${cat.id} is missing numeric sortOrder`);
-  });
+  for (const category of collectionValues(skillCategories)) {
+    validateEntityBase(category, "skill_categories", errors);
+    if (!getString(category.description).trim()) {
+      errors.push(`Skill category ${getString(category.id) || "unknown"} is missing description`);
+    }
+    if (getNumber(category.sortOrder) === undefined) {
+      errors.push(`Skill category ${getString(category.id) || "unknown"} is missing numeric sortOrder`);
+    }
+  }
 
-  Object.values(academicCategories).forEach((cat: any) => {
-    trackEntity(cat, "academic_categories");
-    if (typeof cat.description !== "string" || !cat.description.trim()) errors.push(`Academic category ${cat.id} is missing description`);
-    if (typeof cat.sortOrder !== "number") errors.push(`Academic category ${cat.id} is missing numeric sortOrder`);
-  });
+  for (const category of collectionValues(careerCategories)) {
+    validateEntityBase(category, "career_categories", errors);
+    if (!getString(category.description).trim()) {
+      errors.push(`Career category ${getString(category.id) || "unknown"} is missing description`);
+    }
+    if (getNumber(category.sortOrder) === undefined) {
+      errors.push(`Career category ${getString(category.id) || "unknown"} is missing numeric sortOrder`);
+    }
+  }
 
-  Object.values(skills).forEach((skill: any) => {
-    trackEntity(skill, "skills");
-    if (hasOwn(skill, "name")) errors.push(`Skill ${skill.id} uses legacy name field.`);
-    if (!skillCategories[skill.categoryId]) errors.push(`Skill ${skill.id} references missing skill category ${skill.categoryId}`);
-    if (skill.difficultyLevel && !VALID_LEVELS.has(skill.difficultyLevel)) errors.push(`Skill ${skill.id} has invalid difficultyLevel ${skill.difficultyLevel}`);
-    if (!Array.isArray(skill.tags)) errors.push(`Skill ${skill.id} is missing tags array`);
-  });
+  for (const category of collectionValues(academicCategories)) {
+    validateEntityBase(category, "academic_categories", errors);
+    if (!getString(category.description).trim()) {
+      errors.push(`Academic category ${getString(category.id) || "unknown"} is missing description`);
+    }
+    if (getNumber(category.sortOrder) === undefined) {
+      errors.push(`Academic category ${getString(category.id) || "unknown"} is missing numeric sortOrder`);
+    }
+  }
 
-  Object.values(careerPaths).forEach((careerPath: any) => {
-    trackEntity(careerPath, "career_paths");
-    if (!careerCategories[careerPath.categoryId]) errors.push(`Career path ${careerPath.id} references missing career category ${careerPath.categoryId}`);
-    if (!careerPath.longDescription) errors.push(`Career path ${careerPath.id} is missing longDescription`);
-  });
+  for (const skill of collectionValues(skills)) {
+    const skillId = getString(skill.id);
 
-  Object.values(resources).forEach((resource: any) => {
-    trackEntity(resource, "resources");
-    if (!resource.provider) errors.push(`Resource ${resource.id} is missing provider`);
-    if (!VALID_RESOURCE_TYPES.has(resource.resourceType)) errors.push(`Resource ${resource.id} has invalid resourceType ${resource.resourceType}`);
-    if (resource.difficultyLevel && !VALID_LEVELS.has(resource.difficultyLevel)) errors.push(`Resource ${resource.id} has invalid difficultyLevel ${resource.difficultyLevel}`);
+    validateEntityBase(skill, "skills", errors);
+
+    if (hasOwn(skill, "name")) {
+      errors.push(`Skill ${skillId || "unknown"} uses legacy name field.`);
+    }
+
+    const categoryId = getString(skill.categoryId);
+
+    if (!categoryId || !skillCategories[categoryId]) {
+      errors.push(`Skill ${skillId || "unknown"} references missing skill category ${categoryId || "empty"}`);
+    }
+
+    const difficultyLevel = getString(skill.difficultyLevel);
+
+    if (difficultyLevel && !VALID_LEVELS.has(difficultyLevel)) {
+      errors.push(`Skill ${skillId || "unknown"} has invalid difficultyLevel ${difficultyLevel}`);
+    }
+
+    if (!Array.isArray(skill.tags)) {
+      errors.push(`Skill ${skillId || "unknown"} is missing tags array`);
+    } else if (hasDuplicate(getStringArray(skill.tags))) {
+      errors.push(`Skill ${skillId || "unknown"} has duplicate tags`);
+    }
+  }
+
+  for (const careerPath of collectionValues(careerPaths)) {
+    const careerPathId = getString(careerPath.id);
+    const categoryId = getString(careerPath.categoryId);
+
+    validateEntityBase(careerPath, "career_paths", errors);
+
+    if (!categoryId || !careerCategories[categoryId]) {
+      errors.push(`Career path ${careerPathId || "unknown"} references missing career category ${categoryId || "empty"}`);
+    }
+
+    if (!getString(careerPath.longDescription).trim()) {
+      errors.push(`Career path ${careerPathId || "unknown"} is missing longDescription`);
+    }
+  }
+
+  for (const resource of collectionValues(resources)) {
+    const resourceId = getString(resource.id);
+
+    validateEntityBase(resource, "resources", errors);
+
+    if (!getString(resource.provider)) {
+      errors.push(`Resource ${resourceId || "unknown"} is missing provider`);
+    }
+
+    const resourceType = getString(resource.resourceType);
+
+    if (!VALID_RESOURCE_TYPES.has(resourceType)) {
+      errors.push(`Resource ${resourceId || "unknown"} has invalid resourceType ${resourceType || "empty"}`);
+    }
+
+    const difficultyLevel = getString(resource.difficultyLevel);
+
+    if (difficultyLevel && !VALID_LEVELS.has(difficultyLevel)) {
+      errors.push(`Resource ${resourceId || "unknown"} has invalid difficultyLevel ${difficultyLevel}`);
+    }
+
     for (const field of ["skillIds", "careerPathIds", "academicCategoryIds", "tags"]) {
-      if (!Array.isArray(resource[field])) errors.push(`Resource ${resource.id} is missing ${field} array`);
-      if (Array.isArray(resource[field]) && hasDuplicate(resource[field])) errors.push(`Resource ${resource.id} has duplicate values in ${field}`);
-    }
-    if (resource.sourceType === "external" && (!resource.url || !String(resource.url).startsWith("https://"))) {
-      errors.push(`External resource ${resource.id} must have a real https URL`);
-    }
-    (resource.skillIds || []).forEach((id: string) => { if (!skills[id]) errors.push(`Resource ${resource.id} references missing skill ${id}`); });
-    (resource.careerPathIds || []).forEach((id: string) => { if (!careerPaths[id]) errors.push(`Resource ${resource.id} references missing career path ${id}`); });
-    (resource.academicCategoryIds || []).forEach((id: string) => { if (!academicCategories[id]) errors.push(`Resource ${resource.id} references missing academic category ${id}`); });
-  });
+      const values = getStringArray(resource[field]);
 
-  Object.values(learningPaths).forEach((lp: any) => {
-    trackEntity(lp, "learning_paths", false);
-    if (!careerPaths[lp.careerPathId]) errors.push(`Learning path ${lp.id} references missing career path ${lp.careerPathId}`);
-    if (!VALID_LEVELS.has(lp.difficultyLevel)) errors.push(`Learning path ${lp.id} has invalid difficultyLevel ${lp.difficultyLevel}`);
-  });
+      if (!Array.isArray(resource[field])) {
+        errors.push(`Resource ${resourceId || "unknown"} is missing ${field} array`);
+      }
 
-  Object.values(practiceTasks).forEach((task: any) => {
-    trackEntity(task, "practice_tasks", false);
-    if (!Array.isArray(task.skillIds) || task.skillIds.length === 0) errors.push(`Practice task ${task.id} must have skillIds`);
-    (task.skillIds || []).forEach((id: string) => { if (!skills[id]) errors.push(`Practice task ${task.id} references missing skill ${id}`); });
-  });
-
-  Object.values(projects).forEach((project: any) => {
-    trackEntity(project, "projects", false);
-    for (const field of ["skillIds", "careerPathIds", "requirements"]) {
-      if (!Array.isArray(project[field]) || project[field].length === 0) errors.push(`Project ${project.id} must have non-empty ${field}`);
+      if (values.length > 0 && hasDuplicate(values)) {
+        errors.push(`Resource ${resourceId || "unknown"} has duplicate values in ${field}`);
+      }
     }
-    (project.skillIds || []).forEach((id: string) => { if (!skills[id]) errors.push(`Project ${project.id} references missing skill ${id}`); });
-    (project.careerPathIds || []).forEach((id: string) => { if (!careerPaths[id]) errors.push(`Project ${project.id} references missing career path ${id}`); });
-  });
+
+    if (getString(resource.sourceType) === "external" && !getString(resource.url).startsWith("https://")) {
+      errors.push(`External resource ${resourceId || "unknown"} must have a real https URL`);
+    }
+
+    for (const skillId of getStringArray(resource.skillIds)) {
+      if (!skills[skillId]) {
+        errors.push(`Resource ${resourceId || "unknown"} references missing skill ${skillId}`);
+      }
+    }
+
+    for (const careerPathId of getStringArray(resource.careerPathIds)) {
+      if (!careerPaths[careerPathId]) {
+        errors.push(`Resource ${resourceId || "unknown"} references missing career path ${careerPathId}`);
+      }
+    }
+
+    for (const academicCategoryId of getStringArray(resource.academicCategoryIds)) {
+      if (!academicCategories[academicCategoryId]) {
+        errors.push(`Resource ${resourceId || "unknown"} references missing academic category ${academicCategoryId}`);
+      }
+    }
+  }
+
+  for (const learningPath of collectionValues(learningPaths)) {
+    const learningPathId = getString(learningPath.id);
+    const careerPathId = getString(learningPath.careerPathId);
+    const difficultyLevel = getString(learningPath.difficultyLevel);
+
+    validateEntityBase(learningPath, "learning_paths", errors, { requireSlug: false });
+
+    if (!careerPathId || !careerPaths[careerPathId]) {
+      errors.push(`Learning path ${learningPathId || "unknown"} references missing career path ${careerPathId || "empty"}`);
+    }
+
+    if (!VALID_LEVELS.has(difficultyLevel)) {
+      errors.push(`Learning path ${learningPathId || "unknown"} has invalid difficultyLevel ${difficultyLevel || "empty"}`);
+    }
+  }
+
+  for (const task of collectionValues(practiceTasks)) {
+    const taskId = getString(task.id);
+    const skillIds = getStringArray(task.skillIds);
+
+    validateEntityBase(task, "practice_tasks", errors, { requireSlug: false });
+
+    if (skillIds.length === 0) {
+      errors.push(`Practice task ${taskId || "unknown"} must have skillIds`);
+    }
+
+    if (hasDuplicate(skillIds)) {
+      errors.push(`Practice task ${taskId || "unknown"} has duplicate skillIds`);
+    }
+
+    if (!VALID_LEVELS.has(getString(task.difficultyLevel))) {
+      errors.push(`Practice task ${taskId || "unknown"} has invalid difficultyLevel ${getString(task.difficultyLevel) || "empty"}`);
+    }
+
+    if (getNumber(task.estimatedTimeMinutes) === undefined) {
+      errors.push(`Practice task ${taskId || "unknown"} is missing numeric estimatedTimeMinutes`);
+    }
+
+    for (const skillId of skillIds) {
+      if (!skills[skillId]) {
+        errors.push(`Practice task ${taskId || "unknown"} references missing skill ${skillId}`);
+      }
+    }
+  }
+
+  for (const project of collectionValues(projects)) {
+    const projectId = getString(project.id);
+    const skillIds = getStringArray(project.skillIds);
+    const careerPathIds = getStringArray(project.careerPathIds);
+    const requirements = getArray(project.requirements);
+
+    validateEntityBase(project, "projects", errors, { requireSlug: false });
+
+    if (skillIds.length === 0) {
+      errors.push(`Project ${projectId || "unknown"} must have non-empty skillIds`);
+    }
+
+    if (careerPathIds.length === 0) {
+      errors.push(`Project ${projectId || "unknown"} must have non-empty careerPathIds`);
+    }
+
+    if (requirements.length === 0) {
+      errors.push(`Project ${projectId || "unknown"} must have non-empty requirements`);
+    }
+
+    if (hasDuplicate(skillIds)) {
+      errors.push(`Project ${projectId || "unknown"} has duplicate skillIds`);
+    }
+
+    if (hasDuplicate(careerPathIds)) {
+      errors.push(`Project ${projectId || "unknown"} has duplicate careerPathIds`);
+    }
+
+    if (!VALID_LEVELS.has(getString(project.difficultyLevel))) {
+      errors.push(`Project ${projectId || "unknown"} has invalid difficultyLevel ${getString(project.difficultyLevel) || "empty"}`);
+    }
+
+    if (getNumber(project.estimatedHours) === undefined) {
+      errors.push(`Project ${projectId || "unknown"} is missing numeric estimatedHours`);
+    }
+
+    for (const skillId of skillIds) {
+      if (!skills[skillId]) {
+        errors.push(`Project ${projectId || "unknown"} references missing skill ${skillId}`);
+      }
+    }
+
+    for (const careerPathId of careerPathIds) {
+      if (!careerPaths[careerPathId]) {
+        errors.push(`Project ${projectId || "unknown"} references missing career path ${careerPathId}`);
+      }
+    }
+  }
 
   const quizQuestionTexts = new Set<string>();
-  Object.values(quizzes).forEach((quiz: any) => {
-    trackEntity(quiz, "quizzes", false);
-    if (!Array.isArray(quiz.skillIds) || quiz.skillIds.length === 0) errors.push(`Quiz ${quiz.id} must have skillIds`);
-    (quiz.skillIds || []).forEach((id: string) => { if (!skills[id]) errors.push(`Quiz ${quiz.id} references missing skill ${id}`); });
-    if (!answerKeys[quiz.id]) errors.push(`Quiz ${quiz.id} is missing an answer key`);
-    const questions = Object.values(quiz.questions || {}) as any[];
-    if (questions.length < 3) errors.push(`Quiz ${quiz.id} should contain at least 3 questions`);
-    questions.forEach((question: any) => {
-      if (question.correctOptionIndex !== undefined || question.explanation !== undefined) {
-        errors.push(`Quiz ${quiz.id} exposes answer data in public_content`);
-      }
-      if (!Array.isArray(question.options) || question.options.length < 4) errors.push(`Quiz ${quiz.id}/${question.id} must have at least 4 options`);
-      const key = String(question.questionText || "").trim().toLowerCase();
-      if (!key) errors.push(`Quiz ${quiz.id}/${question.id} is missing questionText`);
-      if (key && quizQuestionTexts.has(key)) errors.push(`Repeated quiz question detected: ${question.questionText}`);
-      if (key) quizQuestionTexts.add(key);
-    });
-  });
 
-  Object.entries(answerKeys).forEach(([quizId, key]: [string, any]) => {
-    if (!quizzes[quizId]) errors.push(`Answer key ${quizId} has no matching public quiz`);
-    Object.entries(key.questions || {}).forEach(([questionId, answer]: [string, any]) => {
-      const publicQuestion = quizzes[quizId]?.questions?.[questionId];
-      if (!publicQuestion) errors.push(`Answer key ${quizId}/${questionId} has no matching public question`);
-      if (typeof answer.correctOptionIndex !== "number") errors.push(`Answer key ${quizId}/${questionId} is missing numeric correctOptionIndex`);
-      if (publicQuestion?.options && (answer.correctOptionIndex < 0 || answer.correctOptionIndex >= publicQuestion.options.length)) {
+  for (const quiz of collectionValues(quizzes)) {
+    const quizId = getString(quiz.id);
+    const skillIds = getStringArray(quiz.skillIds);
+    const questions = asRecord(quiz.questions);
+
+    validateEntityBase(quiz, "quizzes", errors, { requireSlug: false });
+
+    if (skillIds.length === 0) {
+      errors.push(`Quiz ${quizId || "unknown"} must have skillIds`);
+    }
+
+    if (hasDuplicate(skillIds)) {
+      errors.push(`Quiz ${quizId || "unknown"} has duplicate skillIds`);
+    }
+
+    if (!VALID_LEVELS.has(getString(quiz.difficultyLevel))) {
+      errors.push(`Quiz ${quizId || "unknown"} has invalid difficultyLevel ${getString(quiz.difficultyLevel) || "empty"}`);
+    }
+
+    for (const skillId of skillIds) {
+      if (!skills[skillId]) {
+        errors.push(`Quiz ${quizId || "unknown"} references missing skill ${skillId}`);
+      }
+    }
+
+    if (!answerKeys[quizId]) {
+      errors.push(`Quiz ${quizId || "unknown"} is missing an answer key`);
+    }
+
+    const questionValues = collectionValues(questions);
+
+    if (questionValues.length < 3) {
+      errors.push(`Quiz ${quizId || "unknown"} should contain at least 3 questions`);
+    }
+
+    for (const question of questionValues) {
+      const questionId = getString(question.id);
+      const questionText = getString(question.questionText).trim();
+      const options = getArray(question.options);
+
+      if (hasOwn(question, "correctOptionIndex") || hasOwn(question, "explanation") || hasOwn(question, "answer") || hasOwn(question, "correctAnswer")) {
+        errors.push(`Quiz ${quizId || "unknown"} exposes answer data in public_content`);
+      }
+
+      if (!questionText) {
+        errors.push(`Quiz ${quizId || "unknown"}/${questionId || "unknown"} is missing questionText`);
+      }
+
+      if (!Array.isArray(question.options) || options.length < 4) {
+        errors.push(`Quiz ${quizId || "unknown"}/${questionId || "unknown"} must have at least 4 options`);
+      }
+
+      if (questionText) {
+        const normalizedQuestion = questionText.toLowerCase();
+
+        if (quizQuestionTexts.has(normalizedQuestion)) {
+          errors.push(`Repeated quiz question detected: ${questionText}`);
+        }
+
+        quizQuestionTexts.add(normalizedQuestion);
+      }
+    }
+  }
+
+  for (const [quizId, key] of collectionEntries(answerKeys)) {
+    if (!quizzes[quizId]) {
+      errors.push(`Answer key ${quizId} has no matching public quiz`);
+    }
+
+    const keyQuestions = asRecord(key.questions);
+    const publicQuestions = asRecord(asRecord(quizzes[quizId]).questions);
+
+    for (const [questionId, answer] of collectionEntries(keyQuestions)) {
+      const publicQuestion = asRecord(publicQuestions[questionId]);
+      const options = getArray(publicQuestion.options);
+      const correctOptionIndex = getNumber(answer.correctOptionIndex);
+
+      if (!publicQuestions[questionId]) {
+        errors.push(`Answer key ${quizId}/${questionId} has no matching public question`);
+      }
+
+      if (correctOptionIndex === undefined) {
+        errors.push(`Answer key ${quizId}/${questionId} is missing numeric correctOptionIndex`);
+      }
+
+      if (correctOptionIndex !== undefined && options.length > 0 && (correctOptionIndex < 0 || correctOptionIndex >= options.length)) {
         errors.push(`Answer key ${quizId}/${questionId} correctOptionIndex is out of range`);
       }
-    });
-  });
 
-  Object.entries(careerPathSkills).forEach(([careerPathId, skillMap]: [string, any]) => {
-    if (!careerPaths[careerPathId]) errors.push(`career_path_skills references missing career path ${careerPathId}`);
-    Object.entries(skillMap || {}).forEach(([skillId, relation]: [string, any]) => {
-      if (!skills[skillId]) errors.push(`career_path_skills ${careerPathId} references missing skill ${skillId}`);
-      if (!VALID_IMPORTANCE.has(relation.importanceLevel)) errors.push(`career_path_skills ${careerPathId}/${skillId} has invalid importanceLevel`);
-      if (!VALID_LEVELS.has(relation.minimumProficiencyLevel)) errors.push(`career_path_skills ${careerPathId}/${skillId} has invalid minimumProficiencyLevel`);
-    });
-  });
+      if (!getString(answer.explanation).trim()) {
+        errors.push(`Answer key ${quizId}/${questionId} is missing explanation`);
+      }
+    }
+  }
 
-  Object.entries(learningPathSteps).forEach(([learningPathId, steps]: [string, any]) => {
-    if (!learningPaths[learningPathId]) errors.push(`learning_path_steps references missing learning path ${learningPathId}`);
-    Object.values(steps || {}).forEach((step: any) => {
-      if (!VALID_STEP_TYPES.has(step.type)) errors.push(`Learning step ${step.id} has invalid type ${step.type}`);
-      if (step.learningPathId !== learningPathId) errors.push(`Learning step ${step.id} learningPathId does not match parent ${learningPathId}`);
-      if (step.type === "resource" && (!step.resourceId || !resources[step.resourceId])) errors.push(`Learning step ${step.id} references invalid resourceId ${step.resourceId}`);
-      if (step.type === "practice_task" && (!step.practiceTaskId || !practiceTasks[step.practiceTaskId])) errors.push(`Learning step ${step.id} references invalid practiceTaskId ${step.practiceTaskId}`);
-      if (step.type === "quiz" && (!step.quizId || !quizzes[step.quizId])) errors.push(`Learning step ${step.id} references invalid quizId ${step.quizId}`);
-      if (step.type === "project" && (!step.projectId || !projects[step.projectId])) errors.push(`Learning step ${step.id} references invalid projectId ${step.projectId}`);
-    });
-  });
+  for (const [careerPathId, skillMap] of collectionEntries(careerPathSkills)) {
+    if (!careerPaths[careerPathId]) {
+      errors.push(`career_path_skills references missing career path ${careerPathId}`);
+    }
+
+    for (const [skillId, relation] of collectionEntries(skillMap)) {
+      if (!skills[skillId]) {
+        errors.push(`career_path_skills ${careerPathId} references missing skill ${skillId}`);
+      }
+
+      if (!VALID_IMPORTANCE.has(getString(relation.importanceLevel))) {
+        errors.push(`career_path_skills ${careerPathId}/${skillId} has invalid importanceLevel`);
+      }
+
+      if (!VALID_LEVELS.has(getString(relation.minimumProficiencyLevel))) {
+        errors.push(`career_path_skills ${careerPathId}/${skillId} has invalid minimumProficiencyLevel`);
+      }
+
+      if (getNumber(relation.learningOrder) === undefined) {
+        errors.push(`career_path_skills ${careerPathId}/${skillId} is missing numeric learningOrder`);
+      }
+    }
+  }
+
+  for (const [learningPathId, steps] of collectionEntries(learningPathSteps)) {
+    if (!learningPaths[learningPathId]) {
+      errors.push(`learning_path_steps references missing learning path ${learningPathId}`);
+    }
+
+    const seenSortOrders = new Set<number>();
+
+    for (const step of collectionValues(steps)) {
+      const stepId = getString(step.id);
+      const stepType = getString(step.type);
+      const sortOrder = getNumber(step.sortOrder);
+
+      if (!VALID_STEP_TYPES.has(stepType)) {
+        errors.push(`Learning step ${stepId || "unknown"} has invalid type ${stepType || "empty"}`);
+      }
+
+      if (getString(step.learningPathId) !== learningPathId) {
+        errors.push(`Learning step ${stepId || "unknown"} learningPathId does not match parent ${learningPathId}`);
+      }
+
+      if (sortOrder === undefined) {
+        errors.push(`Learning step ${stepId || "unknown"} is missing numeric sortOrder`);
+      } else if (seenSortOrders.has(sortOrder)) {
+        errors.push(`Learning path ${learningPathId} has duplicate step sortOrder ${sortOrder}`);
+      } else {
+        seenSortOrders.add(sortOrder);
+      }
+
+      if (stepType === "resource" && (!getString(step.resourceId) || !resources[getString(step.resourceId)])) {
+        errors.push(`Learning step ${stepId || "unknown"} references invalid resourceId ${getString(step.resourceId) || "empty"}`);
+      }
+
+      if (stepType === "practice_task" && (!getString(step.practiceTaskId) || !practiceTasks[getString(step.practiceTaskId)])) {
+        errors.push(`Learning step ${stepId || "unknown"} references invalid practiceTaskId ${getString(step.practiceTaskId) || "empty"}`);
+      }
+
+      if (stepType === "quiz" && (!getString(step.quizId) || !quizzes[getString(step.quizId)])) {
+        errors.push(`Learning step ${stepId || "unknown"} references invalid quizId ${getString(step.quizId) || "empty"}`);
+      }
+
+      if (stepType === "project" && (!getString(step.projectId) || !projects[getString(step.projectId)])) {
+        errors.push(`Learning step ${stepId || "unknown"} references invalid projectId ${getString(step.projectId) || "empty"}`);
+      }
+    }
+  }
 
   const minimums = [
     ["skill categories", skillCategories, 10],
@@ -299,7 +723,9 @@ export function validateSeedPayload(payload: SeedPayload): string[] {
   ] as const;
 
   for (const [label, collection, minimum] of minimums) {
-    if (Object.keys(collection).length < minimum) errors.push(`Expected at least ${minimum} ${label}, found ${Object.keys(collection).length}`);
+    if (objectCount(collection) < minimum) {
+      errors.push(`Expected at least ${minimum} ${label}, found ${objectCount(collection)}`);
+    }
   }
 
   const expectedIndexes: Record<string, BooleanIndex> = {
@@ -317,55 +743,119 @@ export function validateSeedPayload(payload: SeedPayload): string[] {
     practice_tasks_by_skill: {},
   };
 
-  Object.values(skills).forEach((skill: any) => addIndex(expectedIndexes.skills_by_category, skill.categoryId, skill.id));
-  Object.values(careerPaths).forEach((careerPath: any) => addIndex(expectedIndexes.career_paths_by_category, careerPath.categoryId, careerPath.id));
-  Object.values(learningPaths).forEach((lp: any) => addIndex(expectedIndexes.learning_paths_by_career_path, lp.careerPathId, lp.id));
-  Object.values(resources).forEach((resource: any) => {
-    addIndex(expectedIndexes.resources_by_type, resource.resourceType, resource.id);
-    addIndex(expectedIndexes.resources_by_level, resource.difficultyLevel, resource.id);
-    (resource.skillIds || []).forEach((skillId: string) => addIndex(expectedIndexes.resources_by_skill, skillId, resource.id));
-    (resource.careerPathIds || []).forEach((careerPathId: string) => addIndex(expectedIndexes.resources_by_career_path, careerPathId, resource.id));
-    (resource.academicCategoryIds || []).forEach((academicCategoryId: string) => addIndex(expectedIndexes.resources_by_academic_category, academicCategoryId, resource.id));
-  });
-  Object.values(projects).forEach((project: any) => {
-    (project.skillIds || []).forEach((skillId: string) => addIndex(expectedIndexes.projects_by_skill, skillId, project.id));
-    (project.careerPathIds || []).forEach((careerPathId: string) => addIndex(expectedIndexes.projects_by_career_path, careerPathId, project.id));
-  });
-  Object.values(quizzes).forEach((quiz: any) => (quiz.skillIds || []).forEach((skillId: string) => addIndex(expectedIndexes.quizzes_by_skill, skillId, quiz.id)));
-  Object.values(practiceTasks).forEach((task: any) => (task.skillIds || []).forEach((skillId: string) => addIndex(expectedIndexes.practice_tasks_by_skill, skillId, task.id)));
+  for (const skill of collectionValues(skills)) {
+    addIndex(expectedIndexes.skills_by_category, getString(skill.categoryId), getString(skill.id));
+  }
+
+  for (const careerPath of collectionValues(careerPaths)) {
+    addIndex(expectedIndexes.career_paths_by_category, getString(careerPath.categoryId), getString(careerPath.id));
+  }
+
+  for (const learningPath of collectionValues(learningPaths)) {
+    addIndex(expectedIndexes.learning_paths_by_career_path, getString(learningPath.careerPathId), getString(learningPath.id));
+  }
+
+  for (const resource of collectionValues(resources)) {
+    addIndex(expectedIndexes.resources_by_type, getString(resource.resourceType), getString(resource.id));
+    addIndex(expectedIndexes.resources_by_level, getString(resource.difficultyLevel), getString(resource.id));
+
+    for (const skillId of getStringArray(resource.skillIds)) {
+      addIndex(expectedIndexes.resources_by_skill, skillId, getString(resource.id));
+    }
+
+    for (const careerPathId of getStringArray(resource.careerPathIds)) {
+      addIndex(expectedIndexes.resources_by_career_path, careerPathId, getString(resource.id));
+    }
+
+    for (const academicCategoryId of getStringArray(resource.academicCategoryIds)) {
+      addIndex(expectedIndexes.resources_by_academic_category, academicCategoryId, getString(resource.id));
+    }
+  }
+
+  for (const project of collectionValues(projects)) {
+    for (const skillId of getStringArray(project.skillIds)) {
+      addIndex(expectedIndexes.projects_by_skill, skillId, getString(project.id));
+    }
+
+    for (const careerPathId of getStringArray(project.careerPathIds)) {
+      addIndex(expectedIndexes.projects_by_career_path, careerPathId, getString(project.id));
+    }
+  }
+
+  for (const quiz of collectionValues(quizzes)) {
+    for (const skillId of getStringArray(quiz.skillIds)) {
+      addIndex(expectedIndexes.quizzes_by_skill, skillId, getString(quiz.id));
+    }
+  }
+
+  for (const task of collectionValues(practiceTasks)) {
+    for (const skillId of getStringArray(task.skillIds)) {
+      addIndex(expectedIndexes.practice_tasks_by_skill, skillId, getString(task.id));
+    }
+  }
 
   for (const [indexName, expected] of Object.entries(expectedIndexes)) {
-    compareIndex(indexName, expected, indexes[indexName] || {}, errors);
+    compareIndex(indexName, expected, indexes[indexName], errors);
   }
 
   const expectedStats: Record<string, number> = {
-    resourcesCount: Object.keys(resources).length,
-    skillsCount: Object.keys(skills).length,
-    careerPathsCount: Object.keys(careerPaths).length,
-    academicCategoriesCount: Object.keys(academicCategories).length,
-    careerCategoriesCount: Object.keys(careerCategories).length,
-    skillCategoriesCount: Object.keys(skillCategories).length,
+    resourcesCount: objectCount(resources),
+    skillsCount: objectCount(skills),
+    careerPathsCount: objectCount(careerPaths),
+    academicCategoriesCount: objectCount(academicCategories),
+    careerCategoriesCount: objectCount(careerCategories),
+    skillCategoriesCount: objectCount(skillCategories),
   };
 
   for (const [field, expected] of Object.entries(expectedStats)) {
-    if (stats[field] !== expected) errors.push(`Stats ${field} (${stats[field]}) does not match actual count (${expected})`);
+    if (stats[field] !== expected) {
+      errors.push(`Stats ${field} (${String(stats[field])}) does not match actual count (${expected})`);
+    }
   }
 
   const skillResourceCoverage = new Set<string>();
-  Object.values(resources).forEach((resource: any) => (resource.skillIds || []).forEach((skillId: string) => skillResourceCoverage.add(skillId)));
-  Object.keys(skills).forEach((skillId) => {
-    if (!skillResourceCoverage.has(skillId)) errors.push(`Skill ${skillId} has no resource coverage`);
-  });
 
-  Object.keys(careerPaths).forEach((careerPathId) => {
-    if (!careerPathSkills[careerPathId]) errors.push(`Career path ${careerPathId} has no career_path_skills relation`);
-    const hasLearningPath = Object.values(learningPaths).some((lp: any) => lp.careerPathId === careerPathId);
-    if (!hasLearningPath) errors.push(`Career path ${careerPathId} has no learning path`);
-    const hasProject = Object.values(projects).some((project: any) => (project.careerPathIds || []).includes(careerPathId));
-    if (!hasProject) errors.push(`Career path ${careerPathId} has no portfolio project`);
-    const hasResource = Object.values(resources).some((resource: any) => (resource.careerPathIds || []).includes(careerPathId));
-    if (!hasResource) errors.push(`Career path ${careerPathId} has no resource coverage`);
-  });
+  for (const resource of collectionValues(resources)) {
+    for (const skillId of getStringArray(resource.skillIds)) {
+      skillResourceCoverage.add(skillId);
+    }
+  }
+
+  for (const skillId of Object.keys(skills)) {
+    if (!skillResourceCoverage.has(skillId)) {
+      errors.push(`Skill ${skillId} has no resource coverage`);
+    }
+  }
+
+  for (const careerPathId of Object.keys(careerPaths)) {
+    if (!careerPathSkills[careerPathId]) {
+      errors.push(`Career path ${careerPathId} has no career_path_skills relation`);
+    }
+
+    const hasLearningPath = collectionValues(learningPaths).some((learningPath) => {
+      return getString(learningPath.careerPathId) === careerPathId;
+    });
+
+    if (!hasLearningPath) {
+      errors.push(`Career path ${careerPathId} has no learning path`);
+    }
+
+    const hasProject = collectionValues(projects).some((project) => {
+      return getStringArray(project.careerPathIds).includes(careerPathId);
+    });
+
+    if (!hasProject) {
+      errors.push(`Career path ${careerPathId} has no portfolio project`);
+    }
+
+    const hasResource = collectionValues(resources).some((resource) => {
+      return getStringArray(resource.careerPathIds).includes(careerPathId);
+    });
+
+    if (!hasResource) {
+      errors.push(`Career path ${careerPathId} has no resource coverage`);
+    }
+  }
 
   return errors;
 }
