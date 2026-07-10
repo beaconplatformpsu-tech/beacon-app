@@ -75,6 +75,7 @@ export default function RegisterPage() {
         if (v.length < 2) return e.nameMin;
         if (v.length > 120) return e.nameMax;
         if (!NAME_RE.test(v)) return e.nameInvalid;
+        if (v.trim().split(/\s+/).length < 3) return (e as any).nameWords || "Full name must contain at least 3 words";
         return null;
       case "email":
         if (!v) return e.emailRequired;
@@ -176,7 +177,7 @@ export default function RegisterPage() {
 
       const timestamp = new Date().toISOString();
       await update(ref(db), {
-        [`users/${user.uid}/profile`]: {
+        [`user_private/${user.uid}/profile`]: {
           displayName: form.name.trim(),
           email: form.email.trim(),
           academicLevel: form.academicLevel,
@@ -184,12 +185,6 @@ export default function RegisterPage() {
           bio: form.bio.trim(),
           github: form.github.trim(),
           linkedin: form.linkedin.trim(),
-          createdAt: timestamp,
-        },
-        [`user_admin_meta/${user.uid}`]: {
-          role: "student",
-          accountStatus: "active",
-          emailVerified: false,
           createdAt: timestamp,
         }
       });

@@ -75,7 +75,7 @@ export default function RecommendationsPage() {
     try {
 
       // Fetch user context
-      const userSnap = await get(ref(db, `users/${session.uid}/profile`));
+      const userSnap = await get(ref(db, `user_private/${session.uid}/profile`));
       const skillsSnap = await get(ref(db, `user_private/${session.uid}/user_skills`));
       const tasksSnap = await get(ref(db, `user_private/${session.uid}/tasks`));
       

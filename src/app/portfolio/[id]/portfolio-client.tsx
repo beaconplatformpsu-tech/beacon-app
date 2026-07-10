@@ -32,7 +32,7 @@ export default function PortfolioClient({ id }: { id: string }) {
     const fetchPortfolio = async () => {
       try {
         // Fetch User Profile
-        const userSnap = await get(ref(db, `users/${id}/profile`));
+        const userSnap = await get(ref(db, `user_private/${id}/profile`));
         if (!userSnap.exists()) {
           setError(true);
           setLoading(false);
