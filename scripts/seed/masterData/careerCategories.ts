@@ -1,25 +1,106 @@
-export const getCareerCategories = (timestamp: string): Record<string, any> => {
-  const categories = [
-    { id: "ccat_frontend", title: "Frontend Development", slug: "frontend-development-careers", description: "Careers building user-facing web applications.", sortOrder: 1 },
-    { id: "ccat_backend", title: "Backend Development", slug: "backend-development-careers", description: "Careers building servers, APIs, and databases.", sortOrder: 2 },
-    { id: "ccat_fullstack", title: "Full Stack Development", slug: "full-stack-development-careers", description: "Careers spanning both frontend and backend.", sortOrder: 3 },
-    { id: "ccat_mobile", title: "Mobile Development", slug: "mobile-development-careers", description: "Careers building iOS and Android applications.", sortOrder: 4 },
-    { id: "ccat_data", title: "Data Science", slug: "data-science-careers", description: "Careers in data analysis, science, and engineering.", sortOrder: 5 },
-    { id: "ccat_ai", title: "AI and Machine Learning", slug: "ai-and-machine-learning-careers", description: "Careers building intelligent systems and models.", sortOrder: 6 },
-    { id: "ccat_cyber", title: "Cybersecurity", slug: "cybersecurity-careers", description: "Careers protecting digital assets and systems.", sortOrder: 7 },
-    { id: "ccat_cloud", title: "Cloud and DevOps", slug: "cloud-and-devops-careers", description: "Careers in cloud infrastructure and DevOps engineering.", sortOrder: 8 },
-    { id: "ccat_uiux", title: "UI/UX Design", slug: "ui-ux-design-careers", description: "Careers designing intuitive user interfaces and experiences.", sortOrder: 9 },
-    { id: "ccat_product", title: "Product and Project Management", slug: "product-and-project-management-careers", description: "Careers managing software products and teams.", sortOrder: 10 }
-  ];
+import { Category, ID } from "../../../src/types/database";
 
-  const updates: Record<string, any> = {};
-  categories.forEach(cat => {
-    updates[`public_content/career_categories/${cat.id}`] = {
-      ...cat,
-      isActive: true,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    };
-  });
-  return updates;
+const now = new Date().toISOString();
+
+export const careerCategories: Record<ID, Category> = {
+  "cat_career_tech": {
+    id: "cat_career_tech",
+    slug: "technology-and-software",
+    title: "Technology & Software",
+    description: "Careers involving software engineering, systems architecture, and application development.",
+    sortOrder: 10,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_data": {
+    id: "cat_career_data",
+    slug: "data-and-ai",
+    title: "Data & AI",
+    description: "Careers focusing on data analysis, machine learning, and artificial intelligence.",
+    sortOrder: 20,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_design": {
+    id: "cat_career_design",
+    slug: "design-and-creative",
+    title: "Design & Creative",
+    description: "Careers spanning UI/UX design, graphic arts, and creative direction.",
+    sortOrder: 30,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_business": {
+    id: "cat_career_business",
+    slug: "business-operations",
+    title: "Business & Operations",
+    description: "Management, strategy, human resources, and corporate operations.",
+    sortOrder: 40,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_marketing": {
+    id: "cat_career_marketing",
+    slug: "marketing-and-sales",
+    title: "Marketing & Sales",
+    description: "Digital marketing, brand management, sales, and public relations.",
+    sortOrder: 50,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_finance": {
+    id: "cat_career_finance",
+    slug: "finance-and-accounting",
+    title: "Finance & Accounting",
+    description: "Careers in corporate finance, investment banking, and accounting.",
+    sortOrder: 60,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_engineering": {
+    id: "cat_career_engineering",
+    slug: "traditional-engineering",
+    title: "Traditional Engineering",
+    description: "Mechanical, electrical, civil, and industrial engineering fields.",
+    sortOrder: 70,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_healthcare": {
+    id: "cat_career_healthcare",
+    slug: "healthcare-and-medicine",
+    title: "Healthcare & Medicine",
+    description: "Careers related to medical practice, nursing, and healthcare administration.",
+    sortOrder: 80,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_education": {
+    id: "cat_career_education",
+    slug: "education-and-training",
+    title: "Education & Training",
+    description: "Teaching, instructional design, and academic administration.",
+    sortOrder: 90,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_career_security": {
+    id: "cat_career_security",
+    slug: "security-and-compliance",
+    title: "Security & Compliance",
+    description: "Cybersecurity, risk management, and legal compliance.",
+    sortOrder: 100,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };

@@ -1,176 +1,389 @@
-export const getSkills = (timestamp: string): Record<string, any> => {
-  const skills = [
-    {
-      id: "skill_html", slug: "html", title: "HTML", name: "HTML",
-      description: "The standard markup language for creating web pages and web applications.",
-      categoryId: "cat_web_dev", difficultyLevel: "Beginner", sortOrder: 1,
-      tags: ["web", "markup", "frontend"], isActive: true
-    },
-    {
-      id: "skill_css", slug: "css", title: "CSS", name: "CSS",
-      description: "The stylesheet language used to style HTML documents for visual presentation.",
-      categoryId: "cat_web_dev", difficultyLevel: "Beginner", sortOrder: 2,
-      tags: ["web", "styling", "frontend"], isActive: true
-    },
-    {
-      id: "skill_javascript", slug: "javascript", title: "JavaScript", name: "JavaScript",
-      description: "The programming language of the web, enabling dynamic and interactive experiences.",
-      categoryId: "cat_programming", difficultyLevel: "Intermediate", sortOrder: 3,
-      tags: ["programming", "web", "scripting"], isActive: true
-    },
-    {
-      id: "skill_typescript", slug: "typescript", title: "TypeScript", name: "TypeScript",
-      description: "A strongly typed superset of JavaScript that compiles to plain JavaScript.",
-      categoryId: "cat_programming", difficultyLevel: "Intermediate", sortOrder: 4,
-      tags: ["programming", "web", "types"], isActive: true
-    },
-    {
-      id: "skill_react", slug: "react", title: "React", name: "React",
-      description: "A JavaScript library for building user interfaces with reusable components.",
-      categoryId: "cat_web_dev", difficultyLevel: "Intermediate", sortOrder: 5,
-      tags: ["frontend", "ui", "library"], isActive: true
-    },
-    {
-      id: "skill_nextjs", slug: "nextjs", title: "Next.js", name: "Next.js",
-      description: "A React framework for production — with hybrid static & server rendering.",
-      categoryId: "cat_web_dev", difficultyLevel: "Intermediate", sortOrder: 6,
-      tags: ["react", "ssr", "framework"], isActive: true
-    },
-    {
-      id: "skill_nodejs", slug: "nodejs", title: "Node.js", name: "Node.js",
-      description: "A JavaScript runtime built on Chrome's V8 engine for building server-side applications.",
-      categoryId: "cat_web_dev", difficultyLevel: "Intermediate", sortOrder: 7,
-      tags: ["backend", "javascript", "server"], isActive: true
-    },
-    {
-      id: "skill_python", slug: "python", title: "Python", name: "Python",
-      description: "A versatile, readable programming language popular in data science, AI, and web development.",
-      categoryId: "cat_programming", difficultyLevel: "Beginner", sortOrder: 8,
-      tags: ["programming", "data", "ai"], isActive: true
-    },
-    {
-      id: "skill_java", slug: "java", title: "Java", name: "Java",
-      description: "A class-based, object-oriented programming language widely used in enterprise and Android.",
-      categoryId: "cat_programming", difficultyLevel: "Intermediate", sortOrder: 9,
-      tags: ["programming", "enterprise", "oop"], isActive: true
-    },
-    {
-      id: "skill_sql", slug: "sql", title: "SQL", name: "SQL",
-      description: "Structured Query Language for managing and querying relational databases.",
-      categoryId: "cat_databases", difficultyLevel: "Beginner", sortOrder: 10,
-      tags: ["database", "query", "data"], isActive: true
-    },
-    {
-      id: "skill_git", slug: "git-github", title: "Git and GitHub", name: "Git and GitHub",
-      description: "Version control with Git and collaborative development using GitHub.",
-      categoryId: "cat_se", difficultyLevel: "Beginner", sortOrder: 11,
-      tags: ["version-control", "collaboration", "devtools"], isActive: true
-    },
-    {
-      id: "skill_rest_apis", slug: "rest-apis", title: "REST APIs", name: "REST APIs",
-      description: "Designing and consuming RESTful APIs for client-server communication.",
-      categoryId: "cat_web_dev", difficultyLevel: "Intermediate", sortOrder: 12,
-      tags: ["api", "backend", "web"], isActive: true
-    },
-    {
-      id: "skill_firebase", slug: "firebase", title: "Firebase", name: "Firebase",
-      description: "Google's platform for building mobile and web applications with a suite of cloud services.",
-      categoryId: "cat_cloud", difficultyLevel: "Beginner", sortOrder: 13,
-      tags: ["cloud", "backend", "baas"], isActive: true
-    },
-    {
-      id: "skill_supabase", slug: "supabase", title: "Supabase", name: "Supabase",
-      description: "An open-source Firebase alternative with PostgreSQL, auth, and real-time subscriptions.",
-      categoryId: "cat_databases", difficultyLevel: "Beginner", sortOrder: 14,
-      tags: ["database", "baas", "postgres"], isActive: true
-    },
-    {
-      id: "skill_postgresql", slug: "postgresql", title: "PostgreSQL", name: "PostgreSQL",
-      description: "A powerful open-source relational database system with robust features.",
-      categoryId: "cat_databases", difficultyLevel: "Intermediate", sortOrder: 15,
-      tags: ["database", "sql", "relational"], isActive: true
-    },
-    {
-      id: "skill_ui_ux", slug: "ui-ux-basics", title: "UI/UX Basics", name: "UI/UX Basics",
-      description: "Principles of user interface and user experience design for digital products.",
-      categoryId: "cat_professional", difficultyLevel: "Beginner", sortOrder: 16,
-      tags: ["design", "ux", "ui"], isActive: true
-    },
-    {
-      id: "skill_data_analysis", slug: "data-analysis", title: "Data Analysis", name: "Data Analysis",
-      description: "The process of inspecting, cleaning, and modeling data to discover insights.",
-      categoryId: "cat_data_science", difficultyLevel: "Intermediate", sortOrder: 17,
-      tags: ["data", "analysis", "statistics"], isActive: true
-    },
-    {
-      id: "skill_ml_basics", slug: "machine-learning-basics", title: "Machine Learning Basics", name: "Machine Learning Basics",
-      description: "Foundational concepts in machine learning including algorithms and model evaluation.",
-      categoryId: "cat_ai", difficultyLevel: "Intermediate", sortOrder: 18,
-      tags: ["ai", "ml", "data"], isActive: true
-    },
-    {
-      id: "skill_cyber_fundamentals", slug: "cybersecurity-fundamentals", title: "Cybersecurity Fundamentals", name: "Cybersecurity Fundamentals",
-      description: "Core concepts of protecting systems, networks, and programs from digital attacks.",
-      categoryId: "cat_cybersecurity", difficultyLevel: "Beginner", sortOrder: 19,
-      tags: ["security", "networking", "defense"], isActive: true
-    },
-    {
-      id: "skill_linux", slug: "linux-basics", title: "Linux Basics", name: "Linux Basics",
-      description: "Operating the Linux command line, file system, and system administration.",
-      categoryId: "cat_se", difficultyLevel: "Beginner", sortOrder: 20,
-      tags: ["os", "command-line", "server"], isActive: true
-    },
-    {
-      id: "skill_cloud_fundamentals", slug: "cloud-fundamentals", title: "Cloud Fundamentals", name: "Cloud Fundamentals",
-      description: "Core concepts of cloud computing including IaaS, PaaS, SaaS, and cloud architecture.",
-      categoryId: "cat_cloud", difficultyLevel: "Beginner", sortOrder: 21,
-      tags: ["cloud", "aws", "azure", "gcp"], isActive: true
-    },
-    {
-      id: "skill_docker", slug: "docker-basics", title: "Docker Basics", name: "Docker Basics",
-      description: "Containerization with Docker for consistent development and deployment environments.",
-      categoryId: "cat_cloud", difficultyLevel: "Intermediate", sortOrder: 22,
-      tags: ["containers", "devops", "deployment"], isActive: true
-    },
-    {
-      id: "skill_testing", slug: "testing-basics", title: "Software Testing", name: "Testing Basics",
-      description: "Principles of software testing including unit, integration, and end-to-end testing.",
-      categoryId: "cat_se", difficultyLevel: "Intermediate", sortOrder: 23,
-      tags: ["qa", "testing", "quality"], isActive: true
-    },
-    {
-      id: "skill_technical_writing", slug: "technical-writing", title: "Technical Writing", name: "Technical Writing",
-      description: "Communicating complex technical information clearly through documentation and reports.",
-      categoryId: "cat_professional", difficultyLevel: "Beginner", sortOrder: 24,
-      tags: ["communication", "documentation", "writing"], isActive: true
-    },
-    {
-      id: "skill_problem_solving", slug: "problem-solving", title: "Problem Solving", name: "Problem Solving",
-      description: "Analytical thinking and systematic approaches to solving technical and logical problems.",
-      categoryId: "cat_professional", difficultyLevel: "Beginner", sortOrder: 25,
-      tags: ["logic", "algorithms", "thinking"], isActive: true
-    },
-    {
-      id: "skill_aws", slug: "aws", title: "AWS", name: "AWS",
-      description: "Amazon Web Services — the world's most comprehensive and broadly adopted cloud platform.",
-      categoryId: "cat_cloud", difficultyLevel: "Intermediate", sortOrder: 26,
-      tags: ["cloud", "amazon", "infrastructure"], isActive: true
-    },
-    {
-      id: "skill_kotlin", slug: "kotlin", title: "Kotlin", name: "Kotlin",
-      description: "A modern, concise programming language that runs on the JVM, officially endorsed for Android.",
-      categoryId: "cat_programming", difficultyLevel: "Intermediate", sortOrder: 27,
-      tags: ["android", "mobile", "jvm"], isActive: true
-    }
-  ];
+import { Skill, ID } from "../../../src/types/database";
 
-  const updates: Record<string, any> = {};
-  skills.forEach((skill) => {
-    updates[`public_content/skills/${skill.id}`] = {
-      ...skill,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    };
-  });
-  return updates;
+const now = new Date().toISOString();
+
+export const skills: Record<ID, Skill> = {
+  // Programming & Development
+  "skill_javascript": {
+    id: "skill_javascript",
+    slug: "javascript",
+    title: "JavaScript",
+    description: "The core programming language of the web, used for frontend and backend development.",
+    categoryId: "cat_skill_programming",
+    difficultyLevel: "intermediate",
+    tags: ["web", "frontend", "backend", "fullstack"],
+    sortOrder: 10,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_typescript": {
+    id: "skill_typescript",
+    slug: "typescript",
+    title: "TypeScript",
+    description: "A strongly typed programming language that builds on JavaScript.",
+    categoryId: "cat_skill_programming",
+    difficultyLevel: "advanced",
+    tags: ["web", "frontend", "typing", "javascript"],
+    sortOrder: 20,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_react": {
+    id: "skill_react",
+    slug: "react",
+    title: "React",
+    description: "A JavaScript library for building user interfaces based on components.",
+    categoryId: "cat_skill_programming",
+    difficultyLevel: "intermediate",
+    tags: ["frontend", "ui", "framework"],
+    sortOrder: 30,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_nextjs": {
+    id: "skill_nextjs",
+    slug: "next-js",
+    title: "Next.js",
+    description: "The React framework for the web, providing SSR, SSG, and robust routing.",
+    categoryId: "cat_skill_programming",
+    difficultyLevel: "advanced",
+    tags: ["frontend", "framework", "ssr"],
+    sortOrder: 40,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_python": {
+    id: "skill_python",
+    slug: "python",
+    title: "Python",
+    description: "A versatile language heavily used in data science, AI, and backend scripting.",
+    categoryId: "cat_skill_programming",
+    difficultyLevel: "beginner",
+    tags: ["backend", "data", "scripting"],
+    sortOrder: 50,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  
+  // Data & Analytics
+  "skill_sql": {
+    id: "skill_sql",
+    slug: "sql",
+    title: "SQL",
+    description: "Standard language for querying and managing relational databases.",
+    categoryId: "cat_skill_data",
+    difficultyLevel: "intermediate",
+    tags: ["database", "analytics", "backend"],
+    sortOrder: 60,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_pandas": {
+    id: "skill_pandas",
+    slug: "pandas",
+    title: "Pandas (Python)",
+    description: "Data manipulation and analysis library for Python.",
+    categoryId: "cat_skill_data",
+    difficultyLevel: "intermediate",
+    tags: ["data", "python", "analysis"],
+    sortOrder: 70,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_machine_learning": {
+    id: "skill_machine_learning",
+    slug: "machine-learning",
+    title: "Machine Learning Concepts",
+    description: "Fundamentals of supervised, unsupervised learning, and model evaluation.",
+    categoryId: "cat_skill_data",
+    difficultyLevel: "advanced",
+    tags: ["ai", "data science", "modeling"],
+    sortOrder: 80,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_data_visualization": {
+    id: "skill_data_visualization",
+    slug: "data-visualization",
+    title: "Data Visualization",
+    description: "Creating insightful charts and dashboards using tools like Tableau or libraries like D3.js.",
+    categoryId: "cat_skill_data",
+    difficultyLevel: "intermediate",
+    tags: ["analytics", "design", "reporting"],
+    sortOrder: 90,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Design & UI/UX
+  "skill_figma": {
+    id: "skill_figma",
+    slug: "figma",
+    title: "Figma",
+    description: "Collaborative interface design tool for creating UI/UX prototypes.",
+    categoryId: "cat_skill_design",
+    difficultyLevel: "intermediate",
+    tags: ["design", "ui", "ux", "prototyping"],
+    sortOrder: 100,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_user_research": {
+    id: "skill_user_research",
+    slug: "user-research",
+    title: "User Research",
+    description: "Techniques for understanding user behaviors, needs, and motivations through observation techniques.",
+    categoryId: "cat_skill_design",
+    difficultyLevel: "intermediate",
+    tags: ["ux", "research", "psychology"],
+    sortOrder: 110,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_wireframing": {
+    id: "skill_wireframing",
+    slug: "wireframing",
+    title: "Wireframing",
+    description: "Creating low-fidelity structural blueprints for web and mobile interfaces.",
+    categoryId: "cat_skill_design",
+    difficultyLevel: "beginner",
+    tags: ["ui", "design", "planning"],
+    sortOrder: 120,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Cloud & DevOps
+  "skill_git": {
+    id: "skill_git",
+    slug: "git",
+    title: "Git Version Control",
+    description: "Tracking changes in source code during software development.",
+    categoryId: "cat_skill_cloud",
+    difficultyLevel: "beginner",
+    tags: ["devops", "collaboration", "tool"],
+    sortOrder: 130,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_docker": {
+    id: "skill_docker",
+    slug: "docker",
+    title: "Docker",
+    description: "OS-level virtualization to deliver software in packages called containers.",
+    categoryId: "cat_skill_cloud",
+    difficultyLevel: "intermediate",
+    tags: ["devops", "cloud", "containers"],
+    sortOrder: 140,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_aws": {
+    id: "skill_aws",
+    slug: "aws",
+    title: "Amazon Web Services (AWS)",
+    description: "Comprehensive and widely adopted cloud computing platform.",
+    categoryId: "cat_skill_cloud",
+    difficultyLevel: "advanced",
+    tags: ["cloud", "infrastructure", "devops"],
+    sortOrder: 150,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_ci_cd": {
+    id: "skill_ci_cd",
+    slug: "ci-cd",
+    title: "CI/CD Pipelines",
+    description: "Continuous integration and continuous deployment automation.",
+    categoryId: "cat_skill_cloud",
+    difficultyLevel: "intermediate",
+    tags: ["devops", "automation"],
+    sortOrder: 160,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Security
+  "skill_web_security": {
+    id: "skill_web_security",
+    slug: "web-security",
+    title: "Web Security Fundamentals",
+    description: "Understanding vulnerabilities like XSS, CSRF, and SQL Injection.",
+    categoryId: "cat_skill_security",
+    difficultyLevel: "intermediate",
+    tags: ["security", "web", "hacking"],
+    sortOrder: 170,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_network_security": {
+    id: "skill_network_security",
+    slug: "network-security",
+    title: "Network Security",
+    description: "Protecting underlying networking infrastructure from unauthorized access.",
+    categoryId: "cat_skill_security",
+    difficultyLevel: "advanced",
+    tags: ["security", "infrastructure"],
+    sortOrder: 180,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Product Management
+  "skill_agile": {
+    id: "skill_agile",
+    slug: "agile-methodologies",
+    title: "Agile Methodologies",
+    description: "Iterative approach to software delivery, focusing on collaboration and speed.",
+    categoryId: "cat_skill_product",
+    difficultyLevel: "beginner",
+    tags: ["management", "scrum", "product"],
+    sortOrder: 190,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_product_strategy": {
+    id: "skill_product_strategy",
+    slug: "product-strategy",
+    title: "Product Strategy",
+    description: "Defining what to build, why to build it, and for whom.",
+    categoryId: "cat_skill_product",
+    difficultyLevel: "advanced",
+    tags: ["business", "planning", "strategy"],
+    sortOrder: 200,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Soft Skills
+  "skill_communication": {
+    id: "skill_communication",
+    slug: "effective-communication",
+    title: "Effective Communication",
+    description: "Conveying ideas clearly and listening actively in a professional setting.",
+    categoryId: "cat_skill_soft",
+    difficultyLevel: "all_levels",
+    tags: ["soft skill", "interpersonal"],
+    sortOrder: 210,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_leadership": {
+    id: "skill_leadership",
+    slug: "leadership",
+    title: "Leadership",
+    description: "Guiding and inspiring teams toward a common goal.",
+    categoryId: "cat_skill_soft",
+    difficultyLevel: "advanced",
+    tags: ["soft skill", "management"],
+    sortOrder: 220,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Business & Finance
+  "skill_financial_analysis": {
+    id: "skill_financial_analysis",
+    slug: "financial-analysis",
+    title: "Financial Analysis",
+    description: "Evaluating businesses, projects, and budgets to determine performance.",
+    categoryId: "cat_skill_business",
+    difficultyLevel: "advanced",
+    tags: ["finance", "business", "analytics"],
+    sortOrder: 230,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_project_management": {
+    id: "skill_project_management",
+    slug: "project-management",
+    title: "Project Management",
+    description: "Leading the work of a team to achieve all project goals within constraints.",
+    categoryId: "cat_skill_business",
+    difficultyLevel: "intermediate",
+    tags: ["management", "planning"],
+    sortOrder: 240,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // Digital Marketing
+  "skill_seo": {
+    id: "skill_seo",
+    slug: "seo",
+    title: "Search Engine Optimization (SEO)",
+    description: "Improving the quality and quantity of website traffic from search engines.",
+    categoryId: "cat_skill_marketing",
+    difficultyLevel: "intermediate",
+    tags: ["marketing", "web", "growth"],
+    sortOrder: 250,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_content_marketing": {
+    id: "skill_content_marketing",
+    slug: "content-marketing",
+    title: "Content Marketing",
+    description: "Creating and distributing valuable, relevant, and consistent content.",
+    categoryId: "cat_skill_marketing",
+    difficultyLevel: "beginner",
+    tags: ["marketing", "writing"],
+    sortOrder: 260,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+
+  // AI & Advanced
+  "skill_deep_learning": {
+    id: "skill_deep_learning",
+    slug: "deep-learning",
+    title: "Deep Learning",
+    description: "Advanced machine learning based on artificial neural networks.",
+    categoryId: "cat_skill_ai",
+    difficultyLevel: "expert",
+    tags: ["ai", "data science", "advanced"],
+    sortOrder: 270,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "skill_prompt_engineering": {
+    id: "skill_prompt_engineering",
+    slug: "prompt-engineering",
+    title: "Prompt Engineering",
+    description: "Designing and optimizing prompts to interact with LLMs effectively.",
+    categoryId: "cat_skill_ai",
+    difficultyLevel: "intermediate",
+    tags: ["ai", "generative ai", "communication"],
+    sortOrder: 280,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };

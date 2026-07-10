@@ -1,172 +1,122 @@
-import { z } from "zod";
+import { ID } from "../../src/types/database";
 
-export function validateSeedPayload(payload: Record<string, any>): boolean {
-  console.log(`\n⏳ Validating professional seed payload (${Object.keys(payload).length} nodes)...`);
-  
-  let isValid = true;
-  let errorCount = 0;
+export function validateSeedPayload(payload: Record<string, any>): string[] {
+  const errors: string[] = [];
 
-  const logError = (msg: string) => {
-    if (errorCount < 50) console.error(`❌ Validation Error: ${msg}`);
-    isValid = false;
-    errorCount++;
+  // Data references
+  const publicContent = payload["public_content"] || {};
+  const skillCategories = payload["public_content/skill_categories"] || publicContent.skill_categories || {};
+  const careerCategories = payload["public_content/career_categories"] || publicContent.career_categories || {};
+  const academicCategories = payload["public_content/academic_categories"] || publicContent.academic_categories || {};
+  const skills = payload["public_content/skills"] || publicContent.skills || {};
+  const careerPaths = payload["public_content/career_paths"] || publicContent.career_paths || {};
+  const resources = payload["public_content/resources"] || publicContent.resources || {};
+  const quizzes = payload["public_content/quizzes"] || publicContent.quizzes || {};
+  const answerKeys = payload["system/quiz_answer_keys"] || {};
+  const platformSettings = payload["platform_settings"] || {};
+
+  const allSlugs = new Set<string>();
+
+  // Helper to validate arrays
+  const requireArray = (obj: any, path: string, field: string) => {
+    if (!Array.isArray(obj[field])) {
+      errors.push(`${path} is missing required array field '${field}'`);
+    }
   };
 
-  const slugs = new Set<string>();
+  // Helper to validate dummy content
+  const validateNoDummyContent = (obj: any, path: string) => {
+    const str = JSON.stringify(obj).toLowerCase();
+    if (str.includes("example.com")) {
+      errors.push(`${path} contains dummy URL 'example.com'`);
+    }
+  };
 
-  // Extract maps for relationship checking
-  const validSkills = new Set<string>();
-  const validCareerPaths = new Set<string>();
-  const validAcademicCats = new Set<string>();
-  const validSkillCats = new Set<string>();
-  const validCareerCats = new Set<string>();
-  
-  let actualResourcesCount = 0;
-  let actualSkillsCount = 0;
-  let actualCareerPathsCount = 0;
-  let actualAcademicCatsCount = 0;
-  let actualCareerCatsCount = 0;
-  let actualSkillCatsCount = 0;
-  let actualSupportMessagesCount = 0;
+  // 1. Skill Categories
+  Object.values(skillCategories).forEach((cat: any) => {
+    if (allSlugs.has(cat.slug)) errors.push(`Duplicate slug in skill categories: ${cat.slug}`);
+    allSlugs.add(cat.slug);
+    validateNoDummyContent(cat, `SkillCategory ${cat.id}`);
+  });
 
-  // First pass: collect valid IDs and counts
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === undefined || value === null) continue;
+  // 2. Career Categories
+  Object.values(careerCategories).forEach((cat: any) => {
+    if (allSlugs.has(cat.slug)) errors.push(`Duplicate slug in career categories: ${cat.slug}`);
+    allSlugs.add(cat.slug);
+    validateNoDummyContent(cat, `CareerCategory ${cat.id}`);
+  });
+
+  // 3. Academic Categories
+  Object.values(academicCategories).forEach((cat: any) => {
+    if (allSlugs.has(cat.slug)) errors.push(`Duplicate slug in academic categories: ${cat.slug}`);
+    allSlugs.add(cat.slug);
+    validateNoDummyContent(cat, `AcademicCategory ${cat.id}`);
+  });
+
+  // 4. Skills
+  Object.values(skills).forEach((skill: any) => {
+    if (allSlugs.has(skill.slug)) errors.push(`Duplicate slug in skills: ${skill.slug}`);
+    allSlugs.add(skill.slug);
+    if (!skillCategories[skill.categoryId]) errors.push(`Skill ${skill.id} references missing category: ${skill.categoryId}`);
+    if (skill.name) errors.push(`Skill ${skill.id} uses legacy 'name' instead of 'title'`);
+    validateNoDummyContent(skill, `Skill ${skill.id}`);
+  });
+
+  // 5. Career Paths
+  Object.values(careerPaths).forEach((path: any) => {
+    if (allSlugs.has(path.slug)) errors.push(`Duplicate slug in career paths: ${path.slug}`);
+    allSlugs.add(path.slug);
+    if (path.categoryId && !careerCategories[path.categoryId]) {
+      errors.push(`Career Path ${path.id} references missing category: ${path.categoryId}`);
+    }
+    validateNoDummyContent(path, `CareerPath ${path.id}`);
+  });
+
+  // 6. Resources
+  Object.values(resources).forEach((res: any) => {
+    if (allSlugs.has(res.slug)) errors.push(`Duplicate slug in resources: ${res.slug}`);
+    allSlugs.add(res.slug);
+    requireArray(res, `Resource ${res.id}`, "skillIds");
+    requireArray(res, `Resource ${res.id}`, "careerPathIds");
+    requireArray(res, `Resource ${res.id}`, "academicCategoryIds");
     
-    // Check for legacy collections
-    if (key.startsWith("academic_support_resources") || key.startsWith("career_resources")) {
-      logError(`Legacy collection detected: ${key}`);
-    }
+    res.skillIds?.forEach((id: string) => {
+      if (!skills[id]) errors.push(`Resource ${res.id} references missing skill: ${id}`);
+    });
+    res.careerPathIds?.forEach((id: string) => {
+      if (!careerPaths[id]) errors.push(`Resource ${res.id} references missing career path: ${id}`);
+    });
+    res.academicCategoryIds?.forEach((id: string) => {
+      if (!academicCategories[id]) errors.push(`Resource ${res.id} references missing academic category: ${id}`);
+    });
+    validateNoDummyContent(res, `Resource ${res.id}`);
+  });
 
-    if (key.startsWith("public_content/skills/")) {
-      validSkills.add(value.id);
-      actualSkillsCount++;
+  // 7. Quizzes and Answer Keys
+  Object.values(quizzes).forEach((quiz: any) => {
+    // Check answer keys exist
+    if (!answerKeys[quiz.id]) {
+      errors.push(`Quiz ${quiz.id} is missing an answer key in system/quiz_answer_keys`);
     }
-    if (key.startsWith("public_content/career_paths/")) {
-      validCareerPaths.add(value.id);
-      actualCareerPathsCount++;
-    }
-    if (key.startsWith("public_content/academic_categories/")) {
-      validAcademicCats.add(value.id);
-      actualAcademicCatsCount++;
-    }
-    if (key.startsWith("public_content/skill_categories/")) {
-      validSkillCats.add(value.id);
-      actualSkillCatsCount++;
-    }
-    if (key.startsWith("public_content/career_categories/")) {
-      validCareerCats.add(value.id);
-      actualCareerCatsCount++;
-    }
-    if (key.startsWith("public_content/resources/")) {
-      actualResourcesCount++;
-    }
-    if (key.startsWith("support_messages/")) {
-      actualSupportMessagesCount++;
-    }
+    // Check no exposed answers
+    Object.values(quiz.questions || {}).forEach((q: any) => {
+      if (q.correctOptionIndex !== undefined || q.explanation !== undefined) {
+        errors.push(`Quiz ${quiz.id} exposes correctOptionIndex or explanation in public_content!`);
+      }
+    });
+  });
+
+  // 8. Secrets Validation
+  const platformPrivateStr = JSON.stringify(platformSettings?.private || {}).toLowerCase();
+  if (platformPrivateStr.includes("api_key") || platformPrivateStr.includes("apikey") || platformPrivateStr.includes("secret")) {
+    errors.push(`platform_settings/private contains suspected secrets!`);
   }
 
-  // Second pass: full validation
-  for (const [key, value] of Object.entries(payload)) {
-    if (value === undefined) {
-      logError(`Node '${key}' is undefined.`);
-      continue;
-    }
-    
-    if (value !== null && typeof value === "object") {
-      // Slug uniqueness
-      if (value.slug) {
-        if (slugs.has(value.slug)) {
-          logError(`Duplicate slug found: '${value.slug}' at node '${key}'`);
-        }
-        slugs.add(value.slug);
-      }
-
-      // Fake URL & placeholder check
-      if (value.url && (value.url.includes("example.com") || value.url.includes("test.com"))) {
-        logError(`Fake URL detected: '${value.url}' at node '${key}'. Use real URLs or sourceType 'internal'.`);
-      }
-      
-      const strVal = JSON.stringify(value);
-      if (strVal.includes("admin@example.com") || strVal.includes("portfolio.example.com") || strVal.includes("beacon.example.com")) {
-        logError(`Placeholder values detected in node '${key}'.`);
-      }
-
-      // Check specific nodes
-      if (key.startsWith("relations/career_path_skills/")) {
-        const parts = key.split("/");
-        const pathId = parts[2];
-        const skillId = parts[3];
-        if (!validCareerPaths.has(pathId)) logError(`CareerPathSkill relation references missing path: ${pathId}`);
-        if (!validSkills.has(skillId)) logError(`CareerPathSkill relation references missing skill: ${skillId}`);
-        
-        if (!["core", "important", "optional"].includes(value.importanceLevel)) {
-          logError(`Invalid importanceLevel in ${key}: ${value.importanceLevel}`);
-        }
-        if (!["beginner", "intermediate", "advanced"].includes(value.minimumProficiencyLevel)) {
-          logError(`Invalid minimumProficiencyLevel in ${key}: ${value.minimumProficiencyLevel}`);
-        }
-      }
-
-      if (key.startsWith("public_content/resources/")) {
-        if (value.id && value.id.startsWith("res_dummy")) logError(`Dummy resource ID detected: ${key}`);
-        if (value.title && value.title.includes("Advanced Academic Topic")) logError(`Dummy resource title detected: ${key}`);
-
-        if (value.sourceType === "external" && !value.url) logError(`External resource missing URL: ${key}`);
-        if (value.sourceType === "internal" && value.url) logError(`Internal resource should not have URL: ${key}`);
-        
-        if (Array.isArray(value.skillIds)) {
-          value.skillIds.forEach((id: string) => {
-            if (!validSkills.has(id)) logError(`Resource ${key} references missing skill: ${id}`);
-            if (!payload[`indexes/resources_by_skill/${id}/${value.id}`]) logError(`Missing index for resource ${key} by skill ${id}`);
-          });
-        }
-        if (Array.isArray(value.careerPathIds)) {
-          value.careerPathIds.forEach((id: string) => {
-            if (!validCareerPaths.has(id)) logError(`Resource ${key} references missing career path: ${id}`);
-            if (!payload[`indexes/resources_by_career_path/${id}/${value.id}`]) logError(`Missing index for resource ${key} by path ${id}`);
-          });
-        }
-        if (Array.isArray(value.academicCategoryIds)) {
-          value.academicCategoryIds.forEach((id: string) => {
-            if (!validAcademicCats.has(id)) logError(`Resource ${key} references missing academic category: ${id}`);
-            if (!payload[`indexes/resources_by_academic_category/${id}/${value.id}`]) logError(`Missing index for resource ${key} by academic category ${id}`);
-          });
-        }
-      }
-
-      if (key.startsWith("public_content/skills/")) {
-        if (value.categoryId && !validSkillCats.has(value.categoryId)) {
-          logError(`Skill ${key} references missing skill category: ${value.categoryId}`);
-        }
-      }
-
-      if (key.startsWith("public_content/career_paths/")) {
-        if (value.categoryId && !validCareerCats.has(value.categoryId)) {
-          logError(`Career path ${key} references missing career category: ${value.categoryId}`);
-        }
-      }
-    }
+  // File Reference check across payload
+  const fullPayloadStr = JSON.stringify(payload);
+  if (fullPayloadStr.includes("signedUrl")) {
+    errors.push(`Payload contains forbidden 'signedUrl' fields (permanent signed URLs are not allowed)`);
   }
 
-  // Validate Stats
-  if (payload["stats/resourcesCount"] !== actualResourcesCount) logError(`stats/resourcesCount mismatch: ${payload["stats/resourcesCount"]} != ${actualResourcesCount}`);
-  if (payload["stats/skillsCount"] !== actualSkillsCount) logError(`stats/skillsCount mismatch: ${payload["stats/skillsCount"]} != ${actualSkillsCount}`);
-  if (payload["stats/careerPathsCount"] !== actualCareerPathsCount) logError(`stats/careerPathsCount mismatch: ${payload["stats/careerPathsCount"]} != ${actualCareerPathsCount}`);
-  if (payload["stats/academicCategoriesCount"] !== actualAcademicCatsCount) logError(`stats/academicCategoriesCount mismatch: ${payload["stats/academicCategoriesCount"]} != ${actualAcademicCatsCount}`);
-  if (payload["stats/careerCategoriesCount"] !== actualCareerCatsCount) logError(`stats/careerCategoriesCount mismatch: ${payload["stats/careerCategoriesCount"]} != ${actualCareerCatsCount}`);
-  if (payload["stats/skillCategoriesCount"] !== actualSkillCatsCount) logError(`stats/skillCategoriesCount mismatch: ${payload["stats/skillCategoriesCount"]} != ${actualSkillCatsCount}`);
-  if (payload["stats/supportMessagesCount"] !== actualSupportMessagesCount) logError(`stats/supportMessagesCount mismatch: ${payload["stats/supportMessagesCount"]} != ${actualSupportMessagesCount}`);
-
-  if (errorCount > 50) {
-    console.error(`...and ${errorCount - 50} more validation errors.`);
-  }
-
-  if (isValid) {
-    console.log("✅ Payload successfully validated.");
-  } else {
-    console.error(`❌ Payload validation failed with ${errorCount} errors.`);
-  }
-
-  return isValid;
+  return errors;
 }

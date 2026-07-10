@@ -1,27 +1,106 @@
-export const getAcademicCategories = (timestamp: string): Record<string, any> => {
-  const categories = [
-    { id: "acat_study", title: "Study Planning", slug: "study-planning", description: "Resources for organizing study sessions and academic planning.", sortOrder: 1 },
-    { id: "acat_exam", title: "Exam Preparation", slug: "exam-preparation", description: "Strategies and resources for preparing for technical exams.", sortOrder: 2 },
-    { id: "acat_research", title: "Research Methodology", slug: "research-methodology", description: "Guides for conducting academic research and literature reviews.", sortOrder: 3 },
-    { id: "acat_report", title: "Report Writing", slug: "report-writing", description: "Templates and guidance for academic and technical report writing.", sortOrder: 4 },
-    { id: "acat_presentation", title: "Presentation Skills", slug: "presentation-skills", description: "Resources to improve technical and academic presentation skills.", sortOrder: 5 },
-    { id: "acat_graduation", title: "Graduation Project", slug: "graduation-project", description: "Guides for planning and executing graduation projects.", sortOrder: 6 },
-    { id: "acat_internship", title: "Internship Preparation", slug: "internship-preparation", description: "Resources to prepare for and find internship opportunities.", sortOrder: 7 },
-    { id: "acat_cv", title: "CV and Resume", slug: "cv-and-resume", description: "Templates and best practices for computer science CVs.", sortOrder: 8 },
-    { id: "acat_linkedin", title: "LinkedIn Profile", slug: "linkedin-profile", description: "Guides for building a strong professional LinkedIn presence.", sortOrder: 9 },
-    { id: "acat_github", title: "GitHub Portfolio", slug: "github-portfolio", description: "Resources for creating a standout GitHub developer portfolio.", sortOrder: 10 },
-    { id: "acat_time", title: "Time Management", slug: "time-management", description: "Strategies for managing time effectively during studies.", sortOrder: 11 },
-    { id: "acat_academic_writing", title: "Academic Writing", slug: "academic-writing", description: "Guides for writing academic papers, theses, and dissertations.", sortOrder: 12 }
-  ];
+import { Category, ID } from "../../../src/types/database";
 
-  const updates: Record<string, any> = {};
-  categories.forEach(cat => {
-    updates[`public_content/academic_categories/${cat.id}`] = {
-      ...cat,
-      isActive: true,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    };
-  });
-  return updates;
+const now = new Date().toISOString();
+
+export const academicCategories: Record<ID, Category> = {
+  "cat_academic_cs": {
+    id: "cat_academic_cs",
+    slug: "computer-science",
+    title: "Computer Science & IT",
+    description: "Studies relating to algorithms, systems, networks, and computing.",
+    sortOrder: 10,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_math": {
+    id: "cat_academic_math",
+    slug: "mathematics-and-statistics",
+    title: "Mathematics & Statistics",
+    description: "Applied math, pure math, statistics, and probability.",
+    sortOrder: 20,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_engineering": {
+    id: "cat_academic_engineering",
+    slug: "engineering",
+    title: "Engineering",
+    description: "Mechanical, electrical, civil, and industrial engineering.",
+    sortOrder: 30,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_business": {
+    id: "cat_academic_business",
+    slug: "business-administration",
+    title: "Business Administration",
+    description: "Finance, accounting, management, and marketing studies.",
+    sortOrder: 40,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_design": {
+    id: "cat_academic_design",
+    slug: "design-and-arts",
+    title: "Design & Arts",
+    description: "Graphic design, fine arts, industrial design, and multimedia.",
+    sortOrder: 50,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_science": {
+    id: "cat_academic_science",
+    slug: "natural-sciences",
+    title: "Natural Sciences",
+    description: "Physics, chemistry, biology, and environmental sciences.",
+    sortOrder: 60,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_humanities": {
+    id: "cat_academic_humanities",
+    slug: "humanities-and-social-sciences",
+    title: "Humanities & Social Sciences",
+    description: "Psychology, sociology, history, literature, and philosophy.",
+    sortOrder: 70,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_medicine": {
+    id: "cat_academic_medicine",
+    slug: "medicine-and-health",
+    title: "Medicine & Health",
+    description: "Pre-med, nursing, public health, and biomedical sciences.",
+    sortOrder: 80,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_law": {
+    id: "cat_academic_law",
+    slug: "law-and-legal-studies",
+    title: "Law & Legal Studies",
+    description: "Corporate law, criminal justice, and international relations.",
+    sortOrder: 90,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_academic_education": {
+    id: "cat_academic_education",
+    slug: "education",
+    title: "Education",
+    description: "Pedagogy, early childhood education, and special education.",
+    sortOrder: 100,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };

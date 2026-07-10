@@ -1,14 +1,4 @@
-/**
- * Beacon Platform - Professional Firebase Realtime Database Architecture
- * 
- * This file contains the authoritative TypeScript interfaces for the entire
- * Realtime Database. It defines the exact JSON structure as stored in Firebase.
- */
-
-// ─────────────────────────────────────────────
-// Shared Utility Types
-// ─────────────────────────────────────────────
-export type ISOString = string; // e.g., "2026-07-10T12:00:00Z"
+export type ISOString = string;
 export type UID = string;
 export type ID = string;
 
@@ -19,10 +9,12 @@ export interface BaseEntity {
 }
 
 export interface FileReference {
-  url: string;
-  storagePath: string;
-  mimeType?: string;
-  sizeBytes?: number;
+  provider: "supabase" | "firebase";
+  bucket: string;
+  path: string;
+  publicUrl?: string; // Do not store permanent signed URLs here
+  mimeType: string;
+  sizeBytes: number;
   fileName: string;
   uploadedAt: ISOString;
 }
@@ -96,11 +88,14 @@ export interface LearningPath extends BaseEntity {
 
 export interface LearningPathStep extends BaseEntity {
   learningPathId: ID;
+  type: "resource" | "practice_task" | "quiz" | "project" | "milestone";
   title: string;
   description: string;
   resourceId?: ID;
   practiceTaskId?: ID;
   quizId?: ID;
+  projectId?: ID;
+  minimumScore?: number;
   sortOrder: number;
   isRequired: boolean;
 }
@@ -124,7 +119,7 @@ export interface QuizQuestion {
 export interface Quiz extends BaseEntity {
   title: string;
   description: string;
-  skillId: ID;
+  skillIds: ID[];
   difficultyLevel: "beginner" | "intermediate" | "advanced";
   questions: Record<string, QuizQuestion>;
 }
@@ -212,11 +207,17 @@ export interface UserAdminMeta {
 // User Private Entities (/user_private/{uid})
 // ─────────────────────────────────────────────
 
+export interface Bookmark {
+  entityType: "resource" | "project" | "quiz" | "career_path" | "learning_path";
+  entityId: ID;
+  createdAt: ISOString;
+}
+
 export interface SkillProgress {
   skillId: ID;
   currentLevel: "beginner" | "intermediate" | "advanced" | "expert";
   targetLevel: "beginner" | "intermediate" | "advanced" | "expert";
-  status: "pending" | "in_progress" | "completed";
+  status: "not_started" | "learning" | "practicing" | "verified" | "portfolio_ready";
   progress: number; // 0-100
   completedResourceIds?: ID[];
   passedQuizIds?: ID[];
@@ -243,8 +244,11 @@ export interface SkillEvidence extends BaseEntity {
 export interface CareerReadiness {
   careerPathId: ID;
   score: number; // 0-100
+  coreTotal: number;
   coreCompleted: number;
+  importantTotal: number;
   importantCompleted: number;
+  optionalTotal: number;
   optionalCompleted: number;
   missingSkillIds: ID[];
   weakSkillIds: ID[];
@@ -394,7 +398,8 @@ export interface PlatformSettings {
     updatedAt?: ISOString;
   };
   private: {
-    integrations?: Record<string, string>; // No API keys or secrets.
+    enabledIntegrations?: Record<string, boolean>;
+    providerProjectIds?: Record<string, string>;
     updatedAt?: ISOString;
   };
 }
@@ -444,9 +449,14 @@ export interface AdminLogEntry extends BaseEntity {
 
 export interface AIUsageLog extends BaseEntity {
   uid: UID;
-  actionType: string;
+  feature: "ai_mentor" | "cv_analysis" | "recommendation" | "portfolio_generation";
+  model?: string;
   tokensUsed?: number;
-  prompt?: string;
+  status: "success" | "failed";
+  promptHash?: string;
+  promptSummary?: string;
+  errorCode?: string;
+  createdAt: ISOString;
 }
 
 export interface MigrationMeta extends BaseEntity {
@@ -501,7 +511,7 @@ export interface DatabaseSchema {
   user_private: Record<UID, {
     tasks: Record<ID, Task>;
     notes: Record<ID, Note>;
-    bookmarks: Record<ID, boolean>;
+    bookmarks: Record<ID, Bookmark>;
     skill_progress: Record<ID, SkillProgress>;
     skill_evidence: Record<ID, SkillEvidence>;
     career_readiness: Record<ID, CareerReadiness>;

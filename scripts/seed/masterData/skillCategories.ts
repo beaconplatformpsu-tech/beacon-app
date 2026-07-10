@@ -1,25 +1,106 @@
-export const getSkillCategories = (timestamp: string): Record<string, any> => {
-  const categories = [
-    { id: "cat_programming", title: "Programming", slug: "programming-skills", description: "Core programming languages and paradigms.", sortOrder: 1 },
-    { id: "cat_web_dev", title: "Web Development", slug: "web-development-skills", description: "Frontend and backend web technologies.", sortOrder: 2 },
-    { id: "cat_mobile", title: "Mobile Development", slug: "mobile-development-skills", description: "iOS and Android app development.", sortOrder: 3 },
-    { id: "cat_databases", title: "Databases", slug: "databases-skills", description: "Relational and non-relational database management.", sortOrder: 4 },
-    { id: "cat_data_science", title: "Data Science", slug: "data-science-skills", description: "Data analysis, statistics, and visualization.", sortOrder: 5 },
-    { id: "cat_ai", title: "Artificial Intelligence", slug: "artificial-intelligence-skills", description: "Machine learning, deep learning, and AI systems.", sortOrder: 6 },
-    { id: "cat_cybersecurity", title: "Cybersecurity", slug: "cybersecurity-skills", description: "Network security, ethical hacking, and threat defense.", sortOrder: 7 },
-    { id: "cat_cloud", title: "Cloud & DevOps", slug: "cloud-devops-skills", description: "Cloud platforms, containers, and DevOps practices.", sortOrder: 8 },
-    { id: "cat_se", title: "Software Engineering", slug: "software-engineering-skills", description: "Engineering principles, testing, and version control.", sortOrder: 9 },
-    { id: "cat_professional", title: "Professional Skills", slug: "professional-skills-cat", description: "Career and professional development skills.", sortOrder: 10 }
-  ];
+import { Category, ID } from "../../../src/types/database";
 
-  const updates: Record<string, any> = {};
-  categories.forEach(cat => {
-    updates[`public_content/skill_categories/${cat.id}`] = {
-      ...cat,
-      isActive: true,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    };
-  });
-  return updates;
+const now = new Date().toISOString();
+
+export const skillCategories: Record<ID, Category> = {
+  "cat_skill_programming": {
+    id: "cat_skill_programming",
+    slug: "programming-and-development",
+    title: "Programming & Development",
+    description: "Core coding skills, languages, and software engineering principles.",
+    sortOrder: 10,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_data": {
+    id: "cat_skill_data",
+    slug: "data-and-analytics",
+    title: "Data & Analytics",
+    description: "Data science, machine learning, databases, and analytics.",
+    sortOrder: 20,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_design": {
+    id: "cat_skill_design",
+    slug: "design-and-ui-ux",
+    title: "Design & UI/UX",
+    description: "User experience, interface design, graphic design, and user research.",
+    sortOrder: 30,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_cloud": {
+    id: "cat_skill_cloud",
+    slug: "cloud-and-devops",
+    title: "Cloud & DevOps",
+    description: "Cloud infrastructure, continuous integration, and deployments.",
+    sortOrder: 40,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_security": {
+    id: "cat_skill_security",
+    slug: "cybersecurity",
+    title: "Cybersecurity",
+    description: "Information security, ethical hacking, and risk management.",
+    sortOrder: 50,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_product": {
+    id: "cat_skill_product",
+    slug: "product-management",
+    title: "Product Management",
+    description: "Product strategy, agile methodologies, and lifecycle management.",
+    sortOrder: 60,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_soft": {
+    id: "cat_skill_soft",
+    slug: "soft-skills",
+    title: "Professional Soft Skills",
+    description: "Communication, leadership, time management, and teamwork.",
+    sortOrder: 70,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_business": {
+    id: "cat_skill_business",
+    slug: "business-and-finance",
+    title: "Business & Finance",
+    description: "Corporate finance, business strategy, and operations.",
+    sortOrder: 80,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_marketing": {
+    id: "cat_skill_marketing",
+    slug: "digital-marketing",
+    title: "Digital Marketing",
+    description: "SEO, content marketing, growth hacking, and social media strategy.",
+    sortOrder: 90,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  "cat_skill_ai": {
+    id: "cat_skill_ai",
+    slug: "artificial-intelligence",
+    title: "Artificial Intelligence",
+    description: "Deep learning, NLP, generative models, and neural networks.",
+    sortOrder: 100,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }
 };

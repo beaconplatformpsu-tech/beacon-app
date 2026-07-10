@@ -84,7 +84,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 - This data must NEVER include user-specific progress or metrics.
 - Enums are strictly normalized to lowercase (e.g., `beginner`, `in_progress`, `high`).
 - Arrays like `skillIds` or `careerPathIds` are **required** to ensure index parity.
-- **Quiz Security:** Public quiz entities intentionally omit `correctOptionIndex` and `explanation`. These are stored securely in `/system/quiz_answer_keys` or scored securely via backend edge functions.
+- **Quiz Security:** Public quiz entities intentionally omit `correctOptionIndex` and `explanation`. Quiz answer keys must stay completely out of `public_content`. These are stored securely in `/system/quiz_answer_keys` or scored securely via backend edge functions.
 
 ## 2. Index Paths (`/indexes`)
 **Purpose:** Maps relations between entities without embedding. Supports many-to-many lookups.
@@ -139,10 +139,10 @@ Admins do **not** have blanket read/write access to the database by default. Acc
 Even secure-sounding nodes like `/platform_settings/private` must only contain non-sensitive identifiers or config flags. All true secrets (OpenAI Keys, Stripe Secrets, API tokens) must live exclusively in Supabase Edge Functions secrets, Vercel Environment Variables, or a dedicated secure vault.
 
 ### File Storage Policy
-File URLs stored in the RTDB (like CVs, profile pictures, project uploads, and skill evidence) use the `FileReference` interface. The database only stores the metadata (bucket path, URL, MIME type). The physical files reside in Firebase Storage or Supabase Storage, guarded by distinct Storage Security Rules matching the user's UID.
+File URLs stored in the RTDB (like CVs, profile pictures, project uploads, and skill evidence) use the `FileReference` interface. The database only stores the metadata (bucket path, URL, MIME type). **File signed URLs must not be stored permanently** since they expire. The physical files reside in Firebase Storage or Supabase Storage, guarded by distinct Storage Security Rules matching the user's UID.
 
 ### AI Data Policy
-Logs of AI usage, token counts, and raw prompt invocations are recorded in `/system/ai_usage_logs` strictly for telemetry and abuse prevention. Individual AI feedback meant for the user is piped directly to `/user_private/{uid}/cv_analysis` or `/recommendations`.
+Logs of AI usage and token counts are recorded in `/system/ai_usage_logs` strictly for telemetry and abuse prevention. **AI logs must not store raw prompts** to preserve user privacy and limit DB size. Individual AI feedback meant for the user is piped directly to `/user_private/{uid}/cv_analysis` or `/recommendations`.
 
 ### Normalization & Legacy Removal
 All entities rely strictly on `title` (legacy fields like `Skill.name` are explicitly banned from the database contract). Enums are strictly lowercased and snake_cased where appropriate to prevent frontend mismatch errors.
