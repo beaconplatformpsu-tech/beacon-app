@@ -1,46 +1,85 @@
 # Beacon Platform
 
-Beacon is a high-level educational and professional platform built to empower students and professionals to manage academic tasks, track career goals, and receive personalized recommendations.
+**Beacon** is a comprehensive academic and career development platform built to empower Computer Science students and professionals. It provides a structured environment to track academic tasks, explore career paths, analyze CVs using AI, and access a curated library of professional resources.
 
-## Core Technologies
-- **Framework**: Next.js 15 (App Router)
-- **Styling**: Tailwind CSS & Radix UI (shadcn/ui)
-- **Authentication & Database**: Firebase
-- **Storage**: Supabase Storage
+## ✨ Key Features
 
-## Getting Started
+- **🎓 Academic & Task Management**: Track courses, organize notes, and manage daily academic tasks with progress indicators.
+- **🚀 Career Pathways**: Explore detailed career paths (e.g., Full Stack, AI Engineer) and discover the required skills and learning order.
+- **📚 Curated Resources**: Access a strictly categorized library of courses, documentation, and tools filtered by difficulty and resource type.
+- **🤖 AI-Powered CV Analysis**: Upload a CV and receive intelligent feedback, ATS scoring, and targeted recommendations using the Gemini AI API.
+- **🔐 Role-Based Access Control (RBAC)**: Distinct interfaces for Students and Administrators, secured via Firebase Custom Claims.
+- **📊 Admin Dashboard**: Manage platform content, moderate support messages, and monitor platform statistics in real-time.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/beaconplatformpsu-tech/beacon.git
-   cd beacon
-   ```
+## 🛠️ Technology Stack
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- **Framework**: Next.js 15 (App Router, React 19)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS, Shadcn UI, Radix UI
+- **Database**: Firebase Realtime Database
+- **Authentication**: Firebase Auth
+- **Storage**: Supabase Storage (for CV/PDF uploads)
+- **AI Integration**: Google Gemini API (`@google/genai`)
+- **State Management**: Zustand
+- **Forms & Validation**: React Hook Form, Zod
 
-3. **Environment Configuration**
-   Copy `.env.example` to `.env` and fill in your Firebase and Supabase credentials:
-   ```bash
-   cp .env.example .env
-   ```
+## 🚀 Getting Started
 
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-   The application will be available at [http://localhost:3000](http://localhost:3000).
+### 1. Clone the repository
+```bash
+git clone https://github.com/beaconplatformpsu-tech/beacon.git
+cd beacon
+```
 
-## Architecture Overview
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Environment Configuration
+Copy `.env.example` to `.env.local` and fill in your credentials for Firebase, Supabase, and Gemini API:
+```bash
+cp .env.example .env.local
+```
+
+### 4. Run the development server
+```bash
+npm run dev
+```
+The application will be available at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## 🗄️ Database Management & Seeding
+
+The platform uses a heavily structured Firebase Realtime Database. We provide robust seeding scripts to populate the database with professional starter content, manage indexes, and run strict validations.
+
+**Crucial Note:** Before running any seeder, you must configure a `.env.seeder` file (never commit this) with your Firebase Admin credentials.
+
+### Useful Seed Commands:
+| Command | Description |
+|---------|-------------|
+| `npm run seed:dry` | Validate the seed payload in memory (SAFE, no DB writes) |
+| `npm run seed:dev` | Backup the DB, then write the full payload to Firebase |
+| `npm run seed:indexes` | Dynamically rebuild all database indexes from live data |
+| `npm run seed:verify` | Run a 40+ point post-seed validation suite against the live DB |
+
+For a complete map of the database structure, rules, and security policies, please read:
+👉 **[doc/DATABASE.md](./doc/DATABASE.md)**
+
+---
+
+## 🏗️ Architecture Overview
 
 The project follows a standard Next.js App Router architecture, optimized for performance and scalability:
 
-- **`src/app/`**: Contains all route definitions. Protected routes are housed under `(app)/` and `admin/`, while public routes reside in `auth/`.
-- **`src/components/`**: Reusable UI components. Core building blocks are found in `ui/`, with complex, feature-specific components residing at the root of the directory.
-- **`src/hooks/`**: Custom React hooks for global state management, such as user session data (`useCurrentUserRole`) and notifications (`useCustomToast`).
-- **`src/integrations/`**: Initialization logic and client configuration for third-party services (Firebase, Supabase).
-- **`src/lib/`**: Core utilities, including shared helpers and the global Supabase file upload service.
-- **`src/i18n/`**: Localization strings and language configurations.
+- **`src/app/`**: Route definitions. Protected user routes under `(app)/`, admin routes under `(app)/admin/`, and public auth routes in `auth/`.
+- **`src/features/`**: Domain-specific logic grouped by feature (e.g., `resources`, `skills`, `cv-analysis`). Contains feature-specific hooks, schemas, and UI components.
+- **`src/components/ui/`**: Reusable generic UI components powered by Shadcn and Radix UI.
+- **`src/lib/`**: Core utilities, including the central `validation.ts` schema file and shared generic types.
+- **`src/hooks/`**: Custom React hooks for global state management and Firebase listeners.
+- **`scripts/seed/`**: The complete orchestration pipeline for validating, writing, and indexing the database.
+- **`src/i18n/`**: Localization strings and language configurations (Supports English and Arabic).
 
+## 📝 License
+Proprietary / Closed Source. Developed for Beacon Platform PSU.

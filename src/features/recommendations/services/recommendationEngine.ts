@@ -28,7 +28,7 @@ export const recommendationEngine = {
     const gaps: string[] = [];
     
     // We primarily care about "Core" and "Secondary" skills for gaps
-    const targetSkills = pathSkills.filter(s => s.priority === "Core" || s.priority === "Secondary");
+    const targetSkills = pathSkills.filter(s => s.importanceLevel === "core" || s.importanceLevel === "important");
     
     for (const target of targetSkills) {
       const uSkill = userSkills.find(us => us.skillId === target.skillId);
@@ -41,7 +41,7 @@ export const recommendationEngine = {
       
       // If user has the skill but is only a Beginner and it's a Core skill
       const weight = PROFICIENCY_WEIGHTS[uSkill.proficiency] || 1;
-      if (target.priority === "Core" && weight < 2) {
+      if (target.importanceLevel === "core" && weight < 2) {
         gaps.push(target.skillId);
       }
     }

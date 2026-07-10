@@ -2,54 +2,57 @@
   "rules": {
     ".read": false,
     ".write": false,
-    
+
     "public_content": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
       "resources": {
-        ".indexOn": ["createdAt", "updatedAt", "resourceType", "audienceLevel", "provider"]
+        ".indexOn": ["createdAt", "updatedAt", "resourceType", "difficultyLevel", "provider", "sourceType"]
       },
       "skills": {
-        ".indexOn": ["categoryId", "createdAt"]
+        ".indexOn": ["categoryId", "sortOrder", "createdAt", "isActive"]
       },
       "career_paths": {
         ".indexOn": ["categoryId", "createdAt", "isActive"]
       },
       "skill_categories": {
-        ".indexOn": ["createdAt"]
+        ".indexOn": ["sortOrder", "createdAt"]
       },
       "career_categories": {
-        ".indexOn": ["createdAt"]
+        ".indexOn": ["sortOrder", "createdAt"]
       },
       "academic_categories": {
-        ".indexOn": ["createdAt"]
+        ".indexOn": ["sortOrder", "createdAt"]
+      },
+      "announcements": {
+        ".indexOn": ["createdAt", "isActive"]
       }
     },
 
     "indexes": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
     },
 
     "relations": {
       ".read": true,
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
       "career_path_skills": {
-        ".indexOn": ["careerPathId", "skillId", "priority"]
+        ".indexOn": ["importanceLevel", "minimumProficiencyLevel", "learningOrder"]
       }
     },
 
     "users": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".indexOn": ["role", "createdAt", "accountStatus"],
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["createdAt"],
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".read": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')"
       }
     },
 
     "user_private": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
@@ -57,58 +60,56 @@
           ".indexOn": ["dueDate", "status", "priority", "createdAt"]
         },
         "notes": {
-          ".indexOn": ["createdAt", "updatedAt"]
+          ".indexOn": ["createdAt", "updatedAt", "isPinned"]
         },
-        "cv_profiles": {
-          ".indexOn": ["updatedAt", "createdAt"]
+        "user_skills": {
+          ".indexOn": ["skillId", "proficiency", "progress"]
+        },
+        "cv_profile": {
+          ".indexOn": ["updatedAt"]
         },
         "cv_analysis": {
-          ".indexOn": ["atsScore", "careerMatchScore", "createdAt"]
-        },
-        "cv_uploads": {
-          ".indexOn": ["createdAt", "status"]
-        },
-        "cv_exports": {
-          ".indexOn": ["createdAt", "status"]
+          ".indexOn": ["createdAt"]
         },
         "recommendations": {
-          ".indexOn": ["createdAt"]
+          ".indexOn": ["createdAt", "isDismissed"]
         }
       }
     },
 
     "user_admin_meta": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["role", "accountStatus", "createdAt"]
     },
 
     "support_messages": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
       ".indexOn": ["createdAt", "status", "type"],
       "$messageId": {
-        ".write": "!data.exists() || (auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "!data.exists() || (auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin')"
       }
     },
 
     "platform_settings": {
       "public": {
         ".read": true,
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
       },
       "private": {
-        ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
       }
     },
 
     "stats": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".read": true,
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
     },
 
     "system": {
-      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
-      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+      ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'admin'"
     }
   }
 }

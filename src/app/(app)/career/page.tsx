@@ -124,7 +124,7 @@ export default function CareerPathsPage() {
   // ── Skill Gap + Resources Helpers ────────────────────────────────────────
   const getSkillsGapAnalysis = (pathId: string) => {
     const required = Object.values(careerPathSkills)
-      .filter((cps) => cps.careerPathId === pathId)
+      .filter((cps) => cps.careerPathId === pathId && (cps.importanceLevel === "core" || cps.importanceLevel === "important"))
       .map((cps) => {
         const globalSkill = skills[cps.skillId] || {};
         const userSkill = userSkills.find((us) => us.name?.toLowerCase() === globalSkill.name?.toLowerCase());
@@ -366,7 +366,7 @@ export default function CareerPathsPage() {
                                 <div>
                                   <div className="font-semibold text-sm flex items-center gap-2">
                                     <Zap className="h-4 w-4 text-amber-500" /> {sk.name}
-                                    {sk.importanceLevel === "Critical" && <Badge variant="destructive" className="h-5 text-[10px] px-1.5 font-bold animate-pulse">CRITICAL</Badge>}
+                                    {sk.importanceLevel === "core" && <Badge variant="destructive" className="h-5 text-[10px] px-1.5 font-bold animate-pulse">CRITICAL</Badge>}
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                                     {t.career.targetLevel} <span className="font-medium text-amber-600 dark:text-amber-400">{sk.minimumProficiencyLevel}</span>

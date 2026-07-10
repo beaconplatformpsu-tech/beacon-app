@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { resourceSchema } from "./schemas/resourceSchema";
+import { resourceSchema } from "@/lib/validation";
+import type { ResourceTypeData } from "@/lib/validation";
 
-export type Resource = z.infer<typeof resourceSchema>;
-export type ResourceType = Resource["resourceType"];
+export type Resource = ResourceTypeData;
+export type { ResourceTypeData };
 export { resourceSchema };

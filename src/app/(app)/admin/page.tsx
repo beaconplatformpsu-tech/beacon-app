@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, FileText, Database, ShieldCheck, MessageSquare, Activity, ChevronRight, Server, Cloud } from "lucide-react";
-import { ref, get, query, limitToLast } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
 
@@ -17,15 +17,14 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const [usersSnap, resSnap, msgSnap] = await Promise.all([
-          get(query(ref(db, "users"), limitToLast(100))),
-          get(query(ref(db, "public_content/resources"), limitToLast(100))),
-          get(query(ref(db, "support_messages"), limitToLast(100)))
-        ]);
-
-        setUsersCount(usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0);
-        setResourcesCount(resSnap.exists() ? Object.keys(resSnap.val()).length : 0);
-        setMessagesCount(msgSnap.exists() ? Object.keys(msgSnap.val()).length : 0);
+        // Read from the pre-computed /stats node — a single fast read
+        const statsSnap = await get(ref(db, "stats"));
+        if (statsSnap.exists()) {
+          const data = statsSnap.val();
+          setUsersCount(data.usersCount ?? 0);
+          setResourcesCount(data.resourcesCount ?? 0);
+          setMessagesCount(data.supportMessagesCount ?? 0);
+        }
       } catch (err) {
         console.error("Failed to load stats", err);
       } finally {

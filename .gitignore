@@ -61,7 +61,6 @@ __mocks__/
 # ─── Misc Generated Files ─────────────────────────────────────────────────────
 doc_output.txt
 fix-loaders.cjs
-scripts/
 scratch/
 
 # ─── OS Files ─────────────────────────────────────────────────────────────────

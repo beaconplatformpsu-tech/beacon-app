@@ -1,10 +1,10 @@
 import { computeMatchScore } from '../utils/matchScore';
 
 describe('computeMatchScore', () => {
-  const mockCareerPathSkills = {
-    cps1: { careerPathId: 'p1', skillId: 's1', minimumProficiencyLevel: 'Intermediate', priority: 'Core' as const },
-    cps2: { careerPathId: 'p1', skillId: 's2', minimumProficiencyLevel: 'Advanced', priority: 'Core' as const },
-    cps3: { careerPathId: 'p2', skillId: 's1', minimumProficiencyLevel: 'Beginner', priority: 'Core' as const }
+  const mockCareerPathSkills: any = {
+    cps1: { careerPathId: 'p1', skillId: 's1', minimumProficiencyLevel: 'intermediate', importanceLevel: 'core' },
+    cps2: { careerPathId: 'p1', skillId: 's2', minimumProficiencyLevel: 'advanced', importanceLevel: 'core' },
+    cps3: { careerPathId: 'p2', skillId: 's1', minimumProficiencyLevel: 'beginner', importanceLevel: 'core' }
   };
 
   const mockSkills = {

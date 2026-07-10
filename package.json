@@ -17,8 +17,9 @@
     "seed:users": "npx tsx scripts/seed/index.ts --write --only users",
     "seed:public": "npx tsx scripts/seed/index.ts --write --only public",
     "seed:resources": "npx tsx scripts/seed/index.ts --write --only resources",
-    "seed:verify": "npx tsx scripts/seed/validateSeed.ts",
-    "seed:validate": "npx tsx scripts/seed/validateJson.ts"
+    "seed:indexes": "npx tsx scripts/seed/buildResourceIndexes.ts --write",
+    "seed:verify": "npx tsx scripts/seed/verifySeed.ts",
+    "seed:validate": "npx tsx scripts/seed/index.ts --dry-run"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",
