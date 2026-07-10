@@ -73,7 +73,7 @@ Useful Seed Commands:
 - npm run seed:verify - Run a rigorous post-seed validation suite against the live database.
 
 For a complete map of the database structure, rules, and security policies, please read:
-doc/DATABASE.md
+doc/database-architecture.md
 
 ---
 
@@ -81,13 +81,14 @@ doc/DATABASE.md
 
 The project follows a standard Next.js App Router architecture, optimized for performance and scalability:
 
-- src/app/: Route definitions. Protected user routes under (app)/, admin routes under (app)/admin/, and public auth routes in auth/.
-- src/features/: Domain-specific logic grouped by feature (e.g., resources, skills, cv-analysis). Contains feature-specific hooks, schemas, and UI components.
-- src/components/ui/: Reusable generic UI components powered by Shadcn and Radix UI.
-- src/lib/: Core utilities, including the central validation schema file and shared generic types.
-- src/hooks/: Custom React hooks for global state management and Firebase listeners.
-- scripts/seed/: The complete orchestration pipeline for validating, writing, and indexing the database.
-- src/i18n/: Localization strings and language configurations (Supports English and Arabic).
+- `src/app/`: Route definitions. Protected user routes under `(app)/`, admin routes under `(app)/admin/`, and public auth routes in `auth/`.
+- `src/features/`: Domain-specific logic grouped by feature (e.g., resources, skills, cv-analysis). Contains feature-specific hooks, schemas, and UI components.
+- `src/components/ui/`: Reusable generic UI components powered by Shadcn and Radix UI.
+- `src/types/collections/`: The modular database schema split into domain-specific collections (e.g., base, users, publicContent, system, relations).
+- `src/lib/`: Core utilities, including the central validation schema file and shared generic types.
+- `src/hooks/`: Custom React hooks for global state management and Firebase listeners.
+- `scripts/seed/`: The complete orchestration pipeline for validating, writing, and indexing the database.
+- `src/i18n/`: Localization strings and language configurations (Supports English and Arabic).
 
 ## License
 Proprietary / Closed Source. Developed for Beacon Platform PSU.

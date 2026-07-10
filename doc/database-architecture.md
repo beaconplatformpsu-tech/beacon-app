@@ -139,6 +139,20 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 
 ---
 
+## TypeScript Organization
+
+To enforce the database contract within the application, the TypeScript types are strictly separated by domain under `src/types/collections/`:
+- `base.ts`: Shared foundational interfaces (`ID`, `UID`, `BaseEntity`, `FileReference`).
+- `publicContent.ts`: Types for all catalog items in `/public_content`.
+- `relations.ts`: Metadata interfaces for relation maps.
+- `users.ts`: Core user profile and preference types.
+- `userPrivate.ts`: Interfaces for all sensitive student progress and AI data.
+- `system.ts`: Backend admin configurations, logs, and stats.
+
+These modular collections are aggregated together in `src/types/database.ts`, which exports a single `DatabaseSchema` interface to enforce strict type-safety across all database interactions.
+
+---
+
 ## Strict Security & Policy Guidelines
 
 ### Least Privilege Enforcement
