@@ -170,6 +170,8 @@ const en = {
     haveAccount: "Already have an account?",
     signInWord: "Sign in",
     backToSignIn: "Back to sign in",
+    checkYourEmail: "Check your email",
+    checkEmailSub: "We sent a password reset link to",
     showPassword: "Show password",
     hidePassword: "Hide password",
     // reset password page
@@ -874,6 +876,8 @@ const ar: Dict = {
     haveAccount: "لديك حساب بالفعل؟",
     signInWord: "تسجيل الدخول",
     backToSignIn: "العودة لتسجيل الدخول",
+    checkYourEmail: "تحقق من بريدك الإلكتروني",
+    checkEmailSub: "أرسلنا رابط إعادة تعيين كلمة المرور إلى",
     showPassword: "إظهار كلمة المرور",
     hidePassword: "إخفاء كلمة المرور",
     setNewPassword: "تعيين كلمة مرور جديدة",

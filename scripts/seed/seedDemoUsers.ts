@@ -5,7 +5,7 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
   const config = getDemoUsersConfig();
 
   console.log("=========================================");
-  console.log(`🔥 Starting Demo Users Seeder (${dryRun ? "DRY-RUN" : "WRITE"} mode)`);
+  console.log(` Starting Demo Users Seeder (${dryRun ? "DRY-RUN" : "WRITE"} mode)`);
   console.log("=========================================\n");
 
   if (dryRun) {
@@ -16,150 +16,153 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
   const adminApp = getFirebaseAdmin();
   const auth = adminApp.auth();
   const db = adminApp.database();
+
   const timestamp = new Date().toISOString();
 
   const demoStudentEmail = config.SEED_STUDENT_EMAIL;
   const demoStudentPassword = config.SEED_STUDENT_PASSWORD;
   const demoStudentName = config.SEED_STUDENT_DISPLAY_NAME || "Demo Student";
 
-  if (!demoStudentEmail || !demoStudentPassword) {
-    console.error("❌ Missing SEED_STUDENT_EMAIL or SEED_STUDENT_PASSWORD");
-    process.exit(1);
-  }
-
   let uid: string;
+
   try {
     const userRecord = await auth.getUserByEmail(demoStudentEmail);
     uid = userRecord.uid;
+
     console.log(`✅ Found demo student (UID: ${uid}). Updating...`);
+
     await auth.updateUser(uid, {
       password: demoStudentPassword,
       displayName: demoStudentName,
-      emailVerified: true
+      emailVerified: true,
+      disabled: false,
     });
   } catch (error: any) {
-    if (error.code === 'auth/user-not-found') {
-      console.log(`✅ Creating new demo student...`);
-      const userRecord = await auth.createUser({
-        email: demoStudentEmail,
-        password: demoStudentPassword,
-        displayName: demoStudentName,
-        emailVerified: true
-      });
-      uid = userRecord.uid;
-    } else {
+    if (error.code !== "auth/user-not-found") {
       throw error;
     }
+
+    console.log("✅ Creating new demo student...");
+
+    const userRecord = await auth.createUser({
+      email: demoStudentEmail,
+      password: demoStudentPassword,
+      displayName: demoStudentName,
+      emailVerified: true,
+      disabled: false,
+    });
+
+    uid = userRecord.uid;
   }
+
+  const studentPermissions = {
+    canManageContent: false,
+    canManageUsers: false,
+    canManageSupport: false,
+    canViewStats: false,
+    canViewPrivateStudentData: false,
+    canRunSystemActions: false,
+  };
 
   await auth.setCustomUserClaims(uid, {
     role: "student",
-    permissions: {
-      canManageContent: false,
-      canManageUsers: false,
-      canManageSupport: false,
-      canViewStats: false,
-      canViewPrivateStudentData: false,
-      canRunSystemActions: false
-    }
+    permissions: studentPermissions,
   });
 
-  const updates: Record<string, any> = {};
+  const updates: Record<string, unknown> = {};
 
-  // 1. Profile
-  updates[`users/${uid}/profile`] = {
-    uid,
-    email: demoStudentEmail,
-    displayName: demoStudentName,
-    major: "Computer Science",
-    academicLevel: "Undergraduate",
-    preferredCareerPathId: "path_fullstack_dev",
+  updates[`users/${uid}`] = {
+    profile: {
+      uid,
+      email: demoStudentEmail,
+      displayName: demoStudentName,
+      major: "Computer Science",
+      academicLevel: "Undergraduate",
+      preferredCareerPathId: "path_fullstack_dev",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    },
+    preferences: {
+      theme: "system",
+      language: "en",
+      emailNotifications: true,
+      updatedAt: timestamp,
+    },
+    onboarding: {
+      hasCompletedProfile: true,
+      hasSelectedCareerPath: true,
+      completedSteps: ["profile", "career_path"],
+      updatedAt: timestamp,
+    },
     createdAt: timestamp,
     updatedAt: timestamp,
   };
-  
-  updates[`users/${uid}/preferences`] = {
-    theme: "system",
-    language: "en",
-    emailNotifications: true,
-    updatedAt: timestamp
-  };
 
-  updates[`users/${uid}/onboarding`] = {
-    hasCompletedProfile: true,
-    hasSelectedCareerPath: true,
-    completedSteps: ["profile", "career_path"],
-    updatedAt: timestamp
-  };
-
-  // 2. Admin Meta
   updates[`user_admin_meta/${uid}`] = {
     role: "student",
-    permissions: {
-      canManageContent: false,
-      canManageUsers: false,
-      canManageSupport: false,
-      canViewStats: false,
-      canViewPrivateStudentData: false,
-      canRunSystemActions: false
-    },
+    permissions: studentPermissions,
     accountStatus: "active",
     emailVerified: true,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  // 3. Tasks
   updates[`user_private/${uid}/tasks/seed_task_1`] = {
     id: "seed_task_1",
-    title: "Complete Data Structures Practice",
-    description: "Seeded task for quick start.",
+    title: "Complete React Components Practice",
+    description: "Practice building reusable components and passing data through props.",
     dueDate: timestamp,
-    priority: "high",
+    priority: "medium",
     status: "pending",
-    courseName: "General CS",
-    category: "Algorithms & Data Structures",
+    courseName: "Frontend Development",
+    category: "Practice",
     estimatedHours: 2,
     progress: 0,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  // 4. Notes
   updates[`user_private/${uid}/notes/seed_note_1`] = {
     id: "seed_note_1",
-    title: "Study Plan for This Week",
-    content: "Need to focus on databases.",
+    title: "Weekly Learning Focus",
+    content: "Focus on React components, JavaScript array methods, and Git workflow this week.",
     isPinned: true,
     category: "Planning",
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  // 5. Skill Progress
   updates[`user_private/${uid}/skill_progress/skill_react`] = {
     skillId: "skill_react",
     currentLevel: "beginner",
     targetLevel: "intermediate",
     status: "learning",
     progress: 25,
+    completedResourceIds: [],
+    passedQuizIds: [],
+    completedPracticeTaskIds: [],
+    evidenceIds: [],
     createdAt: timestamp,
     updatedAt: timestamp,
   };
 
-  // 6. CV Profile
   updates[`user_private/${uid}/cv_profile`] = {
-    summary: "Aspiring software engineer.",
+    summary: "Aspiring software engineer focused on frontend and full stack development.",
     experiences: {},
     education: {},
     updatedAt: timestamp,
   };
 
   await db.ref().update(updates);
-  console.log("✅ Wrote demo student data to Realtime DB!");
+
+  console.log("✅ Demo student Auth user created/updated.");
+  console.log("✅ Demo student profile and private starter data written.");
 }
 
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 
-seedDemoUsers(dryRun).catch(console.error);
+seedDemoUsers(dryRun).catch((error) => {
+  console.error("❌ Demo users seed failed:", error);
+  process.exit(1);
+});

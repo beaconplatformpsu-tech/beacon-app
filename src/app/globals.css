@@ -33,7 +33,9 @@
   --color-beam: var(--beam);
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-arabic: 'Noto Kufi Arabic', sans-serif;
+  /* Professional Arabic fonts: IBM Plex Sans Arabic for UI/body, Noto Serif Arabic for titles */
+  --font-arabic: 'IBM Plex Sans Arabic', 'Segoe UI', system-ui, sans-serif;
+  --font-arabic-display: 'Noto Serif Arabic', 'IBM Plex Sans Arabic', serif;
 }
 
 :root {
@@ -102,16 +104,30 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  /* RTL / Arabic: professional body font */
   [dir="rtl"],
   [dir="rtl"] * {
-    font-family: var(--font-arabic), 'Noto Kufi Arabic', sans-serif !important;
+    font-family: var(--font-arabic) !important;
   }
+  /* Arabic titles: override with elegant Noto Serif Arabic */
+  [dir="rtl"] h1,
+  [dir="rtl"] h2,
+  [dir="rtl"] h3,
+  [dir="rtl"] .font-display {
+    font-family: var(--font-arabic-display) !important;
+    letter-spacing: 0 !important; /* Arabic needs no letter-spacing */
+    line-height: 1.4 !important; /* Arabic needs more generous line-height */
+  }
+  /* LTR headings */
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
 }
 
 @layer utilities {
   .font-ar {
-    font-family: var(--font-arabic), 'Noto Kufi Arabic', sans-serif;
+    font-family: var(--font-arabic);
+  }
+  .font-ar-display {
+    font-family: var(--font-arabic-display);
   }
   .text-balance { text-wrap: balance; }
   .bg-beam { background: var(--gradient-beam); }
