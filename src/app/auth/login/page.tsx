@@ -22,10 +22,10 @@ export default function LoginPage() {
   const [touched, setTouched] = useState({ email: false, password: false });
   const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
 
-  // Redirect if already signed in
+  // Redirect if already signed in AND verified
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.push("/");
+      if (user && user.emailVerified) router.push("/");
     });
     return () => unsubscribe();
   }, [router]);
@@ -155,15 +155,19 @@ export default function LoginPage() {
         </div>
         
         {unverifiedUser && (
-          <div className="mt-4 p-4 rounded-xl bg-orange-50 border border-orange-200 text-center">
-            <p className="text-sm text-orange-800 mb-3 font-medium">Your email is not verified.</p>
+          <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">Email not verified</p>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Check your inbox and click the link we sent, or resend it below.</p>
             <button
               type="button"
               onClick={handleResendVerification}
               disabled={loading}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-sm"
             >
-              {loading ? "Sending..." : "Resend Verification Email"}
+              {loading ? <span className="flex items-center gap-2"><svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Sending…</span> : "Resend Verification Email"}
             </button>
           </div>
         )}

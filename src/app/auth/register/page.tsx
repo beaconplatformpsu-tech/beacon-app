@@ -177,6 +177,16 @@ export default function RegisterPage() {
 
       const timestamp = new Date().toISOString();
       await update(ref(db), {
+        [`users/${user.uid}`]: {
+          displayName: form.name.trim(),
+          email: form.email.trim(),
+          emailVerified: false,
+          role: "student",
+          academicLevel: form.academicLevel,
+          department: form.department,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        },
         [`user_private/${user.uid}/profile`]: {
           displayName: form.name.trim(),
           email: form.email.trim(),
@@ -186,12 +196,13 @@ export default function RegisterPage() {
           github: form.github.trim(),
           linkedin: form.linkedin.trim(),
           createdAt: timestamp,
+          updatedAt: timestamp,
         }
       });
 
       await signOut(auth);
 
-      toast.success("Registration complete! Please check your email to verify your account before signing in.");
+      toast.success("Account created! Please verify your email before signing in.");
       router.push("/auth/login");
     } catch (err: unknown) {
       toast.error(firebaseErrorMsg(err));
@@ -211,6 +222,18 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {step === 1 ? t.auth.createSub : "Let's personalize your profile (Optional)"}
         </p>
+        {/* Step progress indicator */}
+        <div className="flex items-center justify-center gap-3 mt-5">
+          <div className="flex items-center gap-2">
+            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === 1 ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/20 text-primary"}`}>1</div>
+            <span className={`text-xs font-medium hidden sm:block ${step === 1 ? "text-foreground" : "text-muted-foreground"}`}>Account</span>
+          </div>
+          <div className={`h-px w-8 transition-colors ${step === 2 ? "bg-primary" : "bg-border"}`} />
+          <div className="flex items-center gap-2">
+            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === 2 ? "bg-primary text-primary-foreground shadow-glow" : "bg-muted text-muted-foreground"}`}>2</div>
+            <span className={`text-xs font-medium hidden sm:block ${step === 2 ? "text-foreground" : "text-muted-foreground"}`}>Profile</span>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4" noValidate autoComplete="off">

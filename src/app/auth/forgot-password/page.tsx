@@ -31,9 +31,11 @@ export default function ForgotPasswordPage() {
   const firebaseErrorMsg = (err: unknown): string => {
     const code = (err as AuthError)?.code ?? "";
     const map: Record<string, string> = {
-      "auth/user-not-found": t.auth.errors.emailInvalid,
+      // Security-neutral: never reveal whether an account exists
+      "auth/user-not-found": t.auth.resetSentToast,
       "auth/invalid-email": t.auth.errors.emailInvalid,
       "auth/network-request-failed": t.auth.somethingWrong,
+      "auth/too-many-requests": "Too many attempts. Please try again later.",
     };
     return map[code] ?? (err instanceof Error ? err.message : t.auth.somethingWrong);
   };
@@ -49,11 +51,18 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email.trim());
-      toast.success(t.auth.resetSentToast);
+      await sendPasswordResetEmail(auth, email.trim(), {
+        url: `${window.location.origin}/auth/reset-password`,
+      });
       setSent(true);
     } catch (err: unknown) {
-      toast.error(firebaseErrorMsg(err));
+      const code = (err as AuthError)?.code ?? "";
+      // Security-neutral: for user-not-found, still show the success state
+      if (code === "auth/user-not-found") {
+        setSent(true);
+      } else {
+        toast.error(firebaseErrorMsg(err));
+      }
     } finally {
       setLoading(false);
     }
