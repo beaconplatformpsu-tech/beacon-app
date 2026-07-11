@@ -1,5 +1,6 @@
 import { getFirebaseAdmin } from "./firebaseAdmin";
 import { getBootstrapAdminConfig } from "./config";
+import { updateUsersCount } from "./statsHelper";
 
 async function bootstrapAdmin() {
   const config = getBootstrapAdminConfig();
@@ -106,7 +107,11 @@ async function bootstrapAdmin() {
   console.log("✅ Super Admin custom claims set.");
   console.log(`✅ /users/${uid} created.`);
   console.log(`✅ /user_admin_meta/${uid} created.`);
+
+  await updateUsersCount(db);
+
   console.log("✅ Bootstrap complete.");
+  process.exit(0);
 }
 
 bootstrapAdmin().catch((error) => {

@@ -3,7 +3,7 @@ import { skills } from "./masterData/skills";
 import { careerPaths } from "./masterData/careerPaths";
 import { learningPaths } from "./masterData/learningPaths";
 import { practiceTasks, projects } from "./masterData/practiceAndProjects";
-import { quizzes } from "./masterData/quizzesAndConfig";
+import { quizzes, announcements } from "./masterData/quizzesAndConfig";
 import { skillCategories } from "./masterData/skillCategories";
 import { careerCategories } from "./masterData/careerCategories";
 import { academicCategories } from "./masterData/academicCategories";
@@ -251,6 +251,11 @@ export function generateStats() {
     resourcesCount: Object.keys(resources).length,
     skillsCount: Object.keys(skills).length,
     careerPathsCount: Object.keys(careerPaths).length,
+    learningPathsCount: Object.keys(learningPaths).length,
+    practiceTasksCount: Object.keys(practiceTasks).length,
+    projectsCount: Object.keys(projects).length,
+    quizzesCount: Object.keys(quizzes).length,
+    announcementsCount: Object.keys(announcements).length,
     academicCategoriesCount: Object.keys(academicCategories).length,
     careerCategoriesCount: Object.keys(careerCategories).length,
     skillCategoriesCount: Object.keys(skillCategories).length,

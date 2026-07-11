@@ -313,6 +313,15 @@ export const learningPathSteps: Record<string, Record<string, LearningPathStep>>
       "lp_fullstack_portfolio_path",
       "step_fullstack_06",
       6,
+      "quiz",
+      "Pass the React and Next.js quiz",
+      "Verify your understanding of React and Next.js routing.",
+      { quizId: "quiz_nextjs_routing", minimumScore: 70 }
+    ),
+    step_fullstack_07: step(
+      "lp_fullstack_portfolio_path",
+      "step_fullstack_07",
+      7,
       "project",
       "Build a full stack task manager",
       "Create a portfolio project with authentication, task CRUD, filters, and protected data.",

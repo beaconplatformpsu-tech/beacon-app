@@ -78,12 +78,27 @@ Useful Seed Commands:
 | `npm run seed:demo:users` | Seed a demo student user (optional — do not run against production). |
 | `npm run seed:verify` | Run post-seed verification checks against the live database. |
 
-**First-time setup order:**
+**First-time setup order (Empty Database):**
 ```bash
-npm run seed:reset:dev        # Clear + seed all public content
-npm run seed:bootstrap:admin  # Create the Super Admin user
-npm run seed:verify           # Confirm everything is in place
+firebase deploy --only database
+
+npm run seed:validate
+npm run seed:dry
+npm run typecheck
+npm run build
+
+npm run seed:dev
+npm run seed:bootstrap:admin
+npm run seed:demo:users
+npm run seed:verify
 ```
+
+**Important Notes:**
+- Realtime Database export does not include Firebase Auth custom claims.
+- Firebase Auth users are separate from Realtime Database data.
+- Do not commit service account files or real secrets.
+- If the Realtime DB is empty, run `seed:dev` before bootstrap/demo verification.
+- `seed:reset:dev` is for reseeding controlled public/platform seed paths only.
 
 For a complete map of the database structure, rules, and security policies, please read:
 doc/database-architecture.md

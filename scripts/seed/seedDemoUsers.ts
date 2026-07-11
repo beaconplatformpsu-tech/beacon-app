@@ -1,5 +1,6 @@
 import { getFirebaseAdmin } from "./firebaseAdmin";
 import { getDemoUsersConfig } from "./config";
+import { updateUsersCount } from "./statsHelper";
 
 type StudentPermissions = {
   canManageContent: false;
@@ -267,7 +268,11 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
   console.log("✅ Custom claims set: role=student.");
   console.log("✅ Demo student profile written.");
   console.log("✅ Demo private starter data written.");
+
+  await updateUsersCount(db);
+
   console.log("\nDone.");
+  process.exit(0);
 }
 
 const args = process.argv.slice(2);

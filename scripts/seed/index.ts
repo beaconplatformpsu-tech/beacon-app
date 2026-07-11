@@ -137,6 +137,7 @@ async function run() {
   await db.ref().update(payload);
 
   console.log("✅ Realtime Database seeded successfully.");
+  process.exit(0);
 }
 
 run().catch((error) => {

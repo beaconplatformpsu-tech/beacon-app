@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Lock, Mail, Loader2, Eye, EyeOff } from "lucide-react";
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut, type AuthError } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification, type AuthError } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
 import Link from "next/link";
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState({ email: false, password: false });
+  const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
 
   // Redirect if already signed in
   useEffect(() => {
@@ -75,8 +76,8 @@ export default function LoginPage() {
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
       
       if (!cred.user.emailVerified) {
-        await signOut(auth);
-        toast.error("Please verify your email before logging in. Check your inbox.");
+        setUnverifiedUser(cred.user);
+        toast.error("Please verify your email before logging in.");
         setLoading(false);
         return;
       }
@@ -85,6 +86,21 @@ export default function LoginPage() {
       // Navigation will be handled by the onAuthStateChanged effect
     } catch (err: unknown) {
       toast.error(firebaseErrorMsg(err));
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedUser) return;
+    setLoading(true);
+    try {
+      await sendEmailVerification(unverifiedUser);
+      toast.success("Verification email resent. Please check your inbox.");
+      await signOut(auth);
+      setUnverifiedUser(null);
+    } catch (err: unknown) {
+      toast.error("Failed to resend verification email. Please try again later.");
+    } finally {
       setLoading(false);
     }
   };
@@ -132,11 +148,25 @@ export default function LoginPage() {
             disabled={loading || !email || !password || !!errors.email || !!errors.password}
             className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60"
           >
-            {loading ? (
+            {loading && !unverifiedUser ? (
               <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span>
             ) : t.auth.signInBtn}
           </button>
         </div>
+        
+        {unverifiedUser && (
+          <div className="mt-4 p-4 rounded-xl bg-orange-50 border border-orange-200 text-center">
+            <p className="text-sm text-orange-800 mb-3 font-medium">Your email is not verified.</p>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={loading}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? "Sending..." : "Resend Verification Email"}
+            </button>
+          </div>
+        )}
       </form>
 
       <div className="mt-6 text-center text-sm text-muted-foreground">
