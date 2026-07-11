@@ -1,29 +1,24 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { 
   CheckSquare, BookOpen, Clock, TrendingUp, Sparkles, ChevronRight, 
-  Target, LayoutDashboard, Plus, Search, AlertTriangle, Briefcase 
+  Target, LayoutDashboard, Plus, Search, AlertTriangle, GraduationCap
 } from "lucide-react";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { useT } from "@/i18n/LanguageProvider";
 import dynamic from "next/dynamic";
 import { format, isPast, isToday } from "date-fns";
 
-// Safe Services
-import { taskService } from "@/features/tasks/services/taskService";
-import { skillService } from "@/features/skills/services/skillService";
-import { noteService } from "@/features/notes/services/noteService";
-import { recommendationService } from "@/features/recommendations/services/recommendationService";
-
-// Types
-import type { Task, UserSkill, Note, Recommendation } from "@/lib/types";
+// New DB Services
+import { useStudentPrivateData, useStudentSkills, useStudentProfile } from "@/lib/db/services/studentDataService";
+import { usePublicCareerPaths } from "@/lib/db/services/publicContentService";
 
 // UI Components
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const ProficiencyChart = dynamic(() => import("@/components/charts/ProficiencyChart"), { 
@@ -35,50 +30,20 @@ export default function DashboardPage() {
   const { session } = useCurrentUserRole();
   const t = useT();
 
-  // Data States
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [skills, setSkills] = useState<UserSkill[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  // Data fetching
+  const { profile, loading: loadingProfile } = useStudentProfile(session?.uid);
+  const { skills, loading: loadingSkills } = useStudentSkills(session?.uid);
+  const { tasks, notes, recommendations, careerReadiness, loading: loadingPrivateData } = useStudentPrivateData(session?.uid);
+  const { careerPaths, loading: loadingCareerPaths } = usePublicCareerPaths();
 
-  // Loading States
-  const [loadingTasks, setLoadingTasks] = useState(true);
-  const [loadingSkills, setLoadingSkills] = useState(true);
-  const [loadingNotes, setLoadingNotes] = useState(true);
-  const [loadingRecs, setLoadingRecs] = useState(true);
+  const loading = loadingProfile || loadingSkills || loadingPrivateData || loadingCareerPaths;
 
-  useEffect(() => {
-    if (!session?.uid) return;
+  // Derived Data
+  const preferredCareerPath = useMemo(() => {
+    if (!profile?.preferredCareerPathId) return null;
+    return careerPaths.find(p => p.id === profile.preferredCareerPathId) || null;
+  }, [profile, careerPaths]);
 
-    const unsubTasks = taskService.subscribeToTasks(session.uid, (data) => {
-      setTasks(data);
-      setLoadingTasks(false);
-    });
-
-    const unsubSkills = skillService.subscribeToUserSkills(session.uid, (data) => {
-      setSkills(data);
-      setLoadingSkills(false);
-    });
-
-    const unsubNotes = noteService.subscribeToNotes(session.uid, (data) => {
-      setNotes(data);
-      setLoadingNotes(false);
-    });
-
-    const unsubRecs = recommendationService.subscribeToRecommendations(session.uid, (data) => {
-      setRecommendations(data);
-      setLoadingRecs(false);
-    });
-
-    return () => {
-      unsubTasks();
-      unsubSkills();
-      unsubNotes();
-      unsubRecs();
-    };
-  }, [session?.uid]);
-
-  // Derived Data (Memoized for performance)
   const pendingTasks = useMemo(() => tasks.filter(t => t.status !== "Completed"), [tasks]);
   
   const overdueTasks = useMemo(() => 
@@ -102,14 +67,10 @@ export default function DashboardPage() {
   const latestRec = useMemo(() => recommendations[0], [recommendations]);
 
   const stats = useMemo(() => [
-    { label: "Pending Tasks", value: loadingTasks ? "-" : pendingTasks.length, icon: CheckSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Acquired Skills", value: loadingSkills ? "-" : skills.length, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Saved Notes", value: loadingNotes ? "-" : notes.length, icon: BookOpen, color: "text-sky-500", bg: "bg-sky-500/10" },
-  ], [loadingTasks, pendingTasks.length, loadingSkills, skills.length, loadingNotes, notes.length]);
-
-  const isFreshAccount = useMemo(() => 
-    !loadingTasks && !loadingSkills && tasks.length === 0 && skills.length === 0,
-  [loadingTasks, loadingSkills, tasks.length, skills.length]);
+    { label: "Pending Tasks", value: loading ? "-" : pendingTasks.length, icon: CheckSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Acquired Skills", value: loading ? "-" : skills.length, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Saved Notes", value: loading ? "-" : notes.length, icon: BookOpen, color: "text-sky-500", bg: "bg-sky-500/10" },
+  ], [loading, pendingTasks.length, skills.length, notes.length]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-12">
@@ -117,7 +78,8 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-3">
-            <LayoutDashboard className="h-8 w-8 text-primary" /> {t.dashboard.welcome.replace("{name}", session?.displayName || "Student")}
+            <LayoutDashboard className="h-8 w-8 text-primary" /> 
+            {loading ? <Skeleton className="h-8 w-48" /> : (t.dashboard?.welcome?.replace("{name}", profile?.displayName || session?.displayName || "Student") || `Welcome back!`)}
           </h1>
           <p className="mt-2 text-muted-foreground max-w-2xl">
             Your academic command center. Track your progress, manage deadlines, and discover new resources.
@@ -137,17 +99,41 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isFreshAccount && (
-        <Card className="bg-primary/5 border-primary/20">
+      {/* NO CAREER PATH EMPTY STATE */}
+      {!loading && !preferredCareerPath && (
+        <Card className="bg-primary/5 border-primary/20 shadow-glow shadow-primary/10">
           <CardContent className="p-8 text-center flex flex-col items-center justify-center">
-            <Sparkles className="w-12 h-12 text-primary mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Welcome to your new Academic Hub!</h2>
+            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 ring-4 ring-primary/5">
+              <GraduationCap className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Set Your Career Goal</h2>
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-              It looks like you haven&apos;t set up any tasks or skills yet. Start by defining your first goal or exploring the resources library.
+              Select a target career path to receive personalized recommendations, skill gap analysis, and tailored learning resources.
             </p>
             <div className="flex gap-4">
-              <Button asChild><Link href="/career">Select a Career Path</Link></Button>
-              <Button variant="outline" asChild><Link href="/skills">Add a Skill</Link></Button>
+              <Button asChild className="shadow-glow"><Link href="/career">Explore Career Paths</Link></Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* SELECTED CAREER PATH SUMMARY */}
+      {!loading && preferredCareerPath && (
+        <Card className="border-emerald-500/30 shadow-sm bg-gradient-to-r from-emerald-500/5 to-transparent">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider flex items-center gap-2">
+              <Target className="w-4 h-4" /> Current Career Goal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-bold text-foreground">{preferredCareerPath.title}</h3>
+                <p className="text-muted-foreground">{preferredCareerPath.industryDomain}</p>
+              </div>
+              <Button variant="outline" asChild size="sm" className="hidden sm:flex border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
+                <Link href={`/career/${preferredCareerPath.id}`}>View Details <ChevronRight className="w-4 h-4 ml-1" /></Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -163,7 +149,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                {loadingTasks || loadingSkills || loadingNotes ? (
+                {loading ? (
                   <Skeleton className="h-8 w-12 mt-1" />
                 ) : (
                   <p className="text-2xl font-bold">{stat.value}</p>
@@ -187,7 +173,7 @@ export default function DashboardPage() {
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              {loadingTasks ? (
+              {loading ? (
                 <div className="p-6 space-y-4">
                   <Skeleton className="h-12 w-full rounded-xl" />
                   <Skeleton className="h-12 w-full rounded-xl" />
@@ -206,7 +192,7 @@ export default function DashboardPage() {
                           <AlertTriangle className="w-4 h-4 text-destructive" />
                           <h4 className="font-semibold text-destructive">{task.title}</h4>
                         </div>
-                        <p className="text-xs text-muted-foreground">{task.courseName} • Due {format(new Date(task.dueDate), "MMM d")}</p>
+                        <p className="text-xs text-muted-foreground">{task.courseName} • Due {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "Unknown"}</p>
                       </div>
                       <Badge variant="destructive">Overdue</Badge>
                     </div>
@@ -215,7 +201,7 @@ export default function DashboardPage() {
                     <div key={task.id} className="p-4 px-6 flex items-center justify-between hover:bg-muted/50 transition-colors">
                       <div>
                         <h4 className="font-medium text-foreground">{task.title}</h4>
-                        <p className="text-xs text-muted-foreground">{task.courseName} • Due {format(new Date(task.dueDate), "MMM d")}</p>
+                        <p className="text-xs text-muted-foreground">{task.courseName} • Due {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "Unknown"}</p>
                       </div>
                       <Badge variant={task.priority === "High" ? "destructive" : task.priority === "Medium" ? "default" : "secondary"}>
                         {task.priority}
@@ -237,7 +223,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              {loadingSkills ? (
+              {loading ? (
                 <Skeleton className="h-[200px] w-full rounded-xl" />
               ) : skills.length === 0 ? (
                 <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
@@ -258,16 +244,15 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loadingRecs ? (
+              {loading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-5/6" />
                 </div>
               ) : latestRec ? (
                 <div className="space-y-4 mt-2">
-                  <p className="text-sm font-medium">{latestRec.explanation || (latestRec as any).reason}</p>
+                  <p className="text-sm font-medium">{latestRec.explanation}</p>
                   
-                  {/* Safely handle new Engine Recommendation shape vs old shape */}
                   {latestRec.missingSkills && latestRec.missingSkills.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {latestRec.missingSkills.map((skill: string) => (
@@ -276,7 +261,7 @@ export default function DashboardPage() {
                     </div>
                   )}
                   
-                  <Button asChild size="sm" className="w-full mt-2">
+                  <Button asChild size="sm" className="w-full mt-2 shadow-glow">
                     <Link href="/recommendations">View Full Plan</Link>
                   </Button>
                 </div>

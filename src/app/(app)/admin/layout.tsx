@@ -2,20 +2,20 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCurrentUserRole } from "@/hooks/use-current-user-role";
+import { useAuth } from "@/hooks/use-auth";
 import { ShieldAlert } from "lucide-react";
-import { useT } from "@/i18n/LanguageProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { role, loading } = useCurrentUserRole();
+  const { role, loading } = useAuth();
   const router = useRouter();
-  const t = useT();
+
+  const isAdmin = role === "admin" || role === "super_admin";
 
   useEffect(() => {
-    if (!loading && role !== "admin") {
+    if (!loading && !isAdmin) {
       router.push("/dashboard");
     }
-  }, [role, loading, router]);
+  }, [role, loading, isAdmin, router]);
 
   if (loading) {
     return (
@@ -25,8 +25,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (role !== "admin") {
-    // Failsafe in case router.push is slow
+  if (!isAdmin) {
+    // Failsafe shown briefly while router.push runs
     return (
       <div className="flex flex-col h-[calc(100vh-10rem)] items-center justify-center text-center">
         <ShieldAlert className="w-16 h-16 text-destructive mb-4" />

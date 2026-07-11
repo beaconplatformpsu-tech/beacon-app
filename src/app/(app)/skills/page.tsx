@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase/config";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { createNotification } from "@/hooks/use-notifications";
-import { useSkills } from "./_hooks/useSkills";
+import { useStudentSkills } from "@/lib/db/services/studentDataService";
 import { SkillCard } from "./_components/SkillCard";
 import { SkillDialog } from "./_components/SkillDialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
@@ -37,7 +37,7 @@ const CS_CATEGORIES: string[] = [
 export default function SkillsPage() {
   const { session } = useCurrentUserRole();
   const toast = useCustomToast();
-  const { skills, loading } = useSkills(session?.uid);
+  const { skills, loading } = useStudentSkills(session?.uid);
   const t = useT();
   const [search, setSearch] = useState("");
   const [skillToDelete, setSkillToDelete] = useState<string | null>(null);

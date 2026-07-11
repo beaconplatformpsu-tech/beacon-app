@@ -1,40 +1,69 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type FormEvent, Suspense } from "react";
 import { toast } from "sonner";
-import { Lock, Mail, Loader2, Eye, EyeOff } from "lucide-react";
-import { signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification, type AuthError } from "firebase/auth";
+import { Lock, Mail, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { sendEmailVerification, type AuthError } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
+import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export default function LoginPage() {
+// ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
+
+function LoginContent() {
   const t = useT();
   const e = t.auth.errors;
   const router = useRouter();
-  
+  const searchParams = useSearchParams();
+  const { login, currentUser, isEmailVerified, loading: authLoading, role } = useAuth();
+
+  // ── Read query params ────────────────────────────────────────────────────
+  const rawEmail = searchParams.get("email") ?? "";
+  const isRegistered = searchParams.get("registered") === "1";
+
+  // Validate + decode the email query param
+  const prefillEmail = (() => {
+    try {
+      const decoded = decodeURIComponent(rawEmail);
+      return EMAIL_RE.test(decoded) ? decoded : "";
+    } catch {
+      return "";
+    }
+  })();
+
+  // ── Local state ──────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState({ email: false, password: false });
   const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
+  const [resending, setResending] = useState(false);
 
-  // Redirect if already signed in AND verified
+  // ── Pre-fill email from query param on mount ─────────────────────────────
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) router.push("/");
-    });
-    return () => unsubscribe();
-  }, [router]);
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+    }
+  }, [prefillEmail]);
 
+  // ── Redirect if already logged in AND verified ───────────────────────────
+  useEffect(() => {
+    if (authLoading) return;
+    if (currentUser && isEmailVerified) {
+      const isAdmin = role === "admin" || role === "super_admin";
+      router.push(isAdmin ? "/admin" : "/dashboard");
+    }
+  }, [currentUser, isEmailVerified, authLoading, role, router]);
+
+  // ── Validation ───────────────────────────────────────────────────────────
   const validateField = (key: "email" | "password", value: string): string | null => {
-    const v = value.trim();
     if (key === "email") {
-      if (!v) return e.emailRequired;
-      if (!EMAIL_RE.test(v) || v.length > 255) return e.emailInvalid;
+      if (!value.trim()) return e.emailRequired;
+      if (!EMAIL_RE.test(value.trim()) || value.length > 255) return e.emailInvalid;
       return null;
     }
     if (key === "password") {
@@ -49,19 +78,7 @@ export default function LoginPage() {
     password: validateField("password", password),
   };
 
-  const firebaseErrorMsg = (err: unknown): string => {
-    const code = (err as AuthError)?.code ?? "";
-    const map: Record<string, string> = {
-      "auth/user-not-found": "No account found with that email.",
-      "auth/wrong-password": "Incorrect password. Please try again.",
-      "auth/invalid-email": "Invalid email address.",
-      "auth/too-many-requests": "Too many attempts. Please try again later.",
-      "auth/network-request-failed": "Network error. Check your connection.",
-      "auth/invalid-credential": "Incorrect email or password.",
-    };
-    return map[code] ?? (err instanceof Error ? err.message : t.auth.somethingWrong);
-  };
-
+  // ── Submit ───────────────────────────────────────────────────────────────
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
     setTouched({ email: true, password: true });
@@ -72,36 +89,44 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    try {
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      
-      if (!cred.user.emailVerified) {
-        setUnverifiedUser(cred.user);
-        toast.error("Please verify your email before logging in.");
-        setLoading(false);
-        return;
-      }
+    setUnverifiedUser(null);
 
-      toast.success(t.auth.welcomeToast);
-      // Navigation will be handled by the onAuthStateChanged effect
-    } catch (err: unknown) {
-      toast.error(firebaseErrorMsg(err));
+    const errMsg = await login(email.trim(), password);
+
+    if (errMsg) {
+      toast.error(errMsg);
       setLoading(false);
+      return;
     }
+
+    // Login succeeded — check if email verified
+    const user = auth.currentUser;
+    if (user && !user.emailVerified) {
+      setUnverifiedUser(user);
+      toast.error("Please verify your email before logging in.");
+      setLoading(false);
+      return;
+    }
+
+    // Verified — redirect based on role is handled by onAuthStateChanged
+    // in the app layout; here we just push to dashboard as default
+    toast.success(t.auth.welcomeToast);
+    // Navigation handled by the useEffect above watching currentUser + isEmailVerified
   };
 
+  // ── Resend verification ──────────────────────────────────────────────────
   const handleResendVerification = async () => {
     if (!unverifiedUser) return;
-    setLoading(true);
+    setResending(true);
     try {
-      await sendEmailVerification(unverifiedUser);
+      await sendEmailVerification(unverifiedUser, {
+        url: `${window.location.origin}/auth/login`,
+      });
       toast.success("Verification email resent. Please check your inbox.");
-      await signOut(auth);
-      setUnverifiedUser(null);
-    } catch (err: unknown) {
+    } catch {
       toast.error("Failed to resend verification email. Please try again later.");
     } finally {
-      setLoading(false);
+      setResending(false);
     }
   };
 
@@ -116,22 +141,48 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* ── Registration success banner ─────────────────────────────────── */}
+      {isRegistered && (
+        <div className="mb-6 flex items-start gap-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4">
+          <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Account created successfully!</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              We sent a verification email to <span className="font-medium text-foreground">{prefillEmail || "your inbox"}</span>. Verify your email, then sign in below.
+            </p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={onSubmit} className="space-y-4" noValidate autoComplete="off">
         <div className="space-y-4">
-          <Field 
-            id="email" type="email" label={t.auth.email} icon={<Mail className="h-4 w-4" />}
-            value={email} onChange={setEmail} onBlur={() => setTouched(s => ({...s, email: true}))}
-            placeholder={t.auth.emailPh} autoComplete="email" 
-            error={touched.email && errors.email ? errors.email : undefined} 
+          <Field
+            id="login-email"
+            type="email"
+            label={t.auth.email}
+            icon={<Mail className="h-4 w-4" />}
+            value={email}
+            onChange={setEmail}
+            onBlur={() => setTouched((s) => ({ ...s, email: true }))}
+            placeholder={t.auth.emailPh}
+            autoComplete="email"
+            error={touched.email && errors.email ? errors.email : undefined}
           />
 
           <div>
-            <Field 
-              id="password" type="password" label={t.auth.password} icon={<Lock className="h-4 w-4" />}
-              value={password} onChange={setPassword} onBlur={() => setTouched(s => ({...s, password: true}))}
-              placeholder={t.auth.passwordPh} autoComplete="current-password"
-              showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
-              error={touched.password && errors.password ? errors.password : undefined} 
+            <Field
+              id="login-password"
+              type="password"
+              label={t.auth.password}
+              icon={<Lock className="h-4 w-4" />}
+              value={password}
+              onChange={setPassword}
+              onBlur={() => setTouched((s) => ({ ...s, password: true }))}
+              placeholder={t.auth.passwordPh}
+              autoComplete="current-password"
+              showLabel={t.auth.showPassword}
+              hideLabel={t.auth.hidePassword}
+              error={touched.password && errors.password ? errors.password : undefined}
             />
 
             <div className="mt-2 text-right rtl:text-left">
@@ -145,29 +196,41 @@ export default function LoginPage() {
         <div className="flex justify-center pt-4 border-t border-border mt-8">
           <button
             type="submit"
-            disabled={loading || !email || !password || !!errors.email || !!errors.password}
+            id="login-submit"
+            disabled={loading || !!errors.email || !!errors.password}
             className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60"
           >
             {loading && !unverifiedUser ? (
-              <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span>
+              <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}
+              </span>
             ) : t.auth.signInBtn}
           </button>
         </div>
-        
+
+        {/* ── Unverified email banner ─────────────────────────────────────── */}
         {unverifiedUser && (
           <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg className="h-4 w-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">Email not verified</p>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Check your inbox and click the link we sent, or resend it below.</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Check your inbox and click the link we sent, or resend it below.
+            </p>
             <button
               type="button"
               onClick={handleResendVerification}
-              disabled={loading}
+              disabled={resending}
               className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-sm"
             >
-              {loading ? <span className="flex items-center gap-2"><svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Sending…</span> : "Resend Verification Email"}
+              {resending ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Sending…
+                </span>
+              ) : "Resend Verification Email"}
             </button>
           </div>
         )}
@@ -180,6 +243,8 @@ export default function LoginPage() {
     </div>
   );
 }
+
+// ─── Field sub-component ──────────────────────────────────────────────────────
 
 function Field({
   id, label, icon, value, onChange, onBlur, placeholder, type = "text", autoComplete, showLabel, hideLabel, error, valid,
@@ -231,5 +296,19 @@ function Field({
         </p>
       )}
     </div>
+  );
+}
+
+// ─── Page export (Suspense wraps useSearchParams) ─────────────────────────────
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

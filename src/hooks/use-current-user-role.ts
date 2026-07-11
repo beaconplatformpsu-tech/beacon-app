@@ -1,50 +1,26 @@
-import { useEffect, useState } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
-import { ref, get } from "firebase/database";
-import { auth, db } from "@/lib/firebase/config";
-
-export type AppRole = "admin" | "student";
-
 /**
- * Returns the currently signed-in Firebase user, their app role (read from
- * Realtime DB at /users/{uid}/role), and a loading flag.
+ * Backward-compatible wrapper around the centralized AuthContext.
  *
- * Role is written to the DB on sign-up (default: "student").
- * Admins can be promoted by setting /users/{uid}/role = "admin" in the
- * Firebase Console.
+ * Existing components that import { useCurrentUserRole } continue to work.
+ * New code should prefer useAuth() from @/hooks/use-auth.
  */
-export function useCurrentUserRole() {
-  const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
-  const [loading, setLoading] = useState(true);
+import { useAuth } from "@/lib/auth/AuthContext";
+import type { User } from "firebase/auth";
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
+export type AppRole = "admin" | "super_admin" | "student";
 
-      if (!firebaseUser) {
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+export function useCurrentUserRole(): {
+  session: User | null;
+  user: User | null;
+  role: AppRole | null;
+  loading: boolean;
+} {
+  const { currentUser, role, loading } = useAuth();
 
-      try {
-        const roleSnap = await get(ref(db, `user_admin_meta/${firebaseUser.uid}/role`));
-        const storedRole = roleSnap.exists() ? (roleSnap.val() as AppRole) : "student";
-        setRole(storedRole);
-      } catch {
-        setRole("student");
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // Keep a compatible shape: expose `session` as a boolean-like object so
-  // existing header/nav code that checks `if (session)` continues to work.
-  const session = user;
-
-  return { session, role, loading, user };
+  return {
+    session: currentUser,
+    user: currentUser,
+    role: currentUser ? role : null,
+    loading,
+  };
 }

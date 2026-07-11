@@ -202,8 +202,9 @@ export default function RegisterPage() {
 
       await signOut(auth);
 
+      const encodedEmail = encodeURIComponent(form.email.trim());
       toast.success("Account created! Please verify your email before signing in.");
-      router.push("/auth/login");
+      router.push(`/auth/login?email=${encodedEmail}&registered=1`);
     } catch (err: unknown) {
       toast.error(firebaseErrorMsg(err));
       setLoading(false);

@@ -4,9 +4,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, CheckSquare, BookOpen, GraduationCap, HeartHandshake, LockKeyhole, User as UserIcon, LogOut, Settings, MessageSquare, Home, Menu, X } from "lucide-react";
-import { useCurrentUserRole } from "@/hooks/use-current-user-role";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
+import { useAuth } from "@/hooks/use-auth";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useT, useLanguage } from "@/i18n/LanguageProvider";
 import logo from "@/assets/beacon-logo.jpg";
@@ -16,20 +14,34 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { session, role, loading } = useCurrentUserRole();
+  const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const toast = useCustomToast();
   const t = useT();
+
+  // ── Auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!loading && !session) {
+    if (loading) return;
+
+    // Not logged in → go to login
+    if (!session) {
       toast.warning(t.layout.authRequired, t.layout.pleaseLogin);
       router.push("/auth/login");
+      return;
     }
-  }, [session, loading, router, toast]);
-  if (loading || !session) {
+
+    // Logged in but email not verified → go to verify page
+    if (!isEmailVerified) {
+      router.push("/auth/verify-email");
+      return;
+    }
+  }, [session, loading, isEmailVerified, router, toast, t.layout]);
+
+  // ── Loading / unauthenticated splash ──────────────────────────────────────
+  if (loading || !session || !isEmailVerified) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -37,13 +49,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // ── Sign-out ──────────────────────────────────────────────────────────────
   const handleSignOut = async () => {
-    await signOut(auth);
+    await logout();
     toast.success(t.actions?.signOut || "Signed out successfully", "See you next time!");
-    router.push("/");
+    router.push("/auth/login");
   };
 
-  const navItems = role === "admin" ? [
+  // ── Nav items by role ─────────────────────────────────────────────────────
+  const isAdmin = role === "admin" || role === "super_admin";
+
+  const navItems = isAdmin ? [
     { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard },
     { label: t.nav.manageUsers, href: "/admin/users", icon: UserIcon },
     { label: t.nav.contentResources, href: "/admin/content", icon: BookOpen },
@@ -146,7 +162,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         confirmText={t.actions?.signOut || "Sign Out"}
         cancelText={t.actions?.cancel || "Cancel"}
       />
-      {role !== "admin" && <FeedbackModal />}
+      {!isAdmin && <FeedbackModal />}
     </div>
   );
 }
