@@ -1,4 +1,4 @@
-import { ref, set, push, remove, update, serverTimestamp } from "firebase/database";
+import { ref, set, push, remove, update, serverTimestamp, increment } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 
 export const adminService = {
@@ -47,6 +47,32 @@ export const adminService = {
     } else {
       await remove(linkRef);
     }
+  },
+
+  async toggleLearningPathStep(adminUid: string, pathId: string, stepId: string, payload: Record<string, any> | null) {
+    if (!adminUid) throw new Error("Unauthorized");
+    const linkRef = ref(db, `relations/learning_path_steps/${pathId}/${stepId}`);
+    
+    if (payload) {
+      await set(linkRef, {
+        ...payload,
+        learningPathId: pathId,
+        stepId: stepId,
+        updatedByAdmin: adminUid,
+        createdAt: serverTimestamp()
+      });
+    } else {
+      await remove(linkRef);
+    }
+  },
+
+  async bumpStatCount(adminUid: string, statKey: string, amount: number) {
+    if (!adminUid) throw new Error("Unauthorized");
+    const statRef = ref(db, `stats`);
+    await update(statRef, {
+      [statKey]: increment(amount),
+      updatedAt: serverTimestamp()
+    });
   },
 
   async updatePlatformSettings(adminUid: string, payload: Record<string, unknown>) {

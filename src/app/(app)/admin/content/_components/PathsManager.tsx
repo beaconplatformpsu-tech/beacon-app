@@ -23,10 +23,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Path = { id: string; title: string; description?: string; industryDomain?: string; categoryId?: string; demandLevel?: string; requiredEducation?: string; skills?: Record<string, boolean> };
+type Path = { id: string; title: string; slug?: string; description?: string; longDescription?: string; industryDomain?: string; categoryId?: string; demandLevel?: string; beginnerFriendly?: boolean; averagePreparationTime?: string; requiredEducation?: string; isActive?: boolean; skills?: Record<string, boolean> };
 type Skill = { id: string; name: string; description?: string };
 type Resource = { id: string; title: string; skillId?: string; careerPathId?: string; resourceType?: string; url?: string; level?: string; categoryId?: string };
-type Category = { id: string; name: string };
+type Category = { id: string; name?: string; title?: string; slug?: string };
 
 export function PathsManager({ paths, categories, skills, resources }: { paths: Path[]; categories: Category[]; skills: Skill[]; resources: Resource[] }) {
   const { session } = useCurrentUserRole();
@@ -35,20 +35,20 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
   const [activeSubTab, setActiveSubTab] = useState<"skills" | "resources">("skills");
-  const [formData, setFormData] = useState({ title: "", description: "", categoryId: "", industryDomain: "", demandLevel: "High", requiredEducation: "Bachelor's Degree" });
+  const [formData, setFormData] = useState({ title: "", slug: "", description: "", longDescription: "", categoryId: "", industryDomain: "", demandLevel: "High", beginnerFriendly: false, averagePreparationTime: "", requiredEducation: "Bachelor's Degree", isActive: true });
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const openNew = () => {
     setEditingId(null);
     const firstCat = categories[0];
-    setFormData({ title: "", description: "", categoryId: firstCat?.id || "", industryDomain: firstCat?.name || "", demandLevel: "High", requiredEducation: "Bachelor's Degree" });
+    setFormData({ title: "", slug: "", description: "", longDescription: "", categoryId: firstCat?.id || "", industryDomain: firstCat?.name || "", demandLevel: "High", beginnerFriendly: false, averagePreparationTime: "", requiredEducation: "Bachelor's Degree", isActive: true });
     setIsOpen(true);
   };
 
   const openEdit = (path: Path) => {
     setEditingId(path.id);
-    setFormData({ title: path.title || "", description: path.description || "", categoryId: path.categoryId || "", industryDomain: path.industryDomain || "", demandLevel: path.demandLevel || "High", requiredEducation: path.requiredEducation || "Bachelor's Degree" });
+    setFormData({ title: path.title || "", slug: path.slug || "", description: path.description || "", longDescription: path.longDescription || "", categoryId: path.categoryId || "", industryDomain: path.industryDomain || "", demandLevel: path.demandLevel || "High", beginnerFriendly: path.beginnerFriendly || false, averagePreparationTime: path.averagePreparationTime || "", requiredEducation: path.requiredEducation || "Bachelor's Degree", isActive: path.isActive !== false });
     setIsOpen(true);
   };
 
@@ -62,7 +62,7 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
     if (!formData.title) { toast.warning("Validation", "Path title is required."); return; }
     if (!session?.uid) return;
     const cat = categories.find(c => c.id === formData.categoryId);
-    const payload = { title: formData.title, description: formData.description, categoryId: formData.categoryId, industryDomain: cat?.name || formData.industryDomain, demandLevel: formData.demandLevel, requiredEducation: formData.requiredEducation };
+    const payload = { title: formData.title, slug: formData.slug, description: formData.description, longDescription: formData.longDescription, categoryId: formData.categoryId, industryDomain: cat?.name || formData.industryDomain || cat?.title, demandLevel: formData.demandLevel, beginnerFriendly: formData.beginnerFriendly, averagePreparationTime: formData.averagePreparationTime, requiredEducation: formData.requiredEducation, isActive: formData.isActive };
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "career_paths", editingId, payload); toast.success("Updated", "Career path updated."); }
@@ -130,6 +130,11 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
                       <h3 className="font-semibold text-lg tracking-tight text-foreground">{path.title}</h3>
                       {path.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2 leading-relaxed max-w-3xl">{path.description}</p>}
                     </div>
+                    {!path.isActive && path.isActive !== undefined && (
+                      <div className="bg-destructive/10 text-destructive text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap h-fit">
+                        Inactive
+                      </div>
+                    )}
                     
                     <div className="action-menu ml-4 shrink-0">
                       <DropdownMenu>
@@ -152,10 +157,10 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 mt-4">
-                    {(cat?.name || path.industryDomain) && (
+                    {(cat?.name || cat?.title || path.industryDomain) && (
                       <div className="flex items-center gap-1.5 text-xs font-medium bg-muted text-muted-foreground px-2.5 py-1 rounded-full border border-border">
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                        {cat?.name || path.industryDomain}
+                        {cat?.name || cat?.title || path.industryDomain}
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 text-xs font-medium bg-muted text-muted-foreground px-2.5 py-1 rounded-full border border-border">
@@ -280,10 +285,20 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Path Title <span className="text-destructive">*</span></Label>
               <Input 
-                className="h-11 rounded-xl bg-muted/50 focus:bg-background"
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
                 value={formData.title} 
                 onChange={e => setFormData({ ...formData, title: e.target.value })} 
                 placeholder="e.g. Full Stack Developer" 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Slug</Label>
+              <Input 
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
+                value={formData.slug} 
+                onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })} 
+                placeholder="e.g. full-stack-developer" 
               />
             </div>
             
@@ -292,9 +307,9 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
               <select 
                 className="w-full h-11 rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus:bg-background focus:ring-2 focus:ring-primary/40 focus:outline-none transition-colors"
                 value={formData.categoryId} 
-                onChange={e => { const cat = categories.find(c => c.id === e.target.value); setFormData({ ...formData, categoryId: e.target.value, industryDomain: cat?.name || "" }); }}>
+                onChange={e => { const cat = categories.find(c => c.id === e.target.value); setFormData({ ...formData, categoryId: e.target.value, industryDomain: cat?.name || cat?.title || "" }); }}>
                 <option value="">Select a Domain</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name || (c as any).title}</option>)}
               </select>
             </div>
             
@@ -305,6 +320,15 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
                 value={formData.description} 
                 onChange={e => setFormData({ ...formData, description: e.target.value })} 
                 placeholder="Detailed description of the responsibilities and outlook for this path..." 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Long Description</Label>
+              <Textarea 
+                className="rounded-xl bg-muted/50 focus:bg-background resize-none min-h-[100px] border-border focus:ring-primary/20"
+                value={formData.longDescription} 
+                onChange={e => setFormData({ ...formData, longDescription: e.target.value })} 
+                placeholder="Detailed explanation of the path..." 
               />
             </div>
             
@@ -319,13 +343,47 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
                 </select>
               </div>
               <div className="space-y-2">
+                <Label className="text-sm font-semibold">Average Prep Time</Label>
+                <Input 
+                  className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
+                  value={formData.averagePreparationTime} 
+                  onChange={e => setFormData({ ...formData, averagePreparationTime: e.target.value })} 
+                  placeholder="e.g. 6 months" 
+                />
+              </div>
+              <div className="space-y-2">
                 <Label className="text-sm font-semibold">Required Education</Label>
                 <Input 
-                  className="h-11 rounded-xl bg-muted/50 focus:bg-background"
+                  className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
                   value={formData.requiredEducation} 
                   onChange={e => setFormData({ ...formData, requiredEducation: e.target.value })} 
                   placeholder="e.g. Bachelor's Degree" 
                 />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 pt-2">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.beginnerFriendly}
+                    onChange={e => setFormData({...formData, beginnerFriendly: e.target.checked})}
+                    className="rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  Beginner Friendly
+                </label>
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isActive}
+                    onChange={e => setFormData({...formData, isActive: e.target.checked})}
+                    className="rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  Is Active
+                </label>
               </div>
             </div>
           </div>

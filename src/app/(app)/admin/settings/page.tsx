@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    const settingsRef = ref(db, "platform_settings");
+    const settingsRef = ref(db, "platform_settings/public");
     const unsubscribe = onValue(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
         setSettings((prev) => ({ ...prev, ...snapshot.val() }));

@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Skill = { id: string; name: string; description?: string };
+type Skill = { id: string; name: string; slug?: string; description?: string; categoryId?: string; difficultyLevel?: string; isActive?: boolean };
 type Path = { id: string; title: string; skills?: Record<string, boolean> };
 type Resource = { id: string; title: string; skillId?: string; resourceType?: string; url?: string };
 type Category = { id: string; name: string };
@@ -33,12 +33,12 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
   const toast = useCustomToast();
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: "", slug: "", description: "", categoryId: "", difficultyLevel: "Beginner", isActive: true });
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const openNew = () => { setEditingId(null); setFormData({ name: "", description: "" }); setIsOpen(true); };
-  const openEdit = (skill: Skill) => { setEditingId(skill.id); setFormData({ name: skill.name || "", description: skill.description || "" }); setIsOpen(true); };
+  const openNew = () => { setEditingId(null); setFormData({ name: "", slug: "", description: "", categoryId: "", difficultyLevel: "Beginner", isActive: true }); setIsOpen(true); };
+  const openEdit = (skill: Skill) => { setEditingId(skill.id); setFormData({ name: skill.name || "", slug: skill.slug || "", description: skill.description || "", categoryId: skill.categoryId || "", difficultyLevel: skill.difficultyLevel || "Beginner", isActive: skill.isActive !== false }); setIsOpen(true); };
 
   const handleDelete = async (id: string) => {
     if (!session?.uid) return;
@@ -110,6 +110,11 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
               <div className="flex-1 space-y-2">
                 <h3 className="font-semibold text-lg text-foreground tracking-tight line-clamp-1">{skill.name}</h3>
                 {skill.description && <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{skill.description}</p>}
+                {!skill.isActive && skill.isActive !== undefined && (
+                  <div className="bg-destructive/10 text-destructive text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap h-fit w-fit">
+                    Inactive
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3 pt-4 mt-4 border-t border-border/50">
@@ -161,16 +166,57 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Skill Name <span className="text-destructive">*</span></Label>
               <Input 
-                className="h-11 rounded-xl bg-muted/50 focus:bg-background"
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
                 value={formData.name} 
                 onChange={e => setFormData({ ...formData, name: e.target.value })} 
                 placeholder="e.g. React.js" 
               />
             </div>
             <div className="space-y-2">
+              <Label className="text-sm font-semibold">Slug</Label>
+              <Input 
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
+                value={formData.slug} 
+                onChange={e => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })} 
+                placeholder="e.g. react-js" 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Skill Category (Optional)</Label>
+              <select 
+                className="w-full h-11 rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus:bg-background focus:ring-2 focus:ring-primary/40 focus:outline-none transition-colors"
+                value={formData.categoryId} 
+                onChange={e => setFormData({ ...formData, categoryId: e.target.value })}>
+                <option value="">None / General</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name || (c as any).title}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Difficulty Level</Label>
+                <select 
+                  className="w-full h-11 rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus:bg-background focus:ring-2 focus:ring-primary/40 focus:outline-none transition-colors"
+                  value={formData.difficultyLevel} 
+                  onChange={e => setFormData({ ...formData, difficultyLevel: e.target.value })}>
+                  {["Beginner", "Intermediate", "Advanced"].map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2 pt-8">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isActive}
+                    onChange={e => setFormData({...formData, isActive: e.target.checked})}
+                    className="rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  Is Active
+                </label>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label className="text-sm font-semibold">Description</Label>
               <Textarea 
-                className="rounded-xl bg-muted/50 focus:bg-background resize-none"
+                className="rounded-xl bg-muted/50 focus:bg-background resize-none border-border focus:ring-primary/20"
                 value={formData.description} 
                 onChange={e => setFormData({ ...formData, description: e.target.value })} 
                 placeholder="Briefly describe this skill..." 

@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, FileText, Database, ShieldCheck, MessageSquare, Activity, ChevronRight, Server, Cloud } from "lucide-react";
+import { Users, FileText, Database, ShieldCheck, MessageSquare, Activity, ChevronRight, Server, Cloud, CheckSquare, Briefcase, Award, Map, PenTool, LayoutTemplate, Megaphone } from "lucide-react";
 import { ref, get } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
 
 export default function AdminDashboard() {
-  const [usersCount, setUsersCount] = useState(0);
-  const [resourcesCount, setResourcesCount] = useState(0);
-  const [messagesCount, setMessagesCount] = useState(0);
+  const [statsData, setStatsData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const t = useT();
 
@@ -20,10 +18,7 @@ export default function AdminDashboard() {
         // Read from the pre-computed /stats node — a single fast read
         const statsSnap = await get(ref(db, "stats"));
         if (statsSnap.exists()) {
-          const data = statsSnap.val();
-          setUsersCount(data.usersCount ?? 0);
-          setResourcesCount(data.resourcesCount ?? 0);
-          setMessagesCount(data.supportMessagesCount ?? 0);
+          setStatsData(statsSnap.val());
         }
       } catch (err) {
         console.error("Failed to load stats", err);
@@ -34,10 +29,18 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
+  const tAdmin = t.admin as any;
   const stats = [
-    { label: t.admin.totalUsers, value: loading ? "-" : usersCount, icon: Users, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-500/20", gradient: "from-blue-500/10 to-transparent" },
-    { label: t.admin.activeResources, value: loading ? "-" : resourcesCount, icon: Database, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-500/20", gradient: "from-emerald-500/10 to-transparent" },
-    { label: t.admin.userFeedback, value: loading ? "-" : messagesCount, icon: FileText, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-500/20", gradient: "from-amber-500/10 to-transparent" },
+    { label: tAdmin?.totalUsers || "Total Users", value: loading ? "-" : (statsData.usersCount ?? 0), icon: Users, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-500/20", gradient: "from-blue-500/10 to-transparent" },
+    { label: tAdmin?.activeResources || "Resources", value: loading ? "-" : (statsData.resourcesCount ?? 0), icon: Database, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-500/20", gradient: "from-emerald-500/10 to-transparent" },
+    { label: tAdmin?.skills || "Skills", value: loading ? "-" : (statsData.skillsCount ?? 0), icon: CheckSquare, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-100 dark:bg-violet-500/20", gradient: "from-violet-500/10 to-transparent" },
+    { label: tAdmin?.careerPaths || "Career Paths", value: loading ? "-" : (statsData.careerPathsCount ?? 0), icon: Briefcase, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-500/20", gradient: "from-amber-500/10 to-transparent" },
+    { label: tAdmin?.learningPaths || "Learning Paths", value: loading ? "-" : (statsData.learningPathsCount ?? 0), icon: Map, color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-100 dark:bg-indigo-500/20", gradient: "from-indigo-500/10 to-transparent" },
+    { label: tAdmin?.practiceTasks || "Practice Tasks", value: loading ? "-" : (statsData.practiceTasksCount ?? 0), icon: PenTool, color: "text-pink-600 dark:text-pink-400", bg: "bg-pink-100 dark:bg-pink-500/20", gradient: "from-pink-500/10 to-transparent" },
+    { label: tAdmin?.projects || "Projects", value: loading ? "-" : (statsData.projectsCount ?? 0), icon: LayoutTemplate, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-100 dark:bg-teal-500/20", gradient: "from-teal-500/10 to-transparent" },
+    { label: tAdmin?.quizzes || "Quizzes", value: loading ? "-" : (statsData.quizzesCount ?? 0), icon: Award, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-500/20", gradient: "from-orange-500/10 to-transparent" },
+    { label: tAdmin?.announcements || "Announcements", value: loading ? "-" : (statsData.announcementsCount ?? 0), icon: Megaphone, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-100 dark:bg-rose-500/20", gradient: "from-rose-500/10 to-transparent" },
+    { label: tAdmin?.userFeedback || "Support Messages", value: loading ? "-" : (statsData.supportMessagesCount ?? 0), icon: MessageSquare, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-500/20", gradient: "from-cyan-500/10 to-transparent" },
   ];
 
   return (
@@ -57,7 +60,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {stats.map((stat, idx) => (
           <div key={idx} className={`group relative overflow-hidden rounded-3xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-${stat.color.split('-')[1]}-500/30`}>
             {/* Subtle Background Gradient */}

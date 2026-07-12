@@ -9,51 +9,63 @@ import { CategoriesManager } from "./_components/CategoriesManager";
 import { PathsManager } from "./_components/PathsManager";
 import { SkillsManager } from "./_components/SkillsManager";
 import { ResourcesManager } from "./_components/ResourcesManager";
+import { LearningPathsManager } from "./_components/LearningPathsManager";
+import { PracticeTasksManager } from "./_components/PracticeTasksManager";
+import { ProjectsManager } from "./_components/ProjectsManager";
+import { QuizzesManager } from "./_components/QuizzesManager";
+import { AnnouncementsManager } from "./_components/AnnouncementsManager";
 import { useT } from "@/i18n/LanguageProvider";
 
 export default function AdminContentPage() {
   const [activeTab, setActiveTab] = useState("categories");
   const t = useT();
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [careerCategories, setCareerCategories] = useState<any[]>([]);
+  const [academicCategories, setAcademicCategories] = useState<any[]>([]);
+  const [skillCategories, setSkillCategories] = useState<any[]>([]);
   const [paths, setPaths] = useState<any[]>([]);
   const [skills, setSkills] = useState<any[]>([]);
   const [resources, setResources] = useState<any[]>([]);
+  const [learningPaths, setLearningPaths] = useState<any[]>([]);
+  const [practiceTasks, setPracticeTasks] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let done = 0;
-    const check = () => { done++; if (done >= 4) setLoading(false); };
+    const totalToLoad = 11;
+    const check = () => { done++; if (done >= totalToLoad) setLoading(false); };
 
-    const unsubCat = onValue(ref(db, "public_content/career_categories"), s => {
-      const d = s.val() || {};
-      setCategories(Object.keys(d).map(k => ({ id: k, ...d[k] })));
-      check();
-    });
-    const unsubPaths = onValue(ref(db, "public_content/career_paths"), s => {
-      const d = s.val() || {};
-      setPaths(Object.keys(d).map(k => ({ id: k, ...d[k] })));
-      check();
-    });
-    const unsubSkills = onValue(ref(db, "public_content/skills"), s => {
-      const d = s.val() || {};
-      setSkills(Object.keys(d).map(k => ({ id: k, ...d[k] })));
-      check();
-    });
-    const unsubRes = onValue(ref(db, "public_content/resources"), s => {
-      const d = s.val() || {};
-      setResources(Object.keys(d).map(k => ({ id: k, ...d[k] })));
-      check();
-    });
+    const subs = [
+      onValue(ref(db, "public_content/career_categories"), s => { const d = s.val() || {}; setCareerCategories(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/academic_categories"), s => { const d = s.val() || {}; setAcademicCategories(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/skill_categories"), s => { const d = s.val() || {}; setSkillCategories(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/career_paths"), s => { const d = s.val() || {}; setPaths(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/skills"), s => { const d = s.val() || {}; setSkills(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/resources"), s => { const d = s.val() || {}; setResources(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/learning_paths"), s => { const d = s.val() || {}; setLearningPaths(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/practice_tasks"), s => { const d = s.val() || {}; setPracticeTasks(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/projects"), s => { const d = s.val() || {}; setProjects(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/quizzes"), s => { const d = s.val() || {}; setQuizzes(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+      onValue(ref(db, "public_content/announcements"), s => { const d = s.val() || {}; setAnnouncements(Object.keys(d).map(k => ({ id: k, ...d[k] }))); check(); }),
+    ];
 
-    return () => { unsubCat(); unsubPaths(); unsubSkills(); unsubRes(); };
+    return () => subs.forEach(unsub => unsub());
   }, []);
 
+  const tContent = t.adminContent as any;
   const tabs = [
-    { id: "categories", label: t.adminContent.categories, icon: Layers },
-    { id: "paths", label: t.adminContent.careerPaths, icon: Briefcase },
-    { id: "skills", label: t.adminContent.skillsLibrary, icon: CheckSquare },
-    { id: "resources", label: t.adminContent.resources, icon: Database },
+    { id: "categories", label: tContent?.categories || "Categories", icon: Layers },
+    { id: "paths", label: tContent?.careerPaths || "Career Paths", icon: Briefcase },
+    { id: "skills", label: tContent?.skillsLibrary || "Skills", icon: CheckSquare },
+    { id: "resources", label: tContent?.resources || "Resources", icon: Database },
+    { id: "learning_paths", label: tContent?.learningPaths || "Learning Paths", icon: Layers },
+    { id: "practice_tasks", label: tContent?.practiceTasks || "Practice Tasks", icon: CheckSquare },
+    { id: "projects", label: tContent?.projects || "Projects", icon: Briefcase },
+    { id: "quizzes", label: tContent?.quizzes || "Quizzes", icon: CheckSquare },
+    { id: "announcements", label: tContent?.announcements || "Announcements", icon: Database },
   ];
 
   return (
@@ -89,10 +101,15 @@ export default function AdminContentPage() {
           </div>
         ) : (
           <>
-            {activeTab === "categories" && <CategoriesManager categories={categories} />}
-            {activeTab === "paths" && <PathsManager paths={paths} categories={categories} skills={skills} resources={resources} />}
-            {activeTab === "skills" && <SkillsManager skills={skills} paths={paths} resources={resources} categories={categories} />}
-            {activeTab === "resources" && <ResourcesManager resources={resources} paths={paths} skills={skills} categories={categories} />}
+            {activeTab === "categories" && <CategoriesManager careerCategories={careerCategories} academicCategories={academicCategories} skillCategories={skillCategories} />}
+            {activeTab === "paths" && <PathsManager paths={paths} categories={careerCategories} skills={skills} resources={resources} />}
+            {activeTab === "skills" && <SkillsManager skills={skills} paths={paths} resources={resources} categories={skillCategories} />}
+            {activeTab === "resources" && <ResourcesManager resources={resources} paths={paths} skills={skills} categories={academicCategories} />}
+            {activeTab === "learning_paths" && <LearningPathsManager learningPaths={learningPaths} paths={paths} resources={resources} practiceTasks={practiceTasks} projects={projects} quizzes={quizzes} />}
+            {activeTab === "practice_tasks" && <PracticeTasksManager practiceTasks={practiceTasks} skills={skills} />}
+            {activeTab === "projects" && <ProjectsManager projects={projects} skills={skills} paths={paths} />}
+            {activeTab === "quizzes" && <QuizzesManager quizzes={quizzes} skills={skills} />}
+            {activeTab === "announcements" && <AnnouncementsManager announcements={announcements} />}
           </>
         )}
       </div>

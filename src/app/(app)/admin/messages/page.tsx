@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useT } from "@/i18n/LanguageProvider";
 
 type ContactMessage = {
@@ -18,6 +19,7 @@ type ContactMessage = {
   name: string;
   email: string;
   message: string;
+  status?: string;
   createdAt: string;
 };
 
@@ -41,7 +43,9 @@ export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [msgToDelete, setMsgToDelete] = useState<string | null>(null);
+  const [msgToView, setMsgToView] = useState<ContactMessage | null>(null);
   const toast = useCustomToast();
   const t = useT();
 
@@ -83,13 +87,25 @@ export default function AdminMessagesPage() {
     }
   };
 
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    if (!session?.uid) return;
+    try {
+      await adminService.updateContent(session.uid, "support_messages", id, { status: newStatus });
+      toast.success("Status Updated", `Message marked as ${newStatus}.`);
+    } catch (err) {
+      toast.error("Update Failed", "Could not update status.");
+    }
+  };
+
   const filteredMessages = useMemo(() => {
-    return messages.filter(m => 
-      (m.name || "").toLowerCase().includes(search.toLowerCase()) || 
-      (m.email || "").toLowerCase().includes(search.toLowerCase()) ||
-      (m.message || "").toLowerCase().includes(search.toLowerCase())
-    );
-  }, [messages, search]);
+    return messages.filter(m => {
+      const matchesSearch = (m.name || "").toLowerCase().includes(search.toLowerCase()) || 
+        (m.email || "").toLowerCase().includes(search.toLowerCase()) ||
+        (m.message || "").toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "All" || (m.status || "New") === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [messages, search, statusFilter]);
 
   const formatMessageTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -112,16 +128,28 @@ export default function AdminMessagesPage() {
           </div>
         </div>
         
-        <div className="relative w-full sm:w-80 group">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-indigo-500 transition-colors" />
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select 
+            className="h-12 bg-background border border-border/60 focus:border-indigo-500/50 focus:ring-indigo-500/20 rounded-xl px-4 text-base"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All Statuses</option>
+            <option value="New">New</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+          <div className="relative w-full sm:w-80 group">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-indigo-500 transition-colors" />
+            </div>
+            <Input 
+              className="pl-10 h-12 bg-background border-border/60 focus:border-indigo-500/50 focus:ring-indigo-500/20 rounded-xl shadow-inner transition-all text-base" 
+              placeholder={t.adminMessages.searchPlaceholder} 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-          <Input 
-            className="pl-10 h-12 bg-background border-border/60 focus:border-indigo-500/50 focus:ring-indigo-500/20 rounded-xl shadow-inner transition-all text-base" 
-            placeholder={t.adminMessages.searchPlaceholder} 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
         </div>
       </div>
 
@@ -170,23 +198,43 @@ export default function AdminMessagesPage() {
                             <span className="flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" /> {formatMessageTime(msg.createdAt)}
                             </span>
+                            <span className="text-border mx-1">•</span>
+                            <select
+                              className="text-xs bg-muted border border-border rounded px-1 py-0.5 outline-none font-medium"
+                              value={msg.status || "New"}
+                              onChange={(e) => handleUpdateStatus(msg.id, e.target.value)}
+                            >
+                              <option value="New">New</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Resolved">Resolved</option>
+                            </select>
                           </div>
                         </div>
                       </div>
 
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100" 
-                        onClick={() => setMsgToDelete(msg.id)}
-                        title={t.adminMessages.deleteMessage}
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="rounded-xl text-indigo-500 hover:bg-indigo-500/10 hover:text-indigo-600 transition-all font-semibold" 
+                          onClick={() => setMsgToView(msg)}
+                        >
+                          View Detail
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-10 w-10 rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100" 
+                          onClick={() => setMsgToDelete(msg.id)}
+                          title={t.adminMessages.deleteMessage}
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
 
-                    {/* Message Body */}
-                    <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 text-[15px] leading-relaxed whitespace-pre-wrap text-foreground/90 font-medium">
+                    {/* Message Body preview */}
+                    <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 text-[15px] leading-relaxed whitespace-pre-wrap text-foreground/90 font-medium line-clamp-3">
                       {msg.message}
                     </div>
                   </div>
@@ -195,6 +243,32 @@ export default function AdminMessagesPage() {
             </div>
           )}
         </div>
+      )}
+
+      {msgToView && (
+        <ConfirmDialog
+          isOpen={!!msgToView}
+          onClose={() => setMsgToView(null)}
+          onConfirm={() => setMsgToView(null)}
+          title={`Message from ${msgToView.name || t.adminMessages.unknown}`}
+          description={
+            <div className="space-y-4 mt-4 text-left">
+              <div className="bg-muted/50 p-4 rounded-xl border border-border/60">
+                <p className="text-sm font-semibold text-foreground mb-1">Email</p>
+                <a href={`mailto:${msgToView.email}`} className="text-indigo-500 hover:underline">{msgToView.email}</a>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-xl border border-border/60">
+                <p className="text-sm font-semibold text-foreground mb-1">Status</p>
+                <Badge variant={msgToView.status === "Resolved" ? "secondary" : "default"}>{msgToView.status || "New"}</Badge>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-xl border border-border/60 whitespace-pre-wrap text-[15px] leading-relaxed">
+                {msgToView.message}
+              </div>
+            </div>
+          }
+          confirmText="Close"
+          cancelText=""
+        />
       )}
 
       <ConfirmDialog

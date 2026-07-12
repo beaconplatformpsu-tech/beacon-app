@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type Resource = { id: string; title: string; skillId?: string; careerPathId?: string; categoryId?: string; resourceType?: string; url?: string; level?: string };
+type Resource = { id: string; title: string; description?: string; skillId?: string; careerPathId?: string; categoryId?: string; resourceType?: string; url?: string; level?: string; duration?: string; isPremium?: boolean; isActive?: boolean };
 type Path = { id: string; title: string };
 type Skill = { id: string; name: string };
 type Category = { id: string; name: string };
@@ -42,12 +42,16 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
 
   const [formData, setFormData] = useState({
     title: "",
+    description: "",
     resourceType: "Document",
     careerPathId: "",
     skillId: "",
     categoryId: "",
     level: "All Levels",
+    duration: "",
     url: "",
+    isPremium: false,
+    isActive: true,
   });
 
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
@@ -57,7 +61,7 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
 
   const openNew = () => {
     setEditingId(null);
-    setFormData({ title: "", resourceType: "Document", careerPathId: "", skillId: "", categoryId: "", level: "All Levels", url: "" });
+    setFormData({ title: "", description: "", resourceType: "Document", careerPathId: "", skillId: "", categoryId: "", level: "All Levels", duration: "", url: "", isPremium: false, isActive: true });
     setFileToUpload(null);
     setUploadMode("link");
     setIsOpen(true);
@@ -67,12 +71,16 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
     setEditingId(res.id);
     setFormData({
       title: res.title || "",
+      description: res.description || "",
       resourceType: res.resourceType || "Document",
       careerPathId: res.careerPathId || "",
       skillId: res.skillId || "",
       categoryId: res.categoryId || "",
       level: res.level || "All Levels",
+      duration: res.duration || "",
       url: res.url || "",
+      isPremium: res.isPremium || false,
+      isActive: res.isActive !== false,
     });
     setFileToUpload(null);
     setUploadMode("link");
@@ -113,12 +121,16 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
 
       const payload = {
         title: formData.title,
+        description: formData.description,
         resourceType: formData.resourceType,
         careerPathId: formData.careerPathId || null,
         skillId: formData.skillId || null,
         categoryId: formData.categoryId || null,
         level: formData.level,
+        duration: formData.duration,
         url: finalUrl,
+        isPremium: formData.isPremium,
+        isActive: formData.isActive,
         updatedAt: new Date().toISOString(),
       };
 
@@ -212,6 +224,8 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     <Badge variant="outline" className="text-[10px] bg-muted/50 border-border/60">{res.resourceType}</Badge>
                     {res.level && res.level !== "All Levels" && <Badge className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-50">{res.level}</Badge>}
+                    {res.isPremium && <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-800 border border-amber-200">Premium</Badge>}
+                    {!res.isActive && res.isActive !== undefined && <Badge variant="destructive" className="text-[10px]">Inactive</Badge>}
                   </div>
                 </div>
 
@@ -274,10 +288,19 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Title <span className="text-destructive">*</span></Label>
               <Input
-                className="h-11 rounded-xl bg-muted/50 focus:bg-background"
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g. React Official Documentation"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Description</Label>
+              <Input
+                className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Short description of this resource..."
               />
             </div>
 
@@ -295,6 +318,40 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
                   value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })}>
                   {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Duration (Optional)</Label>
+                <Input
+                  className="h-11 rounded-xl bg-muted/50 focus:bg-background border-border focus:ring-primary/20"
+                  value={formData.duration}
+                  onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                  placeholder="e.g. 2h 30m"
+                />
+              </div>
+              <div className="space-y-2 pt-8">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isPremium}
+                    onChange={e => setFormData({...formData, isPremium: e.target.checked})}
+                    className="rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  Premium Resource
+                </label>
+              </div>
+              <div className="space-y-2 pt-8">
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.isActive}
+                    onChange={e => setFormData({...formData, isActive: e.target.checked})}
+                    className="rounded border-border text-primary focus:ring-primary/20"
+                  />
+                  Is Active
+                </label>
               </div>
             </div>
 

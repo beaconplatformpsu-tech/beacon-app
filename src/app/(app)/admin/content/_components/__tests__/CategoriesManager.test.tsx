@@ -31,14 +31,14 @@ describe("CategoriesManager", () => {
   });
 
   it("renders correctly with categories", () => {
-    render(<CategoriesManager categories={mockCategories} />);
+    render(<CategoriesManager careerCategories={mockCategories} academicCategories={[]} skillCategories={[]} />);
     expect(screen.getByText("Industry Domains")).toBeInTheDocument();
     expect(screen.getByText("Software Engineering")).toBeInTheDocument();
     expect(screen.getByText("Design")).toBeInTheDocument();
   });
 
   it("opens 'New Category' dialog on Add Category click", () => {
-    render(<CategoriesManager categories={mockCategories} />);
+    render(<CategoriesManager careerCategories={mockCategories} academicCategories={[]} skillCategories={[]} />);
     const addButton = screen.getByText("Add Category");
     fireEvent.click(addButton);
     
@@ -47,7 +47,7 @@ describe("CategoriesManager", () => {
   });
 
   it("validates empty name on submit", async () => {
-    render(<CategoriesManager categories={mockCategories} />);
+    render(<CategoriesManager careerCategories={mockCategories} academicCategories={[]} skillCategories={[]} />);
     fireEvent.click(screen.getByText("Add Category"));
     
     const saveButton = screen.getByText("Save Category");
@@ -60,7 +60,7 @@ describe("CategoriesManager", () => {
   });
 
   it("calls push on valid submit", async () => {
-    render(<CategoriesManager categories={mockCategories} />);
+    render(<CategoriesManager careerCategories={mockCategories} academicCategories={[]} skillCategories={[]} />);
     fireEvent.click(screen.getByText("Add Category"));
     
     const nameInput = screen.getByPlaceholderText("e.g. Data Science");
