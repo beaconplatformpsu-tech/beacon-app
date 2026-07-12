@@ -19,7 +19,7 @@ export function useSkills(userId: string | undefined) {
       return;
     }
 
-    const skillsRef = ref(db, `user_private/${userId}/user_skills`);
+    const skillsRef = ref(db, `user_private/${userId}/skill_progress`);
     const unsubscribe = onValue(skillsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {

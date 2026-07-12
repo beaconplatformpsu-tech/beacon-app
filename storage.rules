@@ -12,8 +12,9 @@ service firebase.storage {
     }
     
     // Resources: Public read for logged-in users, writable by authenticated users
-    // Note: Admin writes are protected by application logic and Realtime DB rules, 
+    // TODO: Admin writes are currently protected by application logic and Realtime DB rules, 
     // but in Firebase Storage without custom claims, we restrict to auth != null.
+    // For full security, move resource uploads to a Server Action / Cloud Function that validates admin claims.
     match /resources/{fileName} {
       allow read: if request.auth != null;
       allow write: if request.auth != null

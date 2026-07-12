@@ -8,7 +8,7 @@ export const skillService = {
    * Fetch a single user's skills safely once
    */
   async getUserSkills(uid: string): Promise<UserSkill[]> {
-    const snapshot = await get(ref(db, `user_private/${uid}/user_skills`));
+    const snapshot = await get(ref(db, `user_private/${uid}/skill_progress`));
     if (!snapshot.exists()) return [];
     
     return this.parseUserSkills(snapshot.val());
@@ -18,7 +18,7 @@ export const skillService = {
    * Subscribe to live skill updates safely
    */
   subscribeToUserSkills(uid: string, callback: (skills: UserSkill[]) => void): () => void {
-    const skillsRef = ref(db, `user_private/${uid}/user_skills`);
+    const skillsRef = ref(db, `user_private/${uid}/skill_progress`);
     const unsubscribe = onValue(skillsRef, (snapshot) => {
       if (!snapshot.exists()) {
         callback([]);

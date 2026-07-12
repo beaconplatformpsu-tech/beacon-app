@@ -79,7 +79,7 @@ export function useStudentSkills(uid: string | undefined) {
       return;
     }
 
-    const dbRef = ref(db, `user_private/${uid}/user_skills`);
+    const dbRef = ref(db, `user_private/${uid}/skill_progress`);
     const unsubscribe = onValue(dbRef, (snapshot) => {
       if (snapshot.exists()) {
         const rawData = snapshot.val();

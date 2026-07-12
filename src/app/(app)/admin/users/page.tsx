@@ -54,7 +54,7 @@ export default function AdminUsersPage() {
   const t = useT();
 
   useEffect(() => {
-    const usersRef = ref(db, "user_private");
+    const usersRef = ref(db, "users");
     const metaRef = ref(db, "user_admin_meta");
     let usersData: any = null;
     let metaData: any = null;
@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
     const processUsers = () => {
       if (usersData && metaData) {
         const usersList = Object.keys(usersData).map(key => {
-          const profile = usersData[key]?.profile || {};
+          const profile = usersData[key] || {};
           const meta = metaData[key] || {};
           return {
             uid: key,

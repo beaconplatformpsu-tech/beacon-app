@@ -32,7 +32,7 @@ export default function PortfolioClient({ id }: { id: string }) {
     const fetchPortfolio = async () => {
       try {
         // Fetch User Profile
-        const userSnap = await get(ref(db, `user_private/${id}/profile`));
+        const userSnap = await get(ref(db, `users/${id}`));
         if (!userSnap.exists()) {
           setError(true);
           setLoading(false);
@@ -41,7 +41,7 @@ export default function PortfolioClient({ id }: { id: string }) {
         setProfile(userSnap.val());
 
         // Fetch Skills
-        const skillsSnap = await get(ref(db, `user_private/${id}/user_skills`));
+        const skillsSnap = await get(ref(db, `user_private/${id}/skill_progress`));
         if (skillsSnap.exists()) {
           setSkills(Object.values(skillsSnap.val()));
         }

@@ -51,8 +51,25 @@ export default function ResourcesPage() {
 
   // We can't generate uniqueTypes from just the subset of loaded resources if it's limited to 100 or filtered by type.
   // Hardcoding the types array based on standard library types is safer and avoids massive DB reads just for dropdown options.
-  const uniqueTypes = ["Documentation", "Course", "Article", "Tool", "Practice", "Guide", "Roadmap", "Template", "Checklist"];
-  const uniqueLevels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
+  const uniqueTypes = [
+    { label: "Documentation", value: "documentation" },
+    { label: "Course", value: "course" },
+    { label: "Article", value: "article" },
+    { label: "Tool", value: "tool" },
+    { label: "Practice", value: "practice" },
+    { label: "Guide", value: "guide" },
+    { label: "Roadmap", value: "roadmap" },
+    { label: "Template", value: "template" },
+    { label: "Checklist", value: "checklist" },
+  ];
+  
+  const uniqueLevels = [
+    { label: "Beginner", value: "beginner" },
+    { label: "Intermediate", value: "intermediate" },
+    { label: "Advanced", value: "advanced" },
+    { label: "Expert", value: "expert" },
+    { label: "All Levels", value: "all_levels" },
+  ];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-12">
@@ -93,7 +110,7 @@ export default function ResourcesPage() {
             <SelectContent>
               <SelectItem value="all">{t.resources.allTypes}</SelectItem>
               {uniqueTypes.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
+                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -105,7 +122,7 @@ export default function ResourcesPage() {
             <SelectContent>
               <SelectItem value="all">{t.resources.allLevels}</SelectItem>
               {uniqueLevels.map(level => (
-                <SelectItem key={level as string} value={level as string}>{level as string}</SelectItem>
+                <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>

@@ -130,6 +130,22 @@ function LoginContent() {
     }
   };
 
+  const handleCheckVerification = async () => {
+    if (!unverifiedUser) return;
+    try {
+      await unverifiedUser.reload();
+      if (unverifiedUser.emailVerified) {
+        toast.success("Email verified successfully! You are now logged in.");
+        // The onAuthStateChanged listener should pick this up, but we can force it
+        window.location.href = "/dashboard";
+      } else {
+        toast.error("Email is still not verified. Please check your inbox.");
+      }
+    } catch (err) {
+      toast.error("Error checking verification status.");
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="text-center mb-8">
@@ -220,18 +236,27 @@ function LoginContent() {
             <p className="text-xs text-muted-foreground mb-3">
               Check your inbox and click the link we sent, or resend it below.
             </p>
-            <button
-              type="button"
-              onClick={handleResendVerification}
-              disabled={resending}
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-sm"
-            >
-              {resending ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Sending…
-                </span>
-              ) : "Resend Verification Email"}
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleCheckVerification}
+                className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition-colors shadow-sm w-full"
+              >
+                I verified my email, check again
+              </button>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="px-4 py-2 bg-transparent border border-amber-500 text-amber-600 dark:text-amber-400 rounded-lg text-sm font-semibold hover:bg-amber-500/10 transition-colors disabled:opacity-50 w-full"
+              >
+                {resending ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Sending…
+                  </span>
+                ) : "Resend Verification Email"}
+              </button>
+            </div>
           </div>
         )}
       </form>
