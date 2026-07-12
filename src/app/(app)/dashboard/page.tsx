@@ -128,13 +128,13 @@ export default function DashboardPage() {
 
       <div className="flex flex-wrap gap-2 mb-8">
         <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border hover:bg-primary/10 hover:border-primary/30 transition-all hover:scale-105">
-          <Link href="/tasks"><Plus className="w-4 h-4" /> {t.dashboard?.addTask || "New Quest"}</Link>
+          <Link href="/tasks"><Plus className="w-4 h-4" /> {tDash?.addTask || "New Quest"}</Link>
         </Button>
         <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border hover:bg-primary/10 hover:border-primary/30 transition-all hover:scale-105">
-          <Link href="/notes"><Plus className="w-4 h-4" /> {t.dashboard?.addNote || "Save Knowledge"}</Link>
+          <Link href="/notes"><Plus className="w-4 h-4" /> {tDash?.addNote || "Save Knowledge"}</Link>
         </Button>
         <Button asChild size="sm" className="gap-2 rounded-xl shadow-glow hover:scale-105 transition-all">
-          <Link href="/resources"><Search className="w-4 h-4" /> {t.dashboard?.exploreResources || "Discover Resources"}</Link>
+          <Link href="/resources"><Search className="w-4 h-4" /> {tDash?.exploreResources || "Discover Resources"}</Link>
         </Button>
       </div>
 
@@ -144,11 +144,11 @@ export default function DashboardPage() {
           <div className="h-20 w-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-indigo-500/30 transition-all duration-500">
             <Target className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">{t.dashboard?.setCareerGoal || "Choose Your Class & Destiny"}</h2>
+          <h2 className="text-2xl font-bold mb-2">{tDash?.setCareerGoal || "Choose Your Class & Destiny"}</h2>
           <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-            {t.dashboard?.setCareerGoalDesc || "Select a target career path to unlock personalized skill trees, customized quests, and tailored learning resources."}
+            {tDash?.setCareerGoalDesc || "Select a target career path to unlock personalized skill trees, customized quests, and tailored learning resources."}
           </p>
-          <Button asChild className="rounded-xl shadow-glow shadow-indigo-500/30"><Link href="/career">{t.dashboard?.exploreCareerPaths || "Explore Career Paths"}</Link></Button>
+          <Button asChild className="rounded-xl shadow-glow shadow-indigo-500/30"><Link href="/career">{tDash?.exploreCareerPaths || "Explore Career Paths"}</Link></Button>
         </div>
       )}
 
@@ -249,9 +249,9 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            </div>
           </div>
-        </div>div>
-
+        </div>
         {/* SIDEBAR: NEXT STEPS & SKILLS */}
         <div className="space-y-6">
           <div className="rounded-3xl border border-border bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl overflow-hidden">
