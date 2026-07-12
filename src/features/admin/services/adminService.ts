@@ -1,4 +1,5 @@
 import { ref, set, push, remove, update, serverTimestamp, increment } from "firebase/database";
+import { callEdgeFunction } from "@/lib/supabase/edgeFunctionsClient";
 import { db } from "@/lib/firebase/config";
 
 export const adminService = {
@@ -6,8 +7,14 @@ export const adminService = {
     if (!adminUid) throw new Error("Unauthorized");
     const collectionRef = ref(db, collection);
     const newRef = push(collectionRef);
+    
+    // Clean payload globally
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(([_, v]) => v !== undefined)
+    );
+
     await set(newRef, {
-      ...payload,
+      ...cleanPayload,
       id: newRef.key,
       createdAt: serverTimestamp(),
       updatedByAdmin: adminUid,
@@ -18,8 +25,14 @@ export const adminService = {
   async updateContent(adminUid: string, collection: string, id: string, payload: Record<string, unknown>) {
     if (!adminUid) throw new Error("Unauthorized");
     const itemRef = ref(db, `${collection}/${id}`);
+    
+    // Clean payload globally
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(([_, v]) => v !== undefined)
+    );
+
     await update(itemRef, {
-      ...payload,
+      ...cleanPayload,
       updatedByAdmin: adminUid,
       updatedAt: serverTimestamp(),
     });
@@ -87,12 +100,9 @@ export const adminService = {
 
   async updateUserRole(adminUid: string, targetUid: string, role: string) {
     if (!adminUid) throw new Error("Unauthorized");
-    const userRef = ref(db, `user_admin_meta/${targetUid}`);
-    await update(userRef, {
-      role,
-      updatedByAdmin: adminUid,
-      updatedAt: serverTimestamp(),
-    });
+    
+    // Call the secure Supabase Edge Function
+    await callEdgeFunction('admin-role-management', { targetUid, role });
   },
 
   async updateAccountStatus(adminUid: string, targetUid: string, status: string) {
@@ -103,5 +113,10 @@ export const adminService = {
       updatedByAdmin: adminUid,
       updatedAt: serverTimestamp(),
     });
+  },
+
+  async rebuildStatsAndIndexes(adminUid: string) {
+    if (!adminUid) throw new Error("Unauthorized");
+    await callEdgeFunction('rebuild-indexes', {});
   }
 };

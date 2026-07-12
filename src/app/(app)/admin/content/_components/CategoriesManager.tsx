@@ -88,20 +88,34 @@ export function CategoriesManager({
       toast.warning("Validation", "Category name is required.");
       return;
     }
+    if (formData.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(formData.slug)) {
+      toast.warning("Validation", "Slug must be lowercase, URL-safe, with no spaces (e.g. my-category).");
+      return;
+    }
+    if (isNaN(Number(formData.sortOrder))) {
+      toast.warning("Validation", "Sort Order must be a valid number.");
+      return;
+    }
+
     if (!session?.uid) return;
+
+    // Clean payload (remove undefined values for Firebase)
+    const payload = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
 
     setLoading(true);
     try {
       const collection = `public_content/${getCollectionName()}`;
       if (editingId) {
-        await adminService.updateContent(session.uid, collection, editingId, formData);
+        await adminService.updateContent(session.uid, collection, editingId, payload);
         toast.success("Updated", "Category updated successfully.");
       } else {
-        await adminService.createContent(session.uid, collection, formData);
+        await adminService.createContent(session.uid, collection, payload);
         toast.success("Created", "Category created successfully.");
       }
       setIsOpen(false);
-    } catch (err) {
+    } catch (error: any) {
       toast.error("Error", "Failed to save category.");
     } finally {
       setLoading(false);

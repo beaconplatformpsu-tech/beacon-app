@@ -12,11 +12,15 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/i18n/LanguageProvider";
+import { useStudentPrivateData } from "@/lib/db/services/studentDataService";
+import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useT();
+  const { session } = useCurrentUserRole();
+  const { bookmarks } = useStudentPrivateData(session?.uid);
   
   // Filters
   const [search, setSearch] = useState("");
@@ -163,7 +167,11 @@ export default function ResourcesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredResources.map(resource => (
-            <ResourceCard key={resource.id} resource={resource} />
+            <ResourceCard 
+              key={resource.id} 
+              resource={resource} 
+              isBookmarked={bookmarks.some(b => b.entityId === resource.id)} 
+            />
           ))}
         </div>
       )}

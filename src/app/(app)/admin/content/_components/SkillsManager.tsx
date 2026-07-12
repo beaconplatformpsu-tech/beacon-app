@@ -51,8 +51,14 @@ export function SkillsManager({ skills, paths, resources, categories }: { skills
     setLoading(true);
     try {
       if (!session?.uid) return;
-      if (editingId) { await adminService.updateContent(session.uid, "public_content/skills", editingId, formData); toast.success("Updated", "Skill updated."); }
-      else { await adminService.createContent(session.uid, "public_content/skills", formData); toast.success("Created", "Skill created."); }
+      
+      // Clean payload (remove undefined values for Firebase)
+      const payload = Object.fromEntries(
+        Object.entries(formData).filter(([_, v]) => v !== undefined)
+      );
+
+      if (editingId) { await adminService.updateContent(session.uid, "public_content/skills", editingId, payload); toast.success("Updated", "Skill updated. Note: Indexes must be rebuilt by backend."); }
+      else { await adminService.createContent(session.uid, "public_content/skills", payload); toast.success("Created", "Skill created. Note: Indexes must be rebuilt by backend."); }
       setIsOpen(false);
     } catch { toast.error("Error", "Failed to save."); }
     finally { setLoading(false); }

@@ -62,11 +62,17 @@ export function PathsManager({ paths, categories, skills, resources }: { paths: 
     if (!formData.title) { toast.warning("Validation", "Path title is required."); return; }
     if (!session?.uid) return;
     const cat = categories.find(c => c.id === formData.categoryId);
-    const payload = { title: formData.title, slug: formData.slug, description: formData.description, longDescription: formData.longDescription, categoryId: formData.categoryId, industryDomain: cat?.name || formData.industryDomain || cat?.title, demandLevel: formData.demandLevel, beginnerFriendly: formData.beginnerFriendly, averagePreparationTime: formData.averagePreparationTime, requiredEducation: formData.requiredEducation, isActive: formData.isActive };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const rawPayload = { title: formData.title, slug: formData.slug, description: formData.description, longDescription: formData.longDescription, categoryId: formData.categoryId, industryDomain: cat?.name || formData.industryDomain || cat?.title, demandLevel: formData.demandLevel, beginnerFriendly: formData.beginnerFriendly, averagePreparationTime: formData.averagePreparationTime, requiredEducation: formData.requiredEducation, isActive: formData.isActive };
+    const payload = Object.fromEntries(
+      Object.entries(rawPayload).filter(([_, v]) => v !== undefined)
+    );
+
     setLoading(true);
     try {
-      if (editingId) { await adminService.updateContent(session.uid, "career_paths", editingId, payload); toast.success("Updated", "Career path updated."); }
-      else { await adminService.createContent(session.uid, "career_paths", payload); toast.success("Created", "Career path created."); }
+      if (editingId) { await adminService.updateContent(session.uid, "public_content/career_paths", editingId, payload); toast.success("Updated", "Career path updated. Note: Indexes must be rebuilt by backend."); }
+      else { await adminService.createContent(session.uid, "public_content/career_paths", payload); toast.success("Created", "Career path created. Note: Indexes must be rebuilt by backend."); }
       setIsOpen(false);
     } catch { toast.error("Error", "Failed to save."); }
     finally { setLoading(false); }

@@ -83,8 +83,17 @@ export function LearningPathsManager({ learningPaths, paths, resources, practice
 
   const handleSubmit = async () => {
     if (!formData.title) { toast.warning("Validation", "Title is required."); return; }
+    if (formData.estimatedHours && (isNaN(Number(formData.estimatedHours)) || Number(formData.estimatedHours) < 0)) {
+      toast.warning("Validation", "Estimated Hours must be a positive number."); return;
+    }
+    
     if (!session?.uid) return;
-    const payload = { title: formData.title, slug: formData.slug, description: formData.description, categoryId: formData.categoryId, level: formData.level, estimatedHours: formData.estimatedHours, isActive: formData.isActive };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const payload = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
+
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "public_content/learning_paths", editingId, payload); toast.success("Updated", "Updated."); }

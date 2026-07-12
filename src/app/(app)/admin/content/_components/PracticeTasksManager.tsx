@@ -54,8 +54,17 @@ export function PracticeTasksManager({ practiceTasks, skills }: { practiceTasks:
 
   const handleSubmit = async () => {
     if (!formData.title) { toast.warning("Validation", "Title is required."); return; }
+    if (formData.estimatedMinutes && (isNaN(Number(formData.estimatedMinutes)) || Number(formData.estimatedMinutes) < 0)) {
+      toast.warning("Validation", "Estimated Minutes must be a positive number."); return;
+    }
+    
     if (!session?.uid) return;
-    const payload = { ...formData };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const payload = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
+    
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "public_content/practice_tasks", editingId, payload); toast.success("Updated", "Updated."); }

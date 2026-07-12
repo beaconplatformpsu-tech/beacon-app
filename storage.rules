@@ -11,13 +11,12 @@ service firebase.storage {
                    && request.resource.contentType.matches('image/.*');
     }
     
-    // Resources: Public read for logged-in users, writable by authenticated users
-    // TODO: Admin writes are currently protected by application logic and Realtime DB rules, 
-    // but in Firebase Storage without custom claims, we restrict to auth != null.
-    // For full security, move resource uploads to a Server Action / Cloud Function that validates admin claims.
+    // Resources: Public read for logged-in users, writable by authenticated admins
+    // Secured with custom claim verification to ensure only admins can upload files
     match /resources/{fileName} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
+                   && request.auth.token.admin == true
                    && request.resource.size < 10 * 1024 * 1024; // 10MB limit
     }
     

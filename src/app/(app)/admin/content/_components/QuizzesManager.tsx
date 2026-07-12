@@ -54,8 +54,22 @@ export function QuizzesManager({ quizzes, skills }: { quizzes: Quiz[]; skills: S
 
   const handleSubmit = async () => {
     if (!formData.title) { toast.warning("Validation", "Title is required."); return; }
+    if (formData.timeLimitMinutes && (isNaN(Number(formData.timeLimitMinutes)) || Number(formData.timeLimitMinutes) < 0)) {
+      toast.warning("Validation", "Time Limit must be a positive number."); return;
+    }
+
     if (!session?.uid) return;
-    const payload = { ...formData };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const payload: any = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
+
+    // SECURITY: Ensure answers are stripped. QuizzesManager only edits metadata.
+    if (payload.questions) {
+      delete payload.questions;
+    }
+
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "public_content/quizzes", editingId, payload); toast.success("Updated", "Updated."); }
@@ -172,7 +186,8 @@ export function QuizzesManager({ quizzes, skills }: { quizzes: Quiz[]; skills: S
                 </label>
               </div>
             </div>
-            <div className="p-4 bg-muted/40 rounded-xl border border-border text-sm text-muted-foreground mt-4">
+            <div className="p-4 bg-muted/40 rounded-xl border border-border text-sm text-muted-foreground mt-4 space-y-2">
+              <p><strong>Security Note:</strong> Public quiz metadata must never expose correct answers. All answer key data will be stripped during save.</p>
               <p><strong>Note:</strong> Quiz questions are managed separately in the Quiz Builder (coming soon).</p>
             </div>
           </div>

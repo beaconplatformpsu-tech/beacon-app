@@ -55,8 +55,17 @@ export function ProjectsManager({ projects, skills, paths }: { projects: Project
 
   const handleSubmit = async () => {
     if (!formData.title) { toast.warning("Validation", "Title is required."); return; }
+    if (formData.estimatedHours && (isNaN(Number(formData.estimatedHours)) || Number(formData.estimatedHours) < 0)) {
+      toast.warning("Validation", "Estimated Hours must be a positive number."); return;
+    }
+
     if (!session?.uid) return;
-    const payload = { ...formData };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const payload = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
+
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "public_content/projects", editingId, payload); toast.success("Updated", "Updated."); }

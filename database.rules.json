@@ -122,7 +122,7 @@
     },
     "indexes": {
       ".read": true,
-      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canManageContent').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
+      ".write": false
     },
     "relations": {
       ".read": true,
@@ -378,7 +378,7 @@
     },
     "stats": {
       ".read": true,
-      ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')"
+      ".write": false
     },
     "system": {
       ".read": false,
@@ -408,7 +408,7 @@
       },
       "admin_logs": {
         ".read": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
-        ".write": "auth != null && root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'",
+        ".write": false,
         ".indexOn": [
           "adminUid",
           "action",
@@ -420,7 +420,7 @@
       },
       "ai_usage_logs": {
         ".read": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
-        ".write": "auth != null && (root.child('user_admin_meta').child(auth.uid).child('permissions').child('canRunSystemActions').val() === true || root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin')",
+        ".write": false,
         ".indexOn": [
           "uid",
           "feature",

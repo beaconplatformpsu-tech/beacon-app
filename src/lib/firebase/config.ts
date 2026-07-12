@@ -4,6 +4,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,4 +25,5 @@ const app = isTest ? {} as any : (getApps().length === 0 ? initializeApp(firebas
 export const auth = isTest ? {} as any : getAuth(app);
 export const db = isTest ? {} as any : getDatabase(app);
 export const storage = isTest ? {} as any : getStorage(app);
+export const functions = isTest ? {} as any : getFunctions(app);
 export default app;

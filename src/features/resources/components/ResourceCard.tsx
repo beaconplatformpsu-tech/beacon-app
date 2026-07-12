@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useState } from "react";
-import { ref, push, update } from "firebase/database";
+import { BookmarkService } from "../services/bookmarkService";
 import { db } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
 
@@ -28,7 +28,10 @@ const TypeIcon = ({ type }: { type: Resource["resourceType"] }) => {
   }
 };
 
-export const ResourceCard = ({ resource }: { resource: Resource }) => {
+import Link from "next/link";
+import { Bookmark, BookmarkCheck } from "lucide-react";
+
+export const ResourceCard = ({ resource, isBookmarked = false }: { resource: Resource, isBookmarked?: boolean }) => {
   const { session } = useCurrentUserRole();
   const toast = useCustomToast();
   const t = useT();
@@ -38,15 +41,20 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
     if (!session?.uid) return;
     setIsSaving(true);
     try {
-      // Add to user's saved resources/tasks list (using a generic saved_resources path)
-      const saveRef = push(ref(db, `saved_resources/${session.uid}`));
-      await update(saveRef, {
-        resourceId: resource.id,
-        savedAt: new Date().toISOString()
-      });
-      toast.success(t.resources.saved, t.resources.savedDesc.replace("{title}", resource.title));
+      const isNowBookmarked = await BookmarkService.toggleBookmark(
+        session.uid, 
+        resource.id, 
+        "resource", 
+        resource.title
+      );
+      
+      if (isNowBookmarked) {
+        toast.success(t.resources.saved, t.resources.savedDesc.replace("{title}", resource.title));
+      } else {
+        toast.info("Bookmark Removed", `${resource.title} removed from bookmarks.`);
+      }
     } catch (e) {
-      toast.error(t.contact.error, t.resources.saveFailed);
+      toast.error(t.contact.error, "Failed to toggle bookmark.");
     } finally {
       setIsSaving(false);
     }
@@ -67,7 +75,11 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
             <span className="ml-1 font-medium">{resource.resourceType}</span>
           </div>
         </div>
-        <CardTitle className="text-base line-clamp-2">{resource.title}</CardTitle>
+        <CardTitle className="text-base line-clamp-2">
+          <Link href={`/resources/${resource.id}`} className="hover:text-primary transition-colors">
+            {resource.title}
+          </Link>
+        </CardTitle>
         <CardDescription className="text-sm font-medium text-foreground/80">
           {resource.provider}
         </CardDescription>
@@ -103,8 +115,13 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
         </div>
       </CardContent>
       
-      <CardFooter className="p-4 pt-0 gap-2">
-        <Button asChild className="flex-1 gap-2" variant="outline">
+      <CardFooter className="p-4 pt-0 gap-2 flex flex-wrap">
+        <Button asChild className="flex-1 min-w-[100px] gap-2" variant="outline" size="sm">
+          <Link href={`/resources/${resource.id}`}>
+            Details
+          </Link>
+        </Button>
+        <Button asChild className="flex-1 min-w-[100px] gap-2" variant="outline" size="sm">
           <a href={resource.url} target="_blank" rel="noopener noreferrer">
             {t.resources.open} <ExternalLink className="w-3.5 h-3.5" />
           </a>
@@ -114,9 +131,11 @@ export const ResourceCard = ({ resource }: { resource: Resource }) => {
           <Button 
             onClick={handleSaveToPlan} 
             disabled={isSaving}
-            className="flex-1"
+            className="flex-1 min-w-[100px] gap-2"
+            variant={isBookmarked ? "secondary" : "default"}
+            size="sm"
           >
-            {isSaving ? t.resources.saving : t.resources.saveToPlan}
+            {isSaving ? <span className="animate-pulse">...</span> : isBookmarked ? <><BookmarkCheck className="w-3.5 h-3.5" /> Saved</> : <><Bookmark className="w-3.5 h-3.5" /> Save</>}
           </Button>
         )}
       </CardFooter>

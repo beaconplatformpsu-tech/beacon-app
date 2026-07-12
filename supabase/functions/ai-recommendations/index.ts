@@ -1,18 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenerativeAI } from "npm:@google/generative-ai@^0.24.1";
-import { z } from "npm:zod@^3.24.2";
+import { verifyFirebaseAuth } from "../_shared/verifyFirebaseAuth.ts";
+import { firebaseDbGet, firebaseDbPatch } from "../_shared/firebaseAdminRest.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const RequestSchema = z.object({
-  major: z.string().max(200),
-  careerLevel: z.string().max(100),
-  skillsList: z.string().max(2000),
-  tasksList: z.string().max(2000),
-});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,17 +17,32 @@ serve(async (req) => {
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) throw new Error("Server configuration error.");
 
-    const body = await req.json();
-    const parseResult = RequestSchema.safeParse(body);
-    
-    if (!parseResult.success) {
-      return new Response(JSON.stringify({ error: "Invalid request payload." }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      });
+    const authResult = await verifyFirebaseAuth(req, { requireEmailVerified: true });
+    if (authResult.error || !authResult.payload) {
+      return new Response(JSON.stringify({ error: authResult.error }), { headers: corsHeaders, status: authResult.status });
+    }
+    const uid = authResult.payload.uid as string;
+
+    // 1. Fetch user data directly from RTDB using admin privileges
+    const userProfile = await firebaseDbGet(`users/${uid}`);
+    if (!userProfile) {
+      return new Response(JSON.stringify({ error: "User profile not found." }), { headers: corsHeaders, status: 404 });
     }
 
-    const { major, careerLevel, skillsList, tasksList } = parseResult.data;
+    const userPrivate = await firebaseDbGet(`user_private/${uid}`);
+    
+    const major = userProfile.major || "Unknown";
+    const careerLevel = userProfile.academicLevel || "Unknown";
+    
+    let skillsList = "None";
+    if (userPrivate?.skill_progress) {
+      skillsList = Object.keys(userPrivate.skill_progress).join(", ");
+    }
+    
+    let tasksList = "None";
+    if (userPrivate?.tasks) {
+      tasksList = Object.values(userPrivate.tasks).map((t: any) => t.title).join(", ");
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
@@ -66,7 +75,27 @@ serve(async (req) => {
     // Ensure the response is valid JSON before sending to client
     const parsedRecommendations = JSON.parse(text);
 
-    return new Response(JSON.stringify(parsedRecommendations), {
+    // Save recommendations back to user's private data securely
+    const updates: Record<string, any> = {};
+    parsedRecommendations.forEach((rec: any, index: number) => {
+      updates[`rec_${Date.now()}_${index}`] = {
+        ...rec,
+        createdAt: new Date().toISOString(),
+        isRead: false
+      };
+    });
+    
+    await firebaseDbPatch(`user_private/${uid}/recommendations`, updates);
+
+    // Write AI Usage log
+    await import("../_shared/firebaseAdminRest.ts").then(m => m.firebaseDbPost(`system/ai_usage_logs`, {
+      uid,
+      feature: "generate_recommendations",
+      status: "success",
+      createdAt: new Date().toISOString()
+    }));
+
+    return new Response(JSON.stringify({ success: true, recommendations: parsedRecommendations }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

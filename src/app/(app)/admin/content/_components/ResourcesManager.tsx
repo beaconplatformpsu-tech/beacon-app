@@ -119,20 +119,20 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
         });
       }
 
-      const payload = {
-        title: formData.title,
-        description: formData.description,
-        resourceType: formData.resourceType,
+      // Prepare data
+      const dataToSave = {
+        ...formData,
+        url: finalUrl,
         careerPathId: formData.careerPathId || null,
         skillId: formData.skillId || null,
         categoryId: formData.categoryId || null,
-        level: formData.level,
-        duration: formData.duration,
-        url: finalUrl,
-        isPremium: formData.isPremium,
-        isActive: formData.isActive,
         updatedAt: new Date().toISOString(),
       };
+
+      // Clean payload (remove undefined values for Firebase)
+      const payload = Object.fromEntries(
+        Object.entries(dataToSave).filter(([_, v]) => v !== undefined && v !== "")
+      );
 
       if (!session?.uid) return;
       if (editingId) {

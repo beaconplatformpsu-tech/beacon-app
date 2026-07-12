@@ -85,7 +85,7 @@ export default function VerifyEmailPage() {
             <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
               <li>Open your email inbox</li>
               <li>Click the verification link from Beacon</li>
-              <li>Return here and click <strong>"I verified my email"</strong></li>
+              <li>Return here and click <strong>&quot;I verified my email&quot;</strong></li>
             </ul>
           </div>
 

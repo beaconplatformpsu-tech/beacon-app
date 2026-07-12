@@ -76,38 +76,74 @@ export default function RecommendationsPage() {
 
       // Fetch user context
       const userSnap = await get(ref(db, `users/${session.uid}`));
-      const skillsSnap = await get(ref(db, `user_private/${session.uid}/skill_progress`));
-      const tasksSnap = await get(ref(db, `user_private/${session.uid}/tasks`));
-      
       const userData = userSnap.val() || {};
-      const skillsData = skillsSnap.val() || {};
-      const tasksData = tasksSnap.val() || {};
-      
-      const major = userData.major || "Computer Science";
-      const careerLevel = userData.careerLevel || "Student";
-      const skillsList = Object.values(skillsData as Record<string, UserSkill>).map((s) => `${s.name}`).join(", ") || "No specific technical skills yet";
-      const tasksList = Object.values(tasksData as Record<string, Task>)
-         .filter((t) => t.status !== "Completed")
-         .map((t) => `'${t.title}' (${t.priority} priority)`)
-         .join(", ") || "No active tasks";
+      const preferredCareerPathId = userData.preferredCareerPathId;
 
-      // Supabase edge functions are disabled.
-      throw new Error("AI Recommendations are currently disabled during migration to Firebase.");
-      /*
-      const parsedRecs = data;
+      if (!preferredCareerPathId) {
+        throw new Error("Please set a career goal in your profile first to get tailored recommendations.");
+      }
+
+      // Safe local fallback: Query learning paths and projects matching the user's career path
+      const pathsSnap = await get(ref(db, `indexes/learning_paths_by_career_path/${preferredCareerPathId}`));
+      const projectsSnap = await get(ref(db, `indexes/projects_by_career_path/${preferredCareerPathId}`));
+      
+      const newRecs: Recommendation[] = [];
+
+      if (pathsSnap.exists()) {
+        const pathIds = Object.keys(pathsSnap.val()).slice(0, 2);
+        for (const pid of pathIds) {
+          const pDataSnap = await get(ref(db, `public_content/learning_paths/${pid}`));
+          if (pDataSnap.exists()) {
+            const pathData = pDataSnap.val();
+            newRecs.push({
+              title: `Complete: ${pathData.title}`,
+              description: `Recommended learning path to build your core skills. ${pathData.description}`,
+              type: "Academic",
+              actionLink: `/learning-paths/${pid}`,
+              actionText: "View Path"
+            });
+          }
+        }
+      }
+
+      if (projectsSnap.exists()) {
+        const projIds = Object.keys(projectsSnap.val()).slice(0, 2);
+        for (const pid of projIds) {
+          const pDataSnap = await get(ref(db, `public_content/projects/${pid}`));
+          if (pDataSnap.exists()) {
+            const projectData = pDataSnap.val();
+            newRecs.push({
+              title: `Project: ${projectData.title}`,
+              description: `Build a portfolio project to demonstrate your skills. ${projectData.description}`,
+              type: "Career",
+              actionLink: `/projects/${pid}`,
+              actionText: "View Project"
+            });
+          }
+        }
+      }
+
+      if (newRecs.length === 0) {
+        newRecs.push({
+          title: "Explore the Resource Library",
+          description: "Browse the resource library to find documentation and courses to boost your skills.",
+          type: "Productivity",
+          actionLink: "/resources",
+          actionText: "Browse Library"
+        });
+      }
       
       // Save to Firebase
       const recsRef = ref(db, `user_private/${session.uid}/recommendations`);
-      for (const rec of parsedRecs) {
+      for (const rec of newRecs) {
         const newRef = push(recsRef);
         await set(newRef, {
           ...rec,
           createdAt: serverTimestamp()
         });
       }
-      */
       
-      // toast.success(t.recommendations.success, t.recommendations.generatedSuccess);
+      toast.success(t.recommendations.success, t.recommendations.generatedSuccess);
 
     } catch (err) {
       console.error(err);

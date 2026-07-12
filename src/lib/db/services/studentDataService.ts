@@ -3,6 +3,8 @@ import { ref, onValue, set, update } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 import { mapUserSkill } from "../mappers";
 import type { UserProfile, UserSkill, Task, Note, Recommendation } from "@/lib/types";
+import { Bookmark, LearningProgress, ProjectSubmission, ActivityLogEntry } from "@/types/database";
+import { callEdgeFunction } from "@/lib/supabase/edgeFunctionsClient";
 
 // User Profile
 export function useStudentProfile(uid: string | undefined) {
@@ -103,6 +105,10 @@ export function useStudentPrivateData(uid: string | undefined) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [careerReadiness, setCareerReadiness] = useState<Record<string, any>>({});
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [learningProgress, setLearningProgress] = useState<Record<string, LearningProgress>>({});
+  const [projectSubmissions, setProjectSubmissions] = useState<Record<string, ProjectSubmission>>({});
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -111,6 +117,10 @@ export function useStudentPrivateData(uid: string | undefined) {
       setNotes([]);
       setRecommendations([]);
       setCareerReadiness({});
+      setBookmarks([]);
+      setLearningProgress({});
+      setProjectSubmissions({});
+      setActivityLog([]);
       setLoading(false);
       return;
     }
@@ -144,14 +154,36 @@ export function useStudentPrivateData(uid: string | undefined) {
         }));
         setRecommendations(mappedRecs);
 
-        // Map Readiness
+        // Map Bookmarks
+        const rawBookmarks = raw.bookmarks || {};
+        const mappedBookmarks = Object.keys(rawBookmarks).map(key => ({
+          id: key,
+          ...rawBookmarks[key]
+        }));
+        setBookmarks(mappedBookmarks);
+
+        // Map Readiness & Progress Dicts
         setCareerReadiness(raw.career_readiness || {});
+        setLearningProgress(raw.learning_progress || {});
+        setProjectSubmissions(raw.project_submissions || {});
+
+        // Map Activity Log
+        const rawActivity = raw.activity_log || {};
+        const mappedActivity = Object.keys(rawActivity).map(key => ({
+          id: key,
+          ...rawActivity[key]
+        })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setActivityLog(mappedActivity);
 
       } else {
         setTasks([]);
         setNotes([]);
         setRecommendations([]);
         setCareerReadiness({});
+        setBookmarks([]);
+        setLearningProgress({});
+        setProjectSubmissions({});
+        setActivityLog([]);
       }
       setLoading(false);
     });
@@ -159,5 +191,36 @@ export function useStudentPrivateData(uid: string | undefined) {
     return () => unsubscribe();
   }, [uid]);
 
-  return { tasks, notes, recommendations, careerReadiness, loading };
+  return { 
+    tasks, notes, recommendations, careerReadiness, bookmarks, 
+    learningProgress, projectSubmissions, activityLog, loading 
+  };
+}
+
+// ----------------------------------------------------------------------------
+// Secure Backend Function Integrations (Phase 5)
+// ----------------------------------------------------------------------------
+
+/**
+ * Calls the secure Firebase Cloud Function to grade a quiz without exposing answers.
+ */
+export async function submitQuiz(quizId: string, answers: Record<string, number>) {
+  const result = await callEdgeFunction("grade-quiz", { quizId, answers });
+  return result;
+}
+
+/**
+ * Calls the secure Supabase Edge Function to generate recommendations using the server-side Gemini key.
+ */
+export async function generateRecommendationsSecure() {
+  const result = await callEdgeFunction("generate-recommendations", {});
+  return result;
+}
+
+/**
+ * Calls the secure Supabase Edge Function to analyze a CV using the server-side Gemini key.
+ */
+export async function analyzeCVSecure(cvText: string) {
+  const result = await callEdgeFunction("analyze-cv", { cvText });
+  return result;
 }

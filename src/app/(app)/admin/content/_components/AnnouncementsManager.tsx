@@ -54,7 +54,12 @@ export function AnnouncementsManager({ announcements }: { announcements: Announc
   const handleSubmit = async () => {
     if (!formData.title) { toast.warning("Validation", "Title is required."); return; }
     if (!session?.uid) return;
-    const payload = { ...formData, updatedAt: new Date().toISOString() };
+    
+    // Clean payload (remove undefined values for Firebase)
+    const payload = Object.fromEntries(
+      Object.entries({ ...formData, updatedAt: new Date().toISOString() }).filter(([_, v]) => v !== undefined)
+    );
+
     setLoading(true);
     try {
       if (editingId) { await adminService.updateContent(session.uid, "public_content/announcements", editingId, payload); toast.success("Updated", "Updated."); }
