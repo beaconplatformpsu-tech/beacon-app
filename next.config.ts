@@ -2,6 +2,10 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
+  // TODO: Static Export Architecture Notes:
+  // - AI/CV analysis requires secure access to GEMINI_API_KEY. Implement via Supabase Edge Function or Firebase Cloud Function. Do NOT expose to client.
+  // - Quiz grading should be done via Cloud Function or trusted server-side function to keep `system/quiz_answer_keys` secure.
+  // - Admin custom claim updates must be done via Admin SDK / Cloud Function.
   eslint: {
     // We manage ESLint separately; don't block builds on warnings
     ignoreDuringBuilds: true,

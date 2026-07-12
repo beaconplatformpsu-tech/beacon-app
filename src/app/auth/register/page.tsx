@@ -27,7 +27,7 @@ export default function RegisterPage() {
   const t = useT();
   const e = t.auth.errors;
   const router = useRouter();
-  
+
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -45,10 +45,8 @@ export default function RegisterPage() {
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // Redirect if already signed in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // If user is logged in and not verifying email, redirect
       if (user && user.emailVerified) router.push("/");
     });
     return () => unsubscribe();
@@ -194,9 +192,11 @@ export default function RegisterPage() {
 
       await signOut(auth);
 
-      const encodedEmail = encodeURIComponent(form.email.trim());
       toast.success("Account created! Please verify your email before signing in.");
-      router.push(`/auth/login?email=${encodedEmail}&registered=1`);
+      const params = new URLSearchParams();
+      params.set("email", form.email.trim());
+      params.set("registered", "1");
+      router.push(`/auth/login?${params.toString()}`);
     } catch (err: unknown) {
       toast.error(firebaseErrorMsg(err));
       setLoading(false);
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                 options={DEPARTMENT_KEYS.map((d) => ({ value: d, label: t.auth.departments[d] }))}
                 error={showError("department") ? errors.department : undefined} />
             </div>
-            
+
             <div className="space-y-2">
               <label htmlFor="bio" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Short Bio (Optional)</label>
               <div className="relative">

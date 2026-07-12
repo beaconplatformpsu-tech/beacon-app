@@ -12,7 +12,6 @@ import Link from "next/link";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-// ─── Inner component (uses useSearchParams — must be inside Suspense) ─────────
 
 function LoginContent() {
   const t = useT();
@@ -20,12 +19,8 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, currentUser, isEmailVerified, loading: authLoading, role } = useAuth();
-
-  // ── Read query params ────────────────────────────────────────────────────
   const rawEmail = searchParams.get("email") ?? "";
   const isRegistered = searchParams.get("registered") === "1";
-
-  // Validate + decode the email query param
   const prefillEmail = (() => {
     try {
       const decoded = decodeURIComponent(rawEmail);
@@ -34,8 +29,6 @@ function LoginContent() {
       return "";
     }
   })();
-
-  // ── Local state ──────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
@@ -43,14 +36,12 @@ function LoginContent() {
   const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
   const [resending, setResending] = useState(false);
 
-  // ── Pre-fill email from query param on mount ─────────────────────────────
   useEffect(() => {
     if (prefillEmail) {
       setEmail(prefillEmail);
     }
   }, [prefillEmail]);
 
-  // ── Redirect if already logged in AND verified ───────────────────────────
   useEffect(() => {
     if (authLoading) return;
     if (currentUser && isEmailVerified) {
@@ -59,7 +50,6 @@ function LoginContent() {
     }
   }, [currentUser, isEmailVerified, authLoading, role, router]);
 
-  // ── Validation ───────────────────────────────────────────────────────────
   const validateField = (key: "email" | "password", value: string): string | null => {
     if (key === "email") {
       if (!value.trim()) return e.emailRequired;
@@ -78,7 +68,7 @@ function LoginContent() {
     password: validateField("password", password),
   };
 
-  // ── Submit ───────────────────────────────────────────────────────────────
+
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
     setTouched({ email: true, password: true });
@@ -162,9 +152,8 @@ function LoginContent() {
         <div className="mb-6 flex items-start gap-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4">
           <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Account created successfully!</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              We sent a verification email to <span className="font-medium text-foreground">{prefillEmail || "your inbox"}</span>. Verify your email, then sign in below.
+            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+              Account created successfully. We sent a verification email. Please verify your email, then log in.
             </p>
           </div>
         </div>
