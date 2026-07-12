@@ -77,18 +77,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950 text-foreground overflow-hidden relative">
+      {/* Gamified Aurora Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[100px] animate-pulse duration-10000" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 blur-[100px] animate-pulse duration-10000" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[30%] left-[40%] w-[30%] h-[30%] rounded-full bg-emerald-500/15 blur-[100px] animate-pulse duration-10000" style={{ animationDelay: '4s' }} />
+      </div>
       {sidebarOpen && (
         <div 
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 start-0 z-50 w-64 border-e border-border bg-card shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}>
-        <div className="flex h-16 items-center border-b border-primary-foreground/10 bg-primary px-6 hover:bg-primary/90 transition-colors">
-          <BrandLogo textClass="text-primary-foreground" />
+      <aside className={`fixed inset-y-4 start-4 z-50 w-64 rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-[120%] rtl:translate-x-[120%]"}`}>
+        <div className="flex h-16 items-center border-b border-border/50 px-6 mt-2">
+          <BrandLogo textClass="text-foreground" />
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto p-4 h-[calc(100vh-8rem)]">
+        <nav className="flex-1 space-y-2 overflow-y-auto p-4 h-[calc(100vh-10rem)] scrollbar-hide">
           {navItems.map((item) => {
             const isActive = item.href === "/" 
               ? pathname === "/" 
@@ -99,47 +105,54 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 prefetch={true}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.02] active:scale-95 ${
                   isActive 
-                    ? "bg-primary text-primary-foreground shadow-glow" 
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-glow shadow-primary/30" 
+                    : "text-muted-foreground hover:bg-white/80 dark:hover:bg-slate-800/80 hover:text-foreground shadow-sm hover:shadow-md"
                 }`}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? "scale-110" : "group-hover:scale-110 group-hover:text-primary"}`} />
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 w-full border-t border-border p-4">
-          <Button variant="ghost" onClick={() => setShowSignOutConfirm(true)} className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground">
-            <LogOut className="h-4 w-4" />
+        <div className="absolute bottom-4 left-4 right-4 border-t border-border/50 pt-4">
+          <Button variant="ghost" onClick={() => setShowSignOutConfirm(true)} className="w-full justify-start gap-3 rounded-2xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-bold hover:scale-[1.02] transition-all">
+            <LogOut className="h-5 w-5 rtl:rotate-180" />
             {t.layout.signOut}
           </Button>
         </div>
       </aside>
       {/* Main Content */}
-      <main className="flex-1 lg:pl-64 rtl:lg:pl-0 rtl:lg:pr-64">
-        {/* Global Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between lg:justify-end bg-primary text-primary-foreground px-4 md:px-8 shadow-md">
-          <div className="flex items-center gap-3 lg:hidden">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 -ml-1.5 rtl:-mr-1.5 rtl:ml-0 hover:bg-white/20 rounded-md transition-colors"
-            >
-              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-            <BrandLogo textClass="text-primary-foreground hidden sm:inline-block" />
-          </div>
-          
-          <div className="flex items-center gap-2 md:gap-4">
-            <UserDropdown />
-            <LanguageToggle />
-          </div>
-        </header>
+      <main className="flex-1 lg:pl-72 rtl:lg:pl-0 rtl:lg:pr-72 relative z-10">
+        {/* Global Floating Header */}
+        <div className="p-4 md:p-6 lg:p-8 pb-0">
+          <header className="sticky top-4 z-40 flex h-16 items-center justify-between lg:justify-end rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 px-4 md:px-6 shadow-lg shadow-black/5 transition-all">
+            <div className="flex items-center gap-3 lg:hidden">
+              <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 -ml-2 rtl:-mr-2 rtl:ml-0 hover:bg-primary/10 text-primary rounded-xl transition-all hover:scale-105 active:scale-95"
+              >
+                {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+              <BrandLogo textClass="text-foreground hidden sm:inline-block" />
+            </div>
+            
+            <div className="flex items-center gap-2 md:gap-4">
+              <UserDropdown 
+                buttonClassName="flex items-center gap-2 rounded-full border border-primary/10 bg-primary/5 pl-1 pr-3 py-1 hover:bg-primary/10 hover:shadow-md hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:pl-3 rtl:pr-1 cursor-pointer"
+                textClassName="text-sm font-bold text-foreground max-w-[120px] truncate hidden sm:inline-block"
+                iconClassName="h-4 w-4 text-primary shrink-0"
+                bellClassName="h-10 w-10 flex items-center justify-center rounded-full border border-primary/10 bg-primary/5 text-primary hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <LanguageToggle className="hover:scale-110 transition-all border-primary/10 bg-primary/5 text-primary hover:bg-primary/10" />
+            </div>
+          </header>
+        </div>
 
-        <div className="p-6 md:p-8">
+        <div className="p-4 md:p-6 lg:p-8">
           {children}
         </div>
       </main>
