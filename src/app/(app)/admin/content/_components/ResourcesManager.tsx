@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { FileText, Link as LinkIcon, Plus, Video, Trash2, Edit, AlertCircle, FileArchive, Edit2, UploadCloud, Loader2, Filter, BookOpen, MoreVertical, Database } from "lucide-react";
-import { storage, db } from "@/lib/firebase/config";
-import { uploadFileToFirebase } from "@/lib/firebase/storage";
+import { db } from "@/lib/firebase/config";
+import { uploadFileToSupabase } from "@/lib/storage/supabaseStorageService";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { adminService } from "../../../../../features/admin/services/adminService";
@@ -102,11 +102,7 @@ export function ResourcesManager({ resources, paths, skills, categories }: { res
     try {
       let finalUrl = formData.url;
       if (uploadMode === "file" && fileToUpload) {
-        const ext = fileToUpload.name.split(".").pop();
-        const fileName = `${Date.now()}-${crypto.randomUUID()}.${ext}`;
-        const path = `resources/${fileName}`;
-        
-        finalUrl = await uploadFileToFirebase(fileToUpload, path, {
+        finalUrl = await uploadFileToSupabase(fileToUpload, 'resource-files', {
           maxSizeMB: 10,
           allowedTypes: [
             'application/pdf', 

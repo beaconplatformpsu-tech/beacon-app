@@ -95,15 +95,6 @@ jest.mock('@/i18n/LanguageProvider', () => {
   };
 });
 
-jest.mock('firebase/storage', () => ({
-  __esModule: true,
-  getStorage: jest.fn(),
-  ref: jest.fn(),
-  uploadBytes: jest.fn(),
-  getDownloadURL: jest.fn(),
-  deleteObject: jest.fn(),
-}));
-
 jest.mock('recharts', () => {
   const OriginalModule = jest.requireActual('recharts');
   return {

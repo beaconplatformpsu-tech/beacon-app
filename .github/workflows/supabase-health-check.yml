@@ -1,0 +1,29 @@
+name: Supabase Health Check
+
+on:
+  schedule:
+    # Run twice a day at 06:00 and 18:00 UTC
+    - cron: '0 6,18 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Edge Function
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "${{ secrets.SUPABASE_HEALTHCHECK_URL }}" \
+            -H "x-health-check-secret: ${{ secrets.SUPABASE_HEALTHCHECK_SECRET }}")
+          
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response Body: $BODY"
+          
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Health check failed with status $HTTP_STATUS"
+            exit 1
+          fi
+          
+          echo "Health check passed!"

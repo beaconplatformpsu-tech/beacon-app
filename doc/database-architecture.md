@@ -163,7 +163,7 @@ Admins do **not** have blanket read/write access to the database by default. Acc
 Even secure-sounding nodes like `/platform_settings/private` must only contain non-sensitive identifiers or config flags. All true secrets (OpenAI Keys, Stripe Secrets, API tokens) must live exclusively in Supabase Edge Functions secrets, Vercel Environment Variables, or a dedicated secure vault.
 
 ### File Storage Policy
-File URLs stored in the RTDB (like CVs, profile pictures, project uploads, and skill evidence) use the `FileReference` interface. The database only stores the metadata (bucket path, URL, MIME type). **File signed URLs must not be stored permanently** since they expire. The physical files reside in Firebase Storage or Supabase Storage, guarded by distinct Storage Security Rules matching the user's UID.
+File URLs stored in the RTDB (like CVs, profile pictures, project uploads, and skill evidence) use the `FileReference` interface. The database only stores the metadata (bucket path, URL, MIME type). **File signed URLs must not be stored permanently** since they expire. The physical files reside in Supabase Storage, guarded by Edge Functions that enforce access control matching the user's UID.
 
 ### AI Data Policy
 Logs of AI usage and token counts are recorded in `/system/ai_usage_logs` strictly for telemetry and abuse prevention. **AI logs must not store raw prompts** to preserve user privacy and limit DB size. Individual AI feedback meant for the user is piped directly to `/user_private/{uid}/cv_analysis` or `/recommendations`.

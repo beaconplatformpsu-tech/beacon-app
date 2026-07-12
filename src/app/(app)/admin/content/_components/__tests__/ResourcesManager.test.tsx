@@ -9,8 +9,8 @@ jest.mock("firebase/database", () => ({
   remove: jest.fn(),
 }));
 
-jest.mock("@/lib/firebase/storage", () => ({
-  uploadFileToFirebase: jest.fn().mockResolvedValue("https://example.com/file")
+jest.mock("@/lib/storage/supabaseStorageService", () => ({
+  uploadFileToSupabase: jest.fn().mockResolvedValue("https://example.com/file")
 }));
 
 jest.mock("@/hooks/use-custom-toast", () => ({

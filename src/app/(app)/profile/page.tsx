@@ -8,7 +8,7 @@ import { useCurrentUserRole } from "@/hooks/use-current-user-role";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { ref, get, update } from "firebase/database";
 import { db, auth } from "@/lib/firebase/config";
-import { uploadFileToFirebase } from "@/lib/firebase/storage";
+import { uploadFileToSupabase } from "@/lib/storage/supabaseStorageService";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -164,24 +164,20 @@ export default function ProfilePage() {
     
     setSaving(true);
     try {
-      const ext = file.name.split(".").pop();
-      const fileName = `${session.uid}-${Date.now()}.${ext}`;
-      const path = `users/${session.uid}/avatars/${fileName}`;
-      
-      const photoURL = await uploadFileToFirebase(file, path, {
-        maxSizeMB: 5,
+      const downloadURL = await uploadFileToSupabase(file, 'avatars', {
+        maxSizeMB: 2,
         allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       });
       
-      await update(ref(db, `users/${session.uid}`), { photoURL });
+      await update(ref(db, `users/${session.uid}`), { photoURL: downloadURL });
       
       if (auth.currentUser) {
         import("firebase/auth").then(({ updateProfile }) => {
-          updateProfile(auth.currentUser!, { photoURL });
+          updateProfile(auth.currentUser!, { photoURL: downloadURL });
         });
       }
       
-      setProfile(prev => ({ ...prev, photoURL: photoURL as string }));
+      setProfile(prev => ({ ...prev, photoURL: downloadURL as string }));
       toast.success(t.profile.imageUpdated, t.profile.avatarSaved);
     } catch (err) {
       console.error(err);
