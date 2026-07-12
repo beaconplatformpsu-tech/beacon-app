@@ -58,18 +58,18 @@ export default function DashboardPage() {
   [pendingTasks]);
 
   const proficiencyData = useMemo(() => [
-    { name: "Beginner", value: skills.filter(s => s.proficiency === "Beginner").length, color: "#94a3b8" },
-    { name: "Intermediate", value: skills.filter(s => s.proficiency === "Intermediate").length, color: "#3b82f6" },
-    { name: "Advanced", value: skills.filter(s => s.proficiency === "Advanced").length, color: "#8b5cf6" },
-    { name: "Expert", value: skills.filter(s => s.proficiency === "Expert").length, color: "#ec4899" },
+    { name: t.dashboard?.beginner || "Beginner", value: skills.filter(s => s.proficiency === "Beginner").length, color: "#94a3b8" },
+    { name: t.dashboard?.intermediate || "Intermediate", value: skills.filter(s => s.proficiency === "Intermediate").length, color: "#3b82f6" },
+    { name: t.dashboard?.advanced || "Advanced", value: skills.filter(s => s.proficiency === "Advanced").length, color: "#8b5cf6" },
+    { name: t.dashboard?.expert || "Expert", value: skills.filter(s => s.proficiency === "Expert").length, color: "#ec4899" },
   ], [skills]);
 
   const latestRec = useMemo(() => recommendations[0], [recommendations]);
 
   const stats = useMemo(() => [
-    { label: "Pending Tasks", value: loading ? "-" : pendingTasks.length, icon: CheckSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Acquired Skills", value: loading ? "-" : skills.length, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Saved Notes", value: loading ? "-" : notes.length, icon: BookOpen, color: "text-sky-500", bg: "bg-sky-500/10" },
+    { label: t.dashboard?.pendingTasks || "Pending Tasks", value: loading ? "-" : pendingTasks.length, icon: CheckSquare, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: t.dashboard?.acquiredSkills || "Acquired Skills", value: loading ? "-" : skills.length, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: t.dashboard?.savedNotes || "Saved Notes", value: loading ? "-" : notes.length, icon: BookOpen, color: "text-sky-500", bg: "bg-sky-500/10" },
   ], [loading, pendingTasks.length, skills.length, notes.length]);
 
   return (
@@ -82,19 +82,19 @@ export default function DashboardPage() {
             {loading ? <Skeleton className="h-8 w-48" /> : (t.dashboard?.welcome?.replace("{name}", profile?.displayName || session?.displayName || "Student") || `Welcome back!`)}
           </h1>
           <p className="mt-2 text-muted-foreground max-w-2xl">
-            Your academic command center. Track your progress, manage deadlines, and discover new resources.
+            {t.dashboard?.commandCenter || "Your academic command center. Track your progress, manage deadlines, and discover new resources."}
           </p>
         </div>
         
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm" className="gap-2">
-            <Link href="/tasks"><Plus className="w-4 h-4" /> Add Task</Link>
+            <Link href="/tasks"><Plus className="w-4 h-4" /> {t.dashboard?.addTask || "Add Task"}</Link>
           </Button>
           <Button asChild variant="outline" size="sm" className="gap-2">
-            <Link href="/notes"><Plus className="w-4 h-4" /> Add Note</Link>
+            <Link href="/notes"><Plus className="w-4 h-4" /> {t.dashboard?.addNote || "Add Note"}</Link>
           </Button>
           <Button asChild size="sm" className="gap-2">
-            <Link href="/resources"><Search className="w-4 h-4" /> Explore Resources</Link>
+            <Link href="/resources"><Search className="w-4 h-4" /> {t.dashboard?.exploreResources || "Explore Resources"}</Link>
           </Button>
         </div>
       </div>
@@ -106,12 +106,12 @@ export default function DashboardPage() {
             <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 ring-4 ring-primary/5">
               <GraduationCap className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Set Your Career Goal</h2>
+            <h2 className="text-2xl font-bold mb-2">{t.dashboard?.setCareerGoal || "Set Your Career Goal"}</h2>
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-              Select a target career path to receive personalized recommendations, skill gap analysis, and tailored learning resources.
+              {t.dashboard?.setCareerGoalDesc || "Select a target career path to receive personalized recommendations, skill gap analysis, and tailored learning resources."}
             </p>
             <div className="flex gap-4">
-              <Button asChild className="shadow-glow"><Link href="/career">Explore Career Paths</Link></Button>
+              <Button asChild className="shadow-glow"><Link href="/career">{t.dashboard?.exploreCareerPaths || "Explore Career Paths"}</Link></Button>
             </div>
           </CardContent>
         </Card>

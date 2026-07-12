@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { FeedbackModal } from "@/components/shared/FeedbackModal";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
-
+import { BrandLogo } from "@/components/shared/BrandLogo";
+import { UserDropdown } from "@/components/shared/UserDropdown";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -84,10 +85,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
       <aside className={`fixed inset-y-0 start-0 z-50 w-64 border-e border-border bg-card shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}>
-        <Link href="/" className="flex h-16 items-center gap-3 border-b border-primary-foreground/10 bg-primary text-primary-foreground px-6 hover:bg-primary/90 transition-colors">
-          <Image src={logo} alt="Beacon" className="h-8 w-8 rounded-md ring-1 ring-primary-foreground/20" />
-          <span className="font-display text-xl tracking-wide">Beacon</span>
-        </Link>
+        <div className="flex h-16 items-center border-b border-primary-foreground/10 bg-primary px-6 hover:bg-primary/90 transition-colors">
+          <BrandLogo textClass="text-primary-foreground" />
+        </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-4 h-[calc(100vh-8rem)]">
           {navItems.map((item) => {
             const isActive = item.href === "/" 
@@ -130,20 +130,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
-            <Link href="/" className="flex items-center gap-2">
-              <Image src={logo} alt="Beacon" className="h-8 w-8 rounded-md ring-1 ring-primary-foreground/20" />
-              <span className="font-sans font-bold text-lg tracking-widest hidden sm:inline-block">Beacon</span>
-            </Link>
+            <BrandLogo textClass="text-primary-foreground hidden sm:inline-block" />
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
-            <Link href="/profile" className="h-9 w-9 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 overflow-hidden flex items-center justify-center hover:ring-2 ring-white/50 transition-all">
-              {session?.photoURL ? (
-                <Image src={session.photoURL} alt="Profile" width={36} height={36} className="h-full w-full object-cover" />
-              ) : (
-                <UserIcon className="h-4 w-4 text-primary-foreground/80" />
-              )}
-            </Link>
+            <UserDropdown />
             <LanguageToggle />
           </div>
         </header>

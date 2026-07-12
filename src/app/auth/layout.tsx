@@ -2,8 +2,7 @@
 
 import { type ReactNode } from "react";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
-import Image from "next/image";
-import logo from "@/assets/beacon-logo.jpg";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { usePathname } from "next/navigation";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -25,7 +24,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className={`rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-500 mx-auto w-full`}>
           <div className="mb-6 flex flex-col items-center gap-3">
-            <Image src={logo} alt="Beacon" className="h-14 w-14 rounded-md object-cover" />
+            <BrandLogo textClass="text-foreground text-2xl" />
           </div>
           
           {children}

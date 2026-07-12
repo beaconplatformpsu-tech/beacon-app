@@ -148,6 +148,15 @@
 }
 .animate-beam { animation: beam-sweep 6s ease-in-out infinite; transform-origin: top center; }
 
+@keyframes toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+[data-sonner-toast]:hover::after {
+  animation-play-state: paused !important;
+}
+
 @keyframes float-slow {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }

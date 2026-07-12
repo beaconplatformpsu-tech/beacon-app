@@ -11,20 +11,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
       closeButton
       duration={4000}
       icons={{
-        success: <CheckCircle2 className="h-5 w-5" />,
-        error: <XCircle className="h-5 w-5" />,
+        success: <CheckCircle2 className="h-6 w-6" />,
+        error: <AlertTriangle className="h-6 w-6" />,
       }}
       className="toaster group"
       toastOptions={{
         unstyled: false,
         classNames: {
           toast:
-            "group toast relative overflow-hidden pointer-events-auto flex w-full items-start gap-3 rounded-lg border shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)]",
-          title: "text-sm font-semibold leading-tight",
-          description: "text-xs mt-0.5 opacity-90",
-          actionButton: "bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs",
-          cancelButton: "bg-muted text-muted-foreground rounded-md px-2 py-1 text-xs",
-          closeButton: "absolute top-2 right-2 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/10 text-current/50 hover:text-current",
+            "group toast relative overflow-hidden pointer-events-auto flex w-full items-center gap-3 rounded-md px-4 py-3 shadow-lg border-0 " +
+            "after:content-[''] after:absolute after:bottom-0 after:start-0 after:h-1.5 after:bg-white/30 after:[animation:toast-progress_4000ms_linear_forwards]",
+          success: "!bg-emerald-600 !text-white",
+          error: "!bg-red-500 !text-white",
+          title: "text-[15px] font-medium",
+          description: "text-sm opacity-90",
+          icon: "text-white [&>svg]:w-6 [&>svg]:h-6 shrink-0",
+          actionButton: "bg-white text-primary rounded-md px-2 py-1 text-xs font-semibold",
+          cancelButton: "bg-white/20 text-white rounded-md px-2 py-1 text-xs",
+          closeButton: "absolute top-1/2 -translate-y-1/2 end-2 !bg-transparent opacity-60 group-hover:opacity-100 transition-opacity !text-white !border-0",
         },
       }}
       {...props}

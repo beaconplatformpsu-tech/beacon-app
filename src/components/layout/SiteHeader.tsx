@@ -3,6 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { BrandLogo } from "@/components/shared/BrandLogo";
+import { UserDropdown } from "@/components/shared/UserDropdown";
 import {
   LayoutDashboard,
   LogOut,
@@ -114,17 +116,7 @@ export function SiteHeader() {
       {/* ── TOP BAR: desktop-only primary brand strip ── */}
       <div className="hidden md:block bg-primary text-primary-foreground">
         <div className="mx-auto flex py-2 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src={logo}
-              alt="Beacon"
-              priority
-              width={64}
-              height={64}
-              className="h-16 w-16 object-cover rounded-full"
-            />
-            <span className="font-sans font-bold text-2xl tracking-widest">Beacon</span>
-          </Link>
+          <BrandLogo textClass="text-primary-foreground text-2xl" />
           <SocialIcons />
         </div>
       </div>
@@ -135,17 +127,9 @@ export function SiteHeader() {
 
           {/* Left: Logo (mobile only - desktop shows logo in top bar) */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 md:hidden">
-              <Image
-                src={logo}
-                alt="Beacon"
-                priority
-                width={48}
-                height={48}
-                className="h-12 w-12 object-cover rounded-full"
-              />
-              <span className="font-sans font-bold text-lg tracking-widest text-primary-foreground">Beacon</span>
-            </Link>
+            <div className="md:hidden">
+              <BrandLogo textClass="text-primary-foreground text-lg" />
+            </div>
 
             {/* Desktop nav links */}
             <nav className="hidden lg:flex items-center gap-8 md:ms-2" aria-label="Main navigation">
@@ -180,35 +164,12 @@ export function SiteHeader() {
                 session ? (
                   <div className="flex items-center gap-2">
                     <NotificationsDropdown />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-2 rounded-full border max-md:border-primary-foreground/30 md:border-border/50 max-md:bg-primary-foreground/10 md:bg-background pl-2 pr-3 py-1 max-md:hover:bg-primary-foreground/20 md:hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer">
-                          <Avatar className="h-7 w-7">
-                            <AvatarImage src={session.photoURL || ""} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                              {session.displayName?.charAt(0)?.toUpperCase() || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm font-medium max-md:text-primary-foreground md:text-foreground max-w-[100px] truncate">
-                            {session.displayName || "Student"}
-                          </span>
-                          <ChevronDown className="h-3 w-3 max-md:text-primary-foreground/70 md:text-muted-foreground" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 mt-2">
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                          <Link href="/profile" className="flex items-center gap-2 w-full">
-                            <UserRound className="h-4 w-4" />
-                            <span>{t.nav.profile}</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setShowSignOutConfirm(true)} disabled={signingOut} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
-                          <LogOut className="h-4 w-4 mr-2" />
-                          <span>{t.actions.signOut}</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <UserDropdown 
+                      buttonClassName="flex items-center gap-2 rounded-full border max-md:border-primary-foreground/30 md:border-border/50 max-md:bg-primary-foreground/10 md:bg-background pl-2 pr-3 py-1 max-md:hover:bg-primary-foreground/20 md:hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
+                      textClassName="text-sm font-medium max-md:text-primary-foreground md:text-foreground max-w-[100px] truncate"
+                      iconClassName="h-3 w-3 max-md:text-primary-foreground/70 md:text-muted-foreground"
+                      bellClassName="max-md:border-primary-foreground/30 max-md:text-primary-foreground/90 max-md:hover:text-primary-foreground md:border-border/60 md:text-foreground/70 md:hover:text-foreground h-9 w-9 flex items-center justify-center rounded-full border bg-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
                   </div>
                 ) : (
                   <Button asChild size="sm" className="rounded-full px-5 font-medium shadow-sm">
