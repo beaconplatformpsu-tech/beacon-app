@@ -20,11 +20,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/i18n/LanguageProvider";
 
-// DB Services
 import { usePublicCareerPaths, usePublicSkills, useCareerPathSkills, usePublicResources } from "@/lib/db/services/publicContentService";
 import { useStudentSkills } from "@/lib/db/services/studentDataService";
 
-// Lazy load markdown
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 export default function CareerPathsPage() {
@@ -35,7 +33,6 @@ export default function CareerPathsPage() {
   const [sortByMatch, setSortByMatch] = useState(true);
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
 
-  // Data fetching
   const { careerPaths, loading: loadingPaths } = usePublicCareerPaths();
   const { skillsMap, loading: loadingSkillsMap } = usePublicSkills();
   const { careerPathSkills, loading: loadingCpSkills } = useCareerPathSkills();
@@ -49,16 +46,14 @@ export default function CareerPathsPage() {
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  // Real-world internships state
   const [internships, setInternships] = useState<Record<string, any[]>>({});
   const [loadingInternships, setLoadingInternships] = useState<Record<string, boolean>>({});
 
-  // ── Match Score Calculation (memoized helper) ────────────────────────────
   const pathsWithScores = useMemo(() => {
     if (loading) return [];
-    return careerPaths.map((path) => ({ 
-      ...path, 
-      matchScore: computeMatchScore(path.id, careerPathSkills, skillsMap, userSkills) 
+    return careerPaths.map((path) => ({
+      ...path,
+      matchScore: computeMatchScore(path.id, careerPathSkills, skillsMap, userSkills)
     }));
   }, [careerPaths, careerPathSkills, skillsMap, userSkills, loading]);
 
@@ -73,7 +68,6 @@ export default function CareerPathsPage() {
       : [...filtered].sort((a, b) => a.title.localeCompare(b.title));
   }, [pathsWithScores, search, sortByMatch]);
 
-  // ── Skill Gap + Resources Helpers ────────────────────────────────────────
   const getSkillsGapAnalysis = (pathId: string) => {
     const required = Object.values(careerPathSkills)
       .filter((cps) => cps.careerPathId === pathId && (cps.importanceLevel === "core" || cps.importanceLevel === "important"))
@@ -95,7 +89,6 @@ export default function CareerPathsPage() {
   const getResourcesForPath = (pathId: string) =>
     resources.filter((res) => res.careerPathIds?.includes(pathId));
 
-  // ── AI Generation ────────────────────────────────────────────────────────
   const generateAiRecommendation = async () => {
     if (userSkills.length === 0) {
       setAiError(t.career?.aiErrorNoSkills || "Add some skills to your profile first.");
@@ -139,7 +132,6 @@ export default function CareerPathsPage() {
         </div>
       </div>
 
-      {/* ── AI Mentor Card ── */}
       {!loading && userSkills.length > 0 && (
         <Card className="border-indigo-500/30 shadow-glow shadow-indigo-500/10 bg-gradient-to-br from-indigo-500/5 to-transparent relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -204,7 +196,6 @@ export default function CareerPathsPage() {
         </Card>
       )}
 
-      {/* ── Search & Filter Bar ── */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 p-4 bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl shadow-sm">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -216,7 +207,6 @@ export default function CareerPathsPage() {
         </div>
       </div>
 
-      {/* ── Career Path Cards ── */}
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -257,14 +247,14 @@ export default function CareerPathsPage() {
                       <div className="relative h-2.5 mt-3 w-full bg-muted rounded-full overflow-hidden shadow-inner">
                         <div
                           className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out ${path.matchScore >= 80 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' :
-                              path.matchScore < 40 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
-                                'bg-gradient-to-r from-primary/70 to-primary'
+                            path.matchScore < 40 ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
+                              'bg-gradient-to-r from-primary/70 to-primary'
                             }`}
                           style={{ width: `${path.matchScore}%` }}
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button asChild size="sm" className="hidden md:flex">
                         <Link href={`/career/${path.id}`} onClick={(e) => e.stopPropagation()}>Details</Link>
@@ -278,7 +268,7 @@ export default function CareerPathsPage() {
 
                 {isExpanded && (
                   <div className="border-t border-border/50 bg-muted/5 p-6 md:p-8 space-y-10 animate-in slide-in-from-top-2 fade-in duration-300">
-                    
+
                     <div className="flex justify-between items-center bg-card p-4 rounded-xl shadow-sm border border-border">
                       <div>
                         <h4 className="font-bold">Explore Full Path Details</h4>
@@ -290,7 +280,7 @@ export default function CareerPathsPage() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                      {/* Acquired Skills */}
+
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold flex items-center gap-2 text-emerald-600 dark:text-emerald-500">
                           <CheckCircle2 className="h-5 w-5" /> {t.career?.readyAttributes || "Acquired Core Skills"} ({gapAnalysis.acquired.length})
@@ -314,7 +304,6 @@ export default function CareerPathsPage() {
                         )}
                       </div>
 
-                      {/* Missing Skills */}
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold flex items-center gap-2 text-amber-600 dark:text-amber-500">
                           <Zap className="h-5 w-5" /> {t.career?.skillGaps || "Missing Core Skills"} ({gapAnalysis.missing.length})

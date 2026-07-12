@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Category, UserSkill } from "@/lib/types";
 import { useT } from "@/i18n/LanguageProvider";
 
-// ── Lazy load the radar chart (it pulls in recharts - not needed on first paint) ──
+
 const SkillRadarChart = dynamic(
   () => import("@/components/charts/SkillRadarChart").then((m) => m.SkillRadarChart),
   { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-xl" /> }
@@ -42,7 +42,6 @@ export default function SkillsPage() {
   const [search, setSearch] = useState("");
   const [skillToDelete, setSkillToDelete] = useState<string | null>(null);
 
-  // ── Radar chart data (memoized) ──────────────────────────────────────────
   const radarData = useMemo(() =>
     CS_CATEGORIES.map((cat) => {
       const catSkills = skills.filter((s) => s.category === cat);
@@ -54,7 +53,6 @@ export default function SkillsPage() {
     [skills]
   );
 
-  // ── Filtered list (memoized) ─────────────────────────────────────────────
   const filteredSkills = useMemo(
     () => skills.filter((s) => s.name.toLowerCase().includes(search.toLowerCase())),
     [skills, search]
@@ -65,7 +63,6 @@ export default function SkillsPage() {
     [radarData]
   );
 
-  // ── Mutations ────────────────────────────────────────────────────────────
   const handleAddSkill = async (skill: Partial<UserSkill>) => {
     if (!skill.name) {
       toast.warning(t.skills.missingFields, t.skills.missingFieldsDesc);
@@ -118,7 +115,7 @@ export default function SkillsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-      {/* ── Header ── */}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-3">
@@ -135,7 +132,7 @@ export default function SkillsPage() {
         </SkillDialog>
       </div>
 
-      {/* ── Analytics (only with data) ── */}
+
       {!loading && skills.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-3">
           <Card className="lg:col-span-1 shadow-glow border-border/50 bg-card/50 backdrop-blur-sm relative overflow-hidden">
@@ -187,7 +184,6 @@ export default function SkillsPage() {
         </div>
       )}
 
-      {/* ── Search ── */}
       <div className="flex flex-col md:flex-row gap-4 p-4 bg-card/50 backdrop-blur-md border border-border/50 rounded-2xl shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -201,7 +197,6 @@ export default function SkillsPage() {
         </div>
       </div>
 
-      {/* ── Skills Grid ── */}
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (

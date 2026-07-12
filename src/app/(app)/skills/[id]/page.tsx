@@ -27,7 +27,7 @@ export default function SkillDetailsPage() {
   const loading = loadingPublicSkills || loadingResources || loadingUserSkills;
 
   const skill = useMemo(() => publicSkills.find((s) => s.id === id), [publicSkills, id]);
-  
+
   const userSkill = useMemo(() => {
     if (!skill) return null;
     return userSkills.find((us) => us.skillId === skill.id || us.name.toLowerCase() === skill.title.toLowerCase());
@@ -64,8 +64,6 @@ export default function SkillDetailsPage() {
       <Button variant="ghost" asChild className="gap-2 text-muted-foreground hover:text-foreground">
         <Link href="/skills"><ArrowLeft className="w-4 h-4" /> Back to My Skills</Link>
       </Button>
-
-      {/* HEADER */}
       <Card className="border-border/50 shadow-sm overflow-hidden bg-card/80 backdrop-blur-sm relative">
         <div className="absolute top-0 right-0 -mt-16 -mr-16 h-48 w-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         <CardContent className="p-8">
@@ -79,7 +77,7 @@ export default function SkillDetailsPage() {
                 <Code className="h-8 w-8 text-primary" /> {skill.title}
               </h1>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">{skill.description}</p>
-              
+
               {skill.tags && skill.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {skill.tags.map(tag => (
@@ -89,12 +87,11 @@ export default function SkillDetailsPage() {
               )}
             </div>
 
-            {/* User Progress Box */}
             <div className="shrink-0 w-full md:w-64 bg-card rounded-xl p-6 border border-border shadow-sm flex flex-col justify-center items-center text-center">
               <Trophy className={`w-8 h-8 mb-2 ${userSkill?.proficiency === 'Expert' ? 'text-emerald-500' : 'text-primary'}`} />
               <div className="text-sm text-muted-foreground font-medium mb-1">Your Proficiency</div>
               <div className="text-2xl font-bold mb-4">{userSkill ? userSkill.proficiency : "Not Tracked"}</div>
-              
+
               {userSkill ? (
                 <div className="w-full">
                   <div className="flex justify-between text-xs mb-1 font-medium">
@@ -113,7 +110,6 @@ export default function SkillDetailsPage() {
         </CardContent>
       </Card>
 
-      {/* RESOURCES */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl flex items-center gap-2">

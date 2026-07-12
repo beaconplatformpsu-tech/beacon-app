@@ -7,12 +7,9 @@ import type {
   ExtendedCareerPathSkill,
   UserSkill
 } from "@/lib/types";
-
-// Helper to safely convert an array-like object or undefined to a true array
 export function safeArray<T>(val: unknown): T[] {
   if (!val) return [];
   if (Array.isArray(val)) return val;
-  // If it's a map/object of true/false or similar (like tags), handle it
   if (typeof val === 'object') {
     return Object.keys(val) as T[];
   }
