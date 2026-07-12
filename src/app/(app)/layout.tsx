@@ -83,7 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 start-0 z-50 w-64 border-e border-border bg-card shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}>
         <Link href="/" className="flex h-16 items-center gap-3 border-b border-primary-foreground/10 bg-primary text-primary-foreground px-6 hover:bg-primary/90 transition-colors">
           <Image src={logo} alt="Beacon" className="h-8 w-8 rounded-md ring-1 ring-primary-foreground/20" />
           <span className="font-display text-xl tracking-wide">Beacon</span>
@@ -120,13 +120,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       {/* Main Content */}
-      <main className="flex-1 lg:pl-64">
+      <main className="flex-1 lg:pl-64 rtl:lg:pl-0 rtl:lg:pr-64">
         {/* Global Header */}
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between lg:justify-end bg-primary text-primary-foreground px-4 md:px-8 shadow-md">
           <div className="flex items-center gap-3 lg:hidden">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 -ml-1.5 hover:bg-white/20 rounded-md transition-colors"
+              className="p-1.5 -ml-1.5 rtl:-mr-1.5 rtl:ml-0 hover:bg-white/20 rounded-md transition-colors"
             >
               {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

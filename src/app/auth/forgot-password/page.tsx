@@ -155,8 +155,8 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             id="fp-submit"
-            disabled={loading || !!error}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-10 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 min-w-[180px]"
+            disabled={loading || !!error || !email}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-10 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed min-w-[180px]"
           >
             {loading ? (
               <>

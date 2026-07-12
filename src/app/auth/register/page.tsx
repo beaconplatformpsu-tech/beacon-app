@@ -215,18 +215,7 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {step === 1 ? t.auth.createSub : "Let's personalize your profile (Optional)"}
         </p>
-        {/* Step progress indicator */}
-        <div className="flex items-center justify-center gap-3 mt-5">
-          <div className="flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === 1 ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/20 text-primary"}`}>1</div>
-            <span className={`text-xs font-medium hidden sm:block ${step === 1 ? "text-foreground" : "text-muted-foreground"}`}>Account</span>
-          </div>
-          <div className={`h-px w-8 transition-colors ${step === 2 ? "bg-primary" : "bg-border"}`} />
-          <div className="flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step === 2 ? "bg-primary text-primary-foreground shadow-glow" : "bg-muted text-muted-foreground"}`}>2</div>
-            <span className={`text-xs font-medium hidden sm:block ${step === 2 ? "text-foreground" : "text-muted-foreground"}`}>Profile</span>
-          </div>
-        </div>
+        {/* Step progress indicator removed as per user request */}
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4" noValidate autoComplete="off">
@@ -340,7 +329,7 @@ export default function RegisterPage() {
               type="button"
               onClick={handleNextStep}
               disabled={!form.name || !form.email || !form.password || !form.confirmPassword || !!errors.name || !!errors.email || !!errors.password || !!errors.confirmPassword}
-              className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="h-4 w-4" />
             </button>
@@ -355,8 +344,8 @@ export default function RegisterPage() {
               </button>
               <button
                 type="submit"
-                disabled={loading || !form.academicLevel || !form.department || !!errors.academicLevel || !!errors.department || !!errors.github || !!errors.linkedin}
-                className="flex-1 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 flex items-center justify-center gap-2 whitespace-nowrap"
+                disabled={loading || Object.keys(errors).length > 0 || !form.name || !form.email || !form.password || !form.confirmPassword || !form.academicLevel || !form.department}
+                className="flex-1 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 {loading ? <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span> : <span className="whitespace-nowrap">Complete Registration</span>} <Check className="h-4 w-4" />
               </button>

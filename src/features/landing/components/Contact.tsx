@@ -18,20 +18,21 @@ export function Contact() {
   const toast = useCustomToast();
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
+  
+  const parsed = schema.safeParse(form);
+  const realtimeErrors: Partial<Record<keyof typeof form, string>> = {};
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const k = issue.path[0] as keyof typeof form;
+      if (!realtimeErrors[k]) realtimeErrors[k] = issue.message;
+    }
+  }
+  const hasErrors = !parsed.success;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setErrors({});
-    const parsed = schema.safeParse(form);
     if (!parsed.success) {
-      const fieldErrors: typeof errors = {};
-      for (const issue of parsed.error.issues) {
-        const k = issue.path[0] as keyof typeof form;
-        if (!fieldErrors[k]) fieldErrors[k] = issue.message;
-      }
-      setErrors(fieldErrors);
-      toast.warning("Validation Error", "Please check your inputs and try again.");
+      toast.error("Validation Error", "Please check your inputs and try again.");
       return;
     }
     setSubmitting(true);
@@ -104,7 +105,7 @@ export function Contact() {
                   value={form.name}
                   onChange={(v) => setForm((f) => ({ ...f, name: v }))}
                   placeholder={t.contact.namePh}
-                  error={errors.name}
+                  error={form.name.length > 0 ? realtimeErrors.name : undefined}
                   autoComplete="name"
                 />
                 <Field
@@ -115,7 +116,7 @@ export function Contact() {
                   value={form.email}
                   onChange={(v) => setForm((f) => ({ ...f, email: v }))}
                   placeholder={t.contact.emailPh}
-                  error={errors.email}
+                  error={form.email.length > 0 ? realtimeErrors.email : undefined}
                   autoComplete="email"
                 />
               </div>
@@ -134,19 +135,20 @@ export function Contact() {
                   onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                   placeholder={t.contact.messagePh}
                   className={`w-full resize-none rounded-lg border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${
-                    errors.message
+                    form.message.length > 0 && realtimeErrors.message
                       ? "border-destructive focus:ring-destructive/30 focus:border-destructive"
                       : "border-border hover:border-border/80"
                   }`}
                 />
-                {errors.message && (
-                  <p className="mt-1.5 text-xs font-medium text-destructive">{errors.message}</p>
+                {form.message.length > 0 && realtimeErrors.message && (
+                  <p className="mt-1.5 text-xs font-medium text-destructive">{realtimeErrors.message}</p>
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-center">
                 <Button
                   type="submit"
+                  disabled={hasErrors || submitting}
                   isLoading={submitting}
                   loadingText="Sending…"
                   className="rounded-lg px-7 py-3 h-auto text-sm font-semibold shadow-glow"

@@ -257,8 +257,8 @@ function ResetPasswordContent() {
         <div className="flex justify-center pt-4 border-t border-border mt-6">
           <button
             type="submit"
-            disabled={loading}
-            className="w-1/2 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60 min-w-[180px]"
+            disabled={loading || !!pwError || !!confError || !password || !confirm}
+            className="w-1/2 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed min-w-[180px]"
           >
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.saving}</>

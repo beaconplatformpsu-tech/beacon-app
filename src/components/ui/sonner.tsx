@@ -7,27 +7,24 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       position="top-right"
-      richColors={false}
+      richColors={true}
       closeButton
       duration={4000}
       icons={{
-        success: <CheckCircle2 className="h-5 w-5 text-emerald-400" />,
-        error: <XCircle className="h-5 w-5 text-red-400" />,
-        info: <Info className="h-5 w-5 text-sky-400" />,
-        warning: <AlertTriangle className="h-5 w-5 text-amber-400" />,
+        success: <CheckCircle2 className="h-5 w-5" />,
+        error: <XCircle className="h-5 w-5" />,
       }}
       className="toaster group"
       toastOptions={{
         unstyled: false,
         classNames: {
           toast:
-            "group toast relative overflow-hidden pointer-events-auto flex w-full items-start gap-3 rounded-lg border-0 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)] " +
-            "bg-[#151520] text-slate-100",
+            "group toast relative overflow-hidden pointer-events-auto flex w-full items-start gap-3 rounded-lg border shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)]",
           title: "text-sm font-semibold leading-tight",
-          description: "text-xs text-slate-400 mt-0.5",
+          description: "text-xs mt-0.5 opacity-90",
           actionButton: "bg-primary text-primary-foreground rounded-md px-2 py-1 text-xs",
           cancelButton: "bg-muted text-muted-foreground rounded-md px-2 py-1 text-xs",
-          closeButton: "absolute top-2 right-2 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/10 text-white/50 hover:text-white",
+          closeButton: "absolute top-2 right-2 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/10 text-current/50 hover:text-current",
         },
       }}
       {...props}

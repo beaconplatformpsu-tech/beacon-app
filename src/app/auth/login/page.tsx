@@ -202,8 +202,8 @@ function LoginContent() {
           <button
             type="submit"
             id="login-submit"
-            disabled={loading || !!errors.email || !!errors.password}
-            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60"
+            disabled={loading || !!errors.email || !!errors.password || !email || !password}
+            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
           >
             {loading && !unverifiedUser ? (
               <span className="flex items-center justify-center gap-2 whitespace-nowrap">
