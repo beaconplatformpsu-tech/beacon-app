@@ -114,8 +114,8 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full flex flex-col shadow-sm">
 
       {/* ── TOP BAR: desktop-only primary brand strip ── */}
-      <div className="hidden md:block bg-primary text-primary-foreground">
-        <div className="mx-auto flex py-2 max-w-7xl items-center justify-between px-6">
+      <div className="hidden md:block bg-primary text-primary-foreground px-4 sm:px-6">
+        <div className="mx-auto flex py-2 max-w-7xl items-center justify-between">
           <BrandLogo textClass="text-primary-foreground text-2xl" />
           <SocialIcons />
         </div>

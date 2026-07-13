@@ -15,6 +15,7 @@ import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserDropdown } from "@/components/shared/UserDropdown";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { NotificationsDropdown } from "@/components/shared/NotificationsDropdown";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -93,7 +94,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
       <aside className={`fixed inset-y-4 start-4 z-50 w-64 rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-[120%] rtl:translate-x-[120%]"}`}>
         <div className="flex h-16 items-center border-b border-border/50 px-6 mt-2">
-          <BrandLogo textClass="text-foreground" />
+          <BrandLogo textClass="text-foreground text-xl md:text-2xl font-bold" imageClass="h-10 w-10 md:h-12 md:w-12" />
         </div>
         <nav className="flex-1 space-y-2 overflow-y-auto p-4 h-[calc(100vh-10rem)] scrollbar-hide">
           {navItems.map((item) => {
@@ -131,24 +132,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Global Floating Header */}
         <div className="p-4 md:p-6 lg:p-8 pb-0">
           <header className="sticky top-4 z-40 flex h-16 items-center justify-between lg:justify-end rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 px-4 md:px-6 shadow-lg shadow-black/5 transition-all">
-            <div className="flex items-center gap-3 lg:hidden">
+            <div className="flex items-center gap-2 sm:gap-3 lg:hidden flex-1 min-w-0">
               <button 
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 -ml-2 rtl:-mr-2 rtl:ml-0 hover:bg-primary/10 text-primary rounded-xl transition-all hover:scale-105 active:scale-95"
+                className="p-1.5 sm:p-2 -ml-1 sm:-ml-2 rtl:-mr-1 sm:rtl:-mr-2 rtl:ml-0 hover:bg-primary/10 text-primary rounded-xl transition-all hover:scale-105 active:scale-95 shrink-0"
               >
                 {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
-              <BrandLogo textClass="text-foreground hidden sm:inline-block" />
+              <BrandLogo textClass="text-foreground text-lg sm:text-xl font-bold truncate" imageClass="h-10 w-10 sm:h-12 sm:w-12 shrink-0" />
             </div>
             
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
+              <NotificationsDropdown />
               <UserDropdown 
-                buttonClassName="flex items-center gap-2 rounded-full border border-primary/10 bg-primary/5 pl-1 pr-3 py-1 hover:bg-primary/10 hover:shadow-md hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:pl-3 rtl:pr-1 cursor-pointer"
-                textClassName="text-sm font-bold text-foreground max-w-[120px] truncate hidden sm:inline-block"
+                buttonClassName="flex items-center gap-1.5 sm:gap-2 rounded-full border border-primary/10 bg-primary/5 pl-1 pr-2 sm:pr-3 py-1 hover:bg-primary/10 hover:shadow-md hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:pl-2 sm:rtl:pl-3 rtl:pr-1 cursor-pointer"
+                textClassName="text-sm font-bold text-foreground max-w-[80px] sm:max-w-[120px] truncate hidden sm:inline-block"
                 iconClassName="h-4 w-4 text-primary shrink-0"
-                bellClassName="h-10 w-10 flex items-center justify-center rounded-full border border-primary/10 bg-primary/5 text-primary hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              <LanguageToggle className="hover:scale-110 transition-all border-primary/10 bg-primary/5 text-primary hover:bg-primary/10" />
+              <LanguageToggle className="hidden md:flex hover:scale-110 transition-all border-primary/10 bg-primary/5 text-primary hover:bg-primary/10" />
             </div>
           </header>
         </div>

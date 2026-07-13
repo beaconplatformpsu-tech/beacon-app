@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/i18n/LanguageProvider";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -19,10 +20,9 @@ interface UserDropdownProps {
   buttonClassName?: string;
   textClassName?: string;
   iconClassName?: string;
-  bellClassName?: string;
 }
 
-export function UserDropdown({ buttonClassName, textClassName, iconClassName, bellClassName }: UserDropdownProps) {
+export function UserDropdown({ buttonClassName, textClassName, iconClassName }: UserDropdownProps) {
   const { currentUser: session, logout } = useAuth();
   const t = useT();
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -41,9 +41,6 @@ export function UserDropdown({ buttonClassName, textClassName, iconClassName, be
   return (
     <>
       <div className="flex items-center gap-2">
-        <button className={bellClassName || "h-9 w-9 flex items-center justify-center rounded-full border border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground hover:bg-primary-foreground/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-foreground/20"}>
-          <Bell className="h-[18px] w-[18px]" />
-        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={buttonClassName || "flex items-center gap-2 rounded-full border border-primary-foreground/10 bg-primary-foreground/5 pl-1 pr-3 py-1 hover:bg-primary-foreground/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-foreground/20 rtl:pl-3 rtl:pr-1"}>
@@ -66,6 +63,11 @@ export function UserDropdown({ buttonClassName, textClassName, iconClassName, be
                 {t.nav.profile}
               </Link>
             </DropdownMenuItem>
+            
+            <div className="md:hidden px-2 py-1.5 flex justify-center w-full">
+              <LanguageToggle />
+            </div>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
