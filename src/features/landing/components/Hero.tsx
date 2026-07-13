@@ -28,7 +28,7 @@ export function Hero() {
               {t.hero.subtitle}
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-3">
+            <div className={`mt-8 flex flex-wrap items-center justify-center ${session ? 'w-full' : 'lg:justify-start'} gap-3`}>
               {!loading && (
                 <Link
                   href={session ? (role === "admin" ? "/admin" : "/dashboard") : "/auth/login"}

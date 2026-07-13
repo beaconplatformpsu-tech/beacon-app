@@ -4,6 +4,7 @@ import { Bell, Check, Trash2, BellRing, Info, AlertTriangle, CheckCircle2, XCirc
 import { formatDistanceToNow } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { useNotifications, type Notification } from "@/hooks/use-notifications";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +102,14 @@ export function NotificationsDropdown() {
             </div>
           )}
         </ScrollArea>
+
+        <div className="p-2 border-t border-border/40 bg-muted/10">
+          <Button variant="ghost" asChild className="w-full text-xs text-primary font-medium hover:text-primary hover:bg-primary/10 rounded-lg">
+            <Link href="/notifications">
+              View all notifications
+            </Link>
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

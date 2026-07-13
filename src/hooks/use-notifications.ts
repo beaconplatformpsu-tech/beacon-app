@@ -47,7 +47,7 @@ export function useNotifications() {
   const markAsRead = async (notificationId: string) => {
     if (!session?.uid) return;
     try {
-      await update(ref(db, `notifications/${session.uid}/${notificationId}`), { read: true });
+      await update(ref(db, `user_private/${session.uid}/notifications/${notificationId}`), { read: true });
     } catch (error) {
       console.error("Failed to mark notification as read", error);
     }
@@ -61,7 +61,7 @@ export function useNotifications() {
         updates[`${n.id}/read`] = true;
       });
       if (Object.keys(updates).length > 0) {
-        await update(ref(db, `notifications/${session.uid}`), updates);
+        await update(ref(db, `user_private/${session.uid}/notifications`), updates);
       }
     } catch (error) {
       console.error("Failed to mark all as read", error);
@@ -71,7 +71,7 @@ export function useNotifications() {
   const clearNotification = async (notificationId: string) => {
     if (!session?.uid) return;
     try {
-      await remove(ref(db, `notifications/${session.uid}/${notificationId}`));
+      await remove(ref(db, `user_private/${session.uid}/notifications/${notificationId}`));
     } catch (error) {
       console.error("Failed to clear notification", error);
     }
@@ -92,7 +92,7 @@ export const createNotification = async (
   notification: Omit<Notification, "id" | "read" | "createdAt">
 ) => {
   try {
-    await push(ref(db, `notifications/${uid}`), {
+    await push(ref(db, `user_private/${uid}/notifications`), {
       ...notification,
       read: false,
       createdAt: new Date().toISOString()
