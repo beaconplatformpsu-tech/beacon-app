@@ -94,7 +94,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
       <aside className={`fixed inset-y-4 start-4 z-50 w-64 rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-[120%] rtl:translate-x-[120%]"}`}>
         <div className="flex h-16 items-center border-b border-border/50 px-6 mt-2">
-          <BrandLogo textClass="text-foreground text-xl md:text-2xl font-bold" imageClass="h-10 w-10 md:h-12 md:w-12" />
+          <BrandLogo textClass="text-foreground text-2xl md:text-3xl font-bold" imageClass="h-12 w-12 md:h-14 md:w-14" />
         </div>
         <nav className="flex-1 space-y-2 overflow-y-auto p-4 h-[calc(100vh-10rem)] scrollbar-hide">
           {navItems.map((item) => {
@@ -139,7 +139,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               >
                 {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
-              <BrandLogo textClass="text-foreground text-lg sm:text-xl font-bold truncate" imageClass="h-10 w-10 sm:h-12 sm:w-12 shrink-0" />
+              <BrandLogo textClass="text-foreground text-xl sm:text-2xl font-bold truncate" imageClass="h-12 w-12 sm:h-14 sm:w-14 shrink-0" />
             </div>
             
             <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">

@@ -116,7 +116,7 @@ export function SiteHeader() {
       {/* ── TOP BAR: desktop-only primary brand strip ── */}
       <div className="hidden md:block bg-primary text-primary-foreground px-4 sm:px-6">
         <div className="mx-auto flex py-2 max-w-7xl items-center justify-between">
-          <BrandLogo textClass="text-primary-foreground text-2xl" />
+          <BrandLogo textClass="text-primary-foreground text-2xl md:text-3xl font-bold" imageClass="h-10 w-10 md:h-14 md:w-14" />
           <SocialIcons />
         </div>
       </div>
@@ -128,7 +128,7 @@ export function SiteHeader() {
           {/* Left: Logo (mobile only - desktop shows logo in top bar) */}
           <div className="flex items-center gap-3">
             <div className="md:hidden">
-              <BrandLogo textClass="text-primary-foreground text-lg" />
+              <BrandLogo textClass="text-primary-foreground text-xl sm:text-2xl font-bold" imageClass="h-10 w-10 sm:h-12 sm:w-12" />
             </div>
 
             {/* Desktop nav links */}
