@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserDropdown } from "@/components/shared/UserDropdown";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -126,7 +127,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       {/* Main Content */}
-      <main className="flex-1 lg:pl-72 rtl:lg:pl-0 rtl:lg:pr-72 relative z-10">
+      <main className="flex-1 flex flex-col lg:pl-72 rtl:lg:pl-0 rtl:lg:pr-72 relative z-10">
         {/* Global Floating Header */}
         <div className="p-4 md:p-6 lg:p-8 pb-0">
           <header className="sticky top-4 z-40 flex h-16 items-center justify-between lg:justify-end rounded-3xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10 px-4 md:px-6 shadow-lg shadow-black/5 transition-all">
@@ -152,8 +153,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </header>
         </div>
 
-        <div className="p-4 md:p-6 lg:p-8">
+        <div className="p-4 md:p-6 lg:p-8 flex-1">
           {children}
+        </div>
+        <div className="mt-auto px-4 md:px-6 lg:px-8 pb-4">
+          <SiteFooter />
         </div>
       </main>
 

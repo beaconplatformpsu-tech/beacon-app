@@ -24,7 +24,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className={`rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-500 mx-auto w-full`}>
           <div className="mb-6 flex flex-col items-center gap-3">
-            <BrandLogo textClass="text-foreground text-2xl" />
+            <BrandLogo showText={false} />
           </div>
           
           {children}
