@@ -131,7 +131,7 @@ export default function AdminDashboard() {
                 <div className="p-3 bg-primary text-primary-foreground rounded-xl shadow-md">
                   <Users className="h-6 w-6" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all rtl:rotate-180" />
               </div>
               <div>
                 <h3 className="font-bold text-lg">{t.admin.manageUsers}</h3>
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                 <div className="p-3 bg-emerald-500 text-white rounded-xl shadow-md">
                   <Database className="h-6 w-6" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all rtl:rotate-180" />
               </div>
               <div>
                 <h3 className="font-bold text-lg">{t.admin.manageContent}</h3>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-muted-foreground">{t.admin.supportMessagesDesc}</p>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-amber-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-all rtl:rotate-180" />
               </div>
             </Link>
           </div>

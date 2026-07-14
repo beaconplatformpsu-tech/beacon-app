@@ -64,9 +64,14 @@ export function SiteFooter() {
             </h4>
             <ul className="mt-5 space-y-3 text-sm text-white/80">
               {links.map((item) => (
-                <li key={item.label} className="flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-primary-foreground/50"></span>
-                  <a href={item.href} className="transition hover:text-primary-foreground hover:translate-x-1 block duration-200">{item.label}</a>
+                <li key={item.label} className="group flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-primary-foreground/50 shrink-0" />
+                  <a
+                    href={item.href}
+                    className="transition-all duration-200 hover:text-primary-foreground group-hover:translate-x-1 rtl:group-hover:-translate-x-1 block"
+                  >
+                    {item.label}
+                  </a>
                 </li>
               ))}
             </ul>

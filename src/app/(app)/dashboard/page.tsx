@@ -85,8 +85,8 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-12">
       {/* HERO LEVEL BANNER */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-indigo-600 p-8 text-white shadow-2xl shadow-primary/20 mb-8 border border-white/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/4 -translate-x-1/4"></div>
+        <div className="absolute top-0 end-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 rtl:-translate-x-1/4"></div>
+        <div className="absolute bottom-0 start-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/4 -translate-x-1/4 rtl:translate-x-1/4"></div>
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-6">
@@ -119,7 +119,7 @@ export default function DashboardPage() {
                 <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/30 blur-sm"></div>
               </div>
             </div>
-            <p className="text-xs text-white/60 mt-2 text-right">
+            <p className="text-xs text-white/60 mt-2 text-end">
               {500 - xpProgress} XP to Level {level + 1}
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
               <p className="text-muted-foreground">{preferredCareerPath.industryDomain}</p>
             </div>
             <Button variant="outline" asChild size="sm" className="hidden sm:flex rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
-              <Link href={`/career/${preferredCareerPath.id}`}>View Map <ChevronRight className="w-4 h-4 ml-1" /></Link>
+                <Link href={`/career/${preferredCareerPath.id}`}>View Map <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
             </Button>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
                 <Flame className="w-5 h-5 text-amber-500" /> Active Quests
               </h2>
               <Button variant="ghost" size="sm" asChild aria-label="View all urgent tasks" className="rounded-xl">
-                <Link href="/tasks">View All <ChevronRight className="w-4 h-4 ml-1" /></Link>
+                <Link href="/tasks">View All <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
               </Button>
             </div>
             <div className="p-0">
@@ -276,7 +276,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-background to-amber-500/5 shadow-xl shadow-amber-500/5 overflow-hidden">
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
+            <div className="absolute -end-10 -top-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
             <div className="border-b border-amber-500/20 px-6 py-4 relative z-10">
               <h2 className="flex items-center gap-2 text-lg font-bold">
                 <Sparkles className="w-5 h-5 text-amber-500" /> Intelligent Next Step
