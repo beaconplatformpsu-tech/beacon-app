@@ -150,8 +150,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <nav className="flex-1 space-y-2 overflow-y-auto pt-6 scrollbar-hide">
           {navItems.map((item) => {
-            const isActive = item.href === "/" 
-              ? pathname === "/" 
+            const isActive = item.href === "/" || item.href === "/admin"
+              ? pathname === item.href 
               : pathname.startsWith(item.href);
             return (
               <Link
@@ -161,7 +161,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center ${isCollapsed ? 'justify-center mx-2 px-0' : 'gap-3 ms-4 px-4'} py-3 text-sm font-bold transition-all duration-300 ${
                   isActive 
-                    ? `bg-slate-50 dark:bg-slate-950 text-primary ${isCollapsed ? 'rounded-2xl' : 'rounded-s-2xl rounded-e-none'} shadow-sm relative ${!isCollapsed ? 'before:absolute before:inset-y-0 before:-start-4 before:w-4 before:bg-slate-50 dark:before:bg-slate-950' : ''}` 
+                    ? `bg-slate-50 dark:bg-slate-950 text-primary ${isCollapsed ? 'rounded-2xl' : 'rounded-s-2xl rounded-e-none'} shadow-sm` 
                     : `text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground ${isCollapsed ? 'rounded-2xl' : 'rounded-s-2xl rounded-e-none'}`
                 }`}
               >

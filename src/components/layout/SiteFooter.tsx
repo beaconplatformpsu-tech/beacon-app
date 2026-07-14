@@ -26,8 +26,8 @@ export function SiteFooter() {
     { href: "/", label: t.nav.home },
     { href: "/admin", label: t.nav.adminDashboard },
     { href: "/admin/users", label: t.nav.manageUsers },
-    { href: "/admin/content", label: t.nav.contentResources },
-    { href: "/admin/messages", label: t.nav.viewFeedback },
+    { href: "/admin/content", label: t.nav.adminContent },
+    { href: "/admin/messages", label: t.nav.adminMessages },
     { href: "/admin/settings", label: t.nav.platformSettings },
   ];
   const links = session ? (role === "admin" ? adminLinks : studentLinks) : guestLinks;
