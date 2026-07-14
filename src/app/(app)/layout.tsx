@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, CheckSquare, BookOpen, GraduationCap, HeartHandshake, LockKeyhole, User as UserIcon, LogOut, Settings, MessageSquare, Home, Menu, X, Newspaper, CalendarDays, Mountain, Handshake, Image as ImageIcon, Images, Users } from "lucide-react";
+import { LayoutDashboard, CheckSquare, BookOpen, GraduationCap, HeartHandshake, LockKeyhole, User as UserIcon, LogOut, Settings, MessageSquare, Home, Menu, X, Newspaper, CalendarDays, Mountain, Handshake, Image as ImageIcon, Images, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCustomToast } from "@/hooks/use-custom-toast";
 import { useT, useLanguage } from "@/i18n/LanguageProvider";
@@ -19,6 +19,7 @@ import { NotificationsDropdown } from "@/components/shared/NotificationsDropdown
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -63,16 +64,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = role === "admin" || role === "super_admin";
 
   const navItems = isAdmin ? [
-    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Manage Users", href: "/admin/users", icon: Users },
-    { label: "Academic Tasks", href: "/admin/tasks", icon: CheckSquare },
-    { label: "Skills Library", href: "/admin/skills", icon: BookOpen },
-    { label: "Career Paths", href: "/admin/career", icon: GraduationCap },
-    { label: "Support Content", href: "/admin/support", icon: HeartHandshake },
-    { label: "Platform Resources", href: "/admin/content", icon: Mountain },
-    { label: "System Analytics", href: "/admin/analytics", icon: Newspaper },
-    { label: "Feedback & Messages", href: "/admin/messages", icon: MessageSquare },
-    { label: "Platform Settings", href: "/admin/settings", icon: Settings },
+    { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard },
+    { label: t.nav.manageUsers, href: "/admin/users", icon: Users },
+    { label: t.nav.adminTasks, href: "/admin/tasks", icon: CheckSquare },
+    { label: t.nav.adminSkills, href: "/admin/skills", icon: BookOpen },
+    { label: t.nav.adminCareer, href: "/admin/career", icon: GraduationCap },
+    { label: t.nav.adminSupport, href: "/admin/support", icon: HeartHandshake },
+    { label: t.nav.adminContent, href: "/admin/content", icon: Mountain },
+    { label: t.nav.adminAnalytics, href: "/admin/analytics", icon: Newspaper },
+    { label: t.nav.adminMessages, href: "/admin/messages", icon: MessageSquare },
+    { label: t.nav.platformSettings, href: "/admin/settings", icon: Settings },
   ] : [
     { label: t.nav.home, href: "/", icon: Home },
     { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard },
@@ -130,7 +131,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 start-0 z-50 lg:z-30 w-64 bg-primary text-primary-foreground shadow-2xl lg:shadow-none transition-transform duration-300 ease-out pt-0 lg:pt-16 flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full lg:translate-x-0"}`}>
+      <aside className={`fixed inset-y-0 start-0 z-50 lg:z-30 ${isCollapsed ? 'w-20' : 'w-64'} bg-primary text-primary-foreground shadow-2xl lg:shadow-none transition-all duration-300 ease-out pt-0 lg:pt-16 flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full lg:translate-x-0"}`}>
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:flex absolute -end-3 top-20 bg-background text-foreground rounded-full p-1 border shadow-sm z-50 hover:bg-accent transition-transform"
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4 rtl:rotate-180" /> : <ChevronLeft className="w-4 h-4 rtl:rotate-180" />}
+        </button>
         <div className="lg:hidden flex h-16 items-center px-4 shrink-0 bg-primary border-b border-primary-foreground/10 relative">
           <BrandLogo textClass="text-primary-foreground text-xl font-bold truncate" imageClass="h-10 w-10 shrink-0" />
           <button 
@@ -152,33 +159,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 prefetch={true}
                 onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 ms-4 px-4 py-3 text-sm font-bold transition-all duration-300 ${
+                className={`group flex items-center ${isCollapsed ? 'justify-center mx-2 px-0' : 'gap-3 ms-4 px-4'} py-3 text-sm font-bold transition-all duration-300 ${
                   isActive 
-                    ? "bg-slate-50 dark:bg-slate-950 text-primary rounded-s-2xl rounded-e-none shadow-sm relative before:absolute before:inset-y-0 before:-start-4 before:w-4 before:bg-slate-50 dark:before:bg-slate-950" 
-                    : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground rounded-s-2xl rounded-e-none"
+                    ? `bg-slate-50 dark:bg-slate-950 text-primary ${isCollapsed ? 'rounded-2xl' : 'rounded-s-2xl rounded-e-none'} shadow-sm relative ${!isCollapsed ? 'before:absolute before:inset-y-0 before:-start-4 before:w-4 before:bg-slate-50 dark:before:bg-slate-950' : ''}` 
+                    : `text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground ${isCollapsed ? 'rounded-2xl' : 'rounded-s-2xl rounded-e-none'}`
                 }`}
               >
-                <item.icon className={`h-5 w-5 transition-transform duration-300 relative z-10 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
-                <span className="relative z-10">{item.label}</span>
+                <item.icon className={`h-5 w-5 transition-transform duration-300 shrink-0 relative z-10 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
+                {!isCollapsed && <span className="relative z-10 truncate">{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
         <div className="mt-auto p-4 border-t border-primary-foreground/10 shrink-0">
-          <Button variant="ghost" onClick={() => setShowSignOutConfirm(true)} className="w-full justify-start gap-3 rounded-2xl text-primary-foreground/80 hover:text-white hover:bg-destructive font-bold transition-all">
-            <LogOut className="h-5 w-5 rtl:rotate-180" />
-            {t.layout.signOut}
+          <Button variant="ghost" onClick={() => setShowSignOutConfirm(true)} className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'} rounded-2xl text-primary-foreground/80 hover:text-white hover:bg-destructive font-bold transition-all`}>
+            <LogOut className="h-5 w-5 shrink-0 rtl:rotate-180" />
+            {!isCollapsed && <span className="truncate">{t.layout.signOut}</span>}
           </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col pt-16 lg:ps-64 rtl:lg:ps-0 rtl:lg:pe-64 relative z-10 min-h-screen">
+      <main className={`flex-1 flex flex-col pt-16 ${isCollapsed ? 'lg:ps-20 rtl:lg:ps-0 rtl:lg:pe-20' : 'lg:ps-64 rtl:lg:ps-0 rtl:lg:pe-64'} transition-all duration-300 relative z-10 min-h-screen`}>
         <div className="p-4 md:p-6 lg:p-8 flex-1">
           {children}
         </div>
-        <div className="mt-auto px-4 md:px-6 lg:px-8 pb-4">
+        <div className="mt-auto w-full">
           <SiteFooter />
         </div>
       </main>

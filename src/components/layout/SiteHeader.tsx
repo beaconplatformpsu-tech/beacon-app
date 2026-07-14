@@ -18,6 +18,13 @@ import {
   Youtube,
   Facebook,
   ChevronDown,
+  CheckSquare,
+  BookOpen,
+  GraduationCap,
+  HeartHandshake,
+  Mountain,
+  Newspaper,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,15 +85,20 @@ export function SiteHeader() {
     { href: "/skills", label: t.nav.skillsCareers },
     { href: "/support", label: t.nav.support },
   ];
+  const isAdmin = role === "admin" || role === "super_admin";
   const adminNav: NavItem[] = [
-    { href: "/", label: t.nav.home },
     { href: "/admin", label: t.nav.adminDashboard, icon: LayoutDashboard },
     { href: "/admin/users", label: t.nav.manageUsers, icon: Users },
-    { href: "/admin/content", label: t.nav.contentResources },
-    { href: "/admin/messages", label: t.nav.viewFeedback },
+    { href: "/admin/tasks", label: t.nav.adminTasks, icon: CheckSquare },
+    { href: "/admin/skills", label: t.nav.adminSkills, icon: BookOpen },
+    { href: "/admin/career", label: t.nav.adminCareer, icon: GraduationCap },
+    { href: "/admin/support", label: t.nav.adminSupport, icon: HeartHandshake },
+    { href: "/admin/content", label: t.nav.adminContent, icon: Mountain },
+    { href: "/admin/analytics", label: t.nav.adminAnalytics, icon: Newspaper },
+    { href: "/admin/messages", label: t.nav.adminMessages, icon: MessageSquare },
     { href: "/admin/settings", label: t.nav.platformSettings, icon: Settings },
   ];
-  const nav = session ? (role === "admin" ? adminNav : studentNav) : guestNav;
+  const nav = session ? (isAdmin ? adminNav : studentNav) : guestNav;
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -294,7 +306,7 @@ export function SiteHeader() {
         onClose={() => setShowSignOutConfirm(false)}
         onConfirm={handleSignOut}
         title={t.actions.confirmSignOut || "Are you sure you want to sign out?"}
-        description={t.actions.warning || "You will need to sign in again to access your dashboard."}
+        description="You will need to sign in again to access your dashboard."
         confirmText={t.actions.signOut || "Sign Out"}
         cancelText={t.actions.cancel || "Cancel"}
         isLoading={signingOut}
