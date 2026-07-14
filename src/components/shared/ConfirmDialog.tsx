@@ -41,19 +41,23 @@ export function ConfirmDialog({
       <AlertDialogContent className="sm:max-w-[425px] overflow-hidden rounded-3xl border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl p-0">
         <div className={`h-2 w-full ${variant === 'destructive' ? 'bg-red-500' : 'bg-primary'}`} />
         <div className="p-6">
-          <AlertDialogHeader>
-            <div className="flex flex-col items-center gap-4 mb-2 text-center">
-              <div className={`p-3 rounded-full ${variant === 'destructive' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
+          <AlertDialogHeader className="text-left rtl:text-right">
+            <div className="flex items-start gap-4 mb-2">
+              <div className={`p-3 rounded-2xl shrink-0 ${variant === 'destructive' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
                 {variant === 'destructive' ? <AlertTriangle className="h-6 w-6" /> : <Info className="h-6 w-6" />}
               </div>
-              <AlertDialogTitle className="text-xl font-bold">{title}</AlertDialogTitle>
+              <div className="pt-1">
+                <AlertDialogTitle className="text-xl font-bold font-sans">{title}</AlertDialogTitle>
+                {description && (
+                  <AlertDialogDescription className="mt-2 text-sm leading-relaxed text-muted-foreground font-sans">
+                    {description}
+                  </AlertDialogDescription>
+                )}
+              </div>
             </div>
-            <AlertDialogDescription className="text-center text-muted-foreground leading-relaxed">
-              {description}
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-8 flex sm:justify-center gap-3">
-            <AlertDialogCancel disabled={isLoading} className="rounded-xl flex-1 sm:flex-none sm:w-32">{cancelText}</AlertDialogCancel>
+          <AlertDialogFooter className="mt-8 flex justify-end gap-3 sm:justify-end">
+            <AlertDialogCancel disabled={isLoading} className="rounded-xl flex-1 sm:flex-none sm:w-auto px-6">{cancelText}</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()

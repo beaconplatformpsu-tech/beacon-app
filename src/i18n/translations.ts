@@ -134,7 +134,7 @@ const en = {
   },
   footer: {
     orgName: "Beacon",
-    blurb: "A professional web application for managing student-focused core modules, tracking skills, exploring careers, and providing a comprehensive learning environment for users worldwide.",
+    blurb: "A professional web application for CS students to manage core academic modules, track technical skills, explore career paths, and provide a comprehensive learning environment for users worldwide.",
     quickLinks: "Quick Links",
     contactUs: "Contact Us",
     location: "Wadi Addawasir KSA",
@@ -853,7 +853,7 @@ const ar: Dict = {
   },
   footer: {
     orgName: "Beacon",
-    blurb: "تطبيق ويب احترافي لإدارة الوحدات الأساسية التي تركز على الطلاب، وتتبع المهارات، واستكشاف الوظائف، وتوفير بيئة تعليمية شاملة للمستخدمين في جميع أنحاء العالم.",
+    blurb: "تطبيق ويب احترافي لطلاب علوم الحاسب لإدارة الوحدات الأساسية التي تركز على الطلاب، وتتبع المهارات، واستكشاف الوظائف، وتوفير بيئة تعليمية شاملة للمستخدمين في جميع أنحاء العالم.",
     quickLinks: "روابط سريعة",
     contactUs: "تواصل معنا",
     location: "وادي الدواسر - السعودية",
