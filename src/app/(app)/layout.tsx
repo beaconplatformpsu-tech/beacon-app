@@ -186,7 +186,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="hidden lg:flex absolute -end-3 top-20 bg-background text-foreground rounded-full p-1 border shadow-sm z-50 hover:bg-accent transition-colors"
+          className="hidden lg:flex absolute -end-5 top-24 bg-background text-foreground rounded-full p-1.5 border shadow-sm z-50 hover:bg-accent transition-colors"
         >
           <CollapseIcon className="w-4 h-4" />
         </button>
@@ -207,7 +207,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 space-y-1.5 overflow-y-auto pt-6 pb-4 scrollbar-hide px-2">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto pt-6 pb-4 scrollbar-white px-2">
           {navItems.map((item) => {
             const isActive = item.href === "/" || item.href === "/admin"
               ? pathname === item.href

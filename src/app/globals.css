@@ -147,6 +147,25 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;                /* Chrome / Safari / Opera */
   }
+
+  /* Custom White Scrollbar for Sidebar */
+  .scrollbar-white::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-white::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-white::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+  }
+  .scrollbar-white::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .scrollbar-white {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
 }
 
 @keyframes beam-sweep {
