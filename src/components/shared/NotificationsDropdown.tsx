@@ -26,7 +26,7 @@ export function NotificationsDropdown() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border/50 bg-background hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer">
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-transparent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer">
           <Bell className="h-4 w-4 text-foreground/80" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white animate-pulse shadow-sm">

@@ -33,6 +33,7 @@ export function useStudentProfile(uid: string | undefined) {
             bio: privateProfileData.bio || "",
             major: privateProfileData.specialization || privateProfileData.major || "",
             academicLevel: privateProfileData.currentLevel || privateProfileData.academicLevel || "",
+            currentLevel: privateProfileData.currentLevel || privateProfileData.academicLevel || "",
             graduationYear: privateProfileData.graduationYear || new Date().getFullYear() + 4,
             preferredCareerPathId: publicData.preferredCareerPathId || undefined,
             github: privateProfileData.links?.github || privateProfileData.github || "",

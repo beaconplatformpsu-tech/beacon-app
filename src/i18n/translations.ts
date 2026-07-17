@@ -791,6 +791,50 @@ const en = {
     newTask: "New Task",
     newNote: "New Note",
     addSkill: "Add Skill",
+    levels: {
+      foundation: {
+        title: "Foundation Stage",
+        desc: "Master the syntax, build the logic. Focus on core programming concepts and problem-solving.",
+        action: "View Foundation Skills",
+        link: "/skills"
+      },
+      year_1: {
+        title: "Year 1 Student",
+        desc: "Build strong fundamentals. Focus on data structures, basic algorithms, and object-oriented programming.",
+        action: "Track Your Skills",
+        link: "/skills"
+      },
+      year_2: {
+        title: "Year 2 Student",
+        desc: "Dive deeper into systems and architecture. Start exploring specialized domains like web or databases.",
+        action: "Explore Domains",
+        link: "/skills"
+      },
+      year_3: {
+        title: "Year 3 Student",
+        desc: "Time to specialize and build. Focus on complex projects, software engineering principles, and teamwork.",
+        action: "Plan Projects",
+        link: "/projects"
+      },
+      year_4: {
+        title: "Year 4 Student",
+        desc: "Master your craft. Focus on advanced topics, capstone preparation, and industry readiness.",
+        action: "View Career Map",
+        link: "/career"
+      },
+      capstone: {
+        title: "Capstone Stage",
+        desc: "Apply everything you've learned. Build a significant project that showcases your full capabilities.",
+        action: "Manage Projects",
+        link: "/projects"
+      },
+      job_prep: {
+        title: "Job Prep Stage",
+        desc: "Polish your CV, master LeetCode, and ace the interviews. Your career starts now.",
+        action: "Prepare for Interviews",
+        link: "/career"
+      }
+    },
   },
   resources: {
     title: "Learning Library",
@@ -1608,6 +1652,50 @@ const ar: Dict = {
     newTask: "مهمة جديدة",
     newNote: "ملاحظة جديدة",
     addSkill: "إضافة مهارة",
+    levels: {
+      foundation: {
+        title: "مرحلة التأسيس",
+        desc: "أتقن بناء الجملة، وابنِ المنطق. ركز على مفاهيم البرمجة الأساسية وحل المشكلات.",
+        action: "عرض مهارات التأسيس",
+        link: "/skills"
+      },
+      year_1: {
+        title: "طالب سنة 1",
+        desc: "ابنِ أساسيات قوية. ركز على هياكل البيانات، الخوارزميات الأساسية، والبرمجة الكينونية.",
+        action: "تتبع مهاراتك",
+        link: "/skills"
+      },
+      year_2: {
+        title: "طالب سنة 2",
+        desc: "تعمق في الأنظمة والهيكلة. ابدأ في استكشاف المجالات المتخصصة مثل الويب أو قواعد البيانات.",
+        action: "استكشاف المجالات",
+        link: "/skills"
+      },
+      year_3: {
+        title: "طالب سنة 3",
+        desc: "حان وقت التخصص والبناء. ركز على المشاريع المعقدة، مبادئ هندسة البرمجيات، والعمل الجماعي.",
+        action: "تخطيط المشاريع",
+        link: "/projects"
+      },
+      year_4: {
+        title: "طالب سنة 4",
+        desc: "أتقن مهنتك. ركز على المواضيع المتقدمة، التحضير لمشروع التخرج، والاستعداد لسوق العمل.",
+        action: "عرض الخريطة المهنية",
+        link: "/career"
+      },
+      capstone: {
+        title: "مرحلة مشروع التخرج",
+        desc: "طبق كل ما تعلمته. ابنِ مشروعاً ضخماً يعرض قدراتك الكاملة.",
+        action: "إدارة المشاريع",
+        link: "/projects"
+      },
+      job_prep: {
+        title: "مرحلة الاستعداد الوظيفي",
+        desc: "جهز سيرتك الذاتية، تدرب على المقابلات، وابدأ مسيرتك المهنية الآن.",
+        action: "الاستعداد للمقابلات",
+        link: "/career"
+      }
+    },
   },
   resources: {
     title: "مكتبة التعلم",

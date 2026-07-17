@@ -158,6 +158,7 @@ export const userProfileSchema = z.object({
   bio: z.string().max(1000).optional(),
   major: z.string().max(255).optional(),
   academicLevel: z.string().max(100).optional(),
+  currentLevel: z.string().max(100).optional(),
   graduationYear: z.number().int().optional(),
   preferredCareerPathId: z.string().optional(),
   github: httpsUrl.optional(),

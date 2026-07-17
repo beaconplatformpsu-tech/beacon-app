@@ -40,6 +40,9 @@ export default function DashboardPage() {
   const loading = loadingProfile || loadingSkills || loadingPrivateData || loadingCareerPaths;
 
   // Derived Data
+  const currentLevelKey = profile?.currentLevel || "foundation";
+  const levelInfo = tDash?.levels?.[currentLevelKey];
+
   const preferredCareerPath = useMemo(() => {
     if (!profile?.preferredCareerPathId) return null;
     return careerPaths.find(p => p.id === profile.preferredCareerPathId) || null;
@@ -101,7 +104,7 @@ export default function DashboardPage() {
                 {loading ? <Skeleton className="h-8 w-48 bg-white/20" /> : (tDash?.welcome?.replace("{name}", profile?.displayName || session?.displayName || "Explorer") || `Welcome back, Explorer!`)}
               </h1>
               <p className="mt-2 text-white/80 max-w-lg">
-                {tDash?.commandCenter || "Ready for your next quest? Keep learning and climbing the ranks!"}
+                {levelInfo?.desc || tDash?.commandCenter || "Ready for your next quest? Keep learning and climbing the ranks!"}
               </p>
             </div>
           </div>
@@ -137,6 +140,23 @@ export default function DashboardPage() {
           <Link href="/resources"><Search className="w-4 h-4" /> {tDash?.exploreResources || "Discover Resources"}</Link>
         </Button>
       </div>
+
+      {/* STAGE FOCUS CARD */}
+      {!loading && levelInfo && (
+        <div className="relative overflow-hidden rounded-3xl border border-primary/30 shadow-xl shadow-primary/5 bg-gradient-to-r from-primary/10 via-background to-background p-6 mb-8 hover:border-primary/50 transition-colors">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1">
+                <GraduationCap className="w-3 h-3" /> {levelInfo.title}
+              </p>
+              <h3 className="text-xl font-bold text-foreground max-w-lg">{levelInfo.desc}</h3>
+            </div>
+            <Button asChild size="sm" className="hidden sm:flex rounded-xl shadow-glow mt-4 sm:mt-0">
+                <Link href={levelInfo.link}>{levelInfo.action} <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* NO CAREER PATH EMPTY STATE */}
       {!loading && !preferredCareerPath && (

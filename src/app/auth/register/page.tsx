@@ -187,27 +187,21 @@ export default function RegisterPage() {
         <h1 className="font-display text-2xl md:text-3xl text-foreground">
           {t.auth.createTitle}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t.auth.createSub}
-        </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4" noValidate autoComplete="off">
         <div className="space-y-4 animate-in fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field id="name" label={t.auth.fullName} icon={<User className="h-4 w-4" />}
-              value={form.name} onChange={(v) => setField("name", v)} onBlur={() => blur("name")}
-              placeholder={t.auth.fullNamePh} autoComplete="name"
-              error={showError("name") ? errors.name : undefined} />
+          <Field id="name" label={t.auth.fullName} icon={<User className="h-4 w-4" />}
+            value={form.name} onChange={(v) => setField("name", v)} onBlur={() => blur("name")}
+            placeholder={t.auth.fullNamePh} autoComplete="name"
+            error={showError("name") ? errors.name : undefined} />
 
-            <Field id="email" type="email" label={t.auth.email} icon={<Mail className="h-4 w-4" />}
-              value={form.email} onChange={(v) => setField("email", v)} onBlur={() => blur("email")}
-              placeholder={t.auth.emailPh} autoComplete="email"
-              error={showError("email") ? errors.email : undefined} />
-          </div>
+          <Field id="email" type="email" label={t.auth.email} icon={<Mail className="h-4 w-4" />}
+            value={form.email} onChange={(v) => setField("email", v)} onBlur={() => blur("email")}
+            placeholder={t.auth.emailPh} autoComplete="email"
+            error={showError("email") ? errors.email : undefined} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+          <div>
               <Field id="password" type="password" label={t.auth.password} icon={<Lock className="h-4 w-4" />}
                 value={form.password} onChange={(v) => setField("password", v)} onBlur={() => blur("password")}
                 placeholder={t.auth.passwordPh}
@@ -246,14 +240,13 @@ export default function RegisterPage() {
               showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
               error={showError("confirmPassword") ? errors.confirmPassword : undefined}
               valid={touched.confirmPassword && !errors.confirmPassword && form.confirmPassword.length > 0} />
-          </div>
         </div>
 
         <div className="flex justify-center pt-4 border-t border-border mt-8">
           <button
             type="submit"
             disabled={loading || !isFormValid}
-            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
+            className="w-auto px-10 rounded-md bg-primary py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2 whitespace-nowrap">
