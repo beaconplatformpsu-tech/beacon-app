@@ -72,7 +72,7 @@ export function FeedbackModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-glow bg-primary hover:bg-primary/90 text-primary-foreground z-50 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group"
+          className="fixed bottom-6 right-6 rtl:right-auto rtl:left-6 h-14 w-14 rounded-full shadow-glow bg-primary hover:bg-primary/90 text-primary-foreground z-50 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group"
           size="icon"
           aria-label="Feedback"
         >
