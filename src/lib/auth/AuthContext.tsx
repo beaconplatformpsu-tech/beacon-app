@@ -9,7 +9,6 @@
  *  - isAuthenticated
  *  - isEmailVerified  – from Firebase Auth (source of truth)
  *  - role         – "student" | "admin"
- *  - permissions  – from user_admin_meta (null for students)
  *  - profile      – basic profile snapshot from users/{uid}
  *  - login / logout / resendVerificationEmail / refreshUser
  *
@@ -36,15 +35,6 @@ import { auth, db } from "@/lib/firebase/config";
 /** Only two roles exist in this platform: student and admin. */
 export type AppRole = "student" | "admin";
 
-export interface AuthPermissions {
-  canManageContent: boolean;
-  canManageUsers: boolean;
-  canManageSupport: boolean;
-  canViewStats: boolean;
-  canViewPrivateStudentData: boolean;
-  canRunSystemActions: boolean;
-}
-
 export interface AuthProfile {
   uid: string;
   email: string;
@@ -61,7 +51,6 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   role: AppRole;
-  permissions: AuthPermissions | null;
   profile: AuthProfile | null;
 
   /** Sign in and return any error message, or null on success. */
@@ -77,17 +66,6 @@ export interface AuthContextValue {
   refreshUser: () => Promise<void>;
 }
 
-// ─── Default permissions (student / no-role) ─────────────────────────────────
-
-const DEFAULT_PERMISSIONS: AuthPermissions = {
-  canManageContent: false,
-  canManageUsers: false,
-  canManageSupport: false,
-  canViewStats: false,
-  canViewPrivateStudentData: false,
-  canRunSystemActions: false,
-};
-
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -97,43 +75,31 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 /**
  * Resolve the app role for a Firebase user.
  * Only two roles are supported: "admin" and "student".
- * Priority: Firebase custom claims → user_admin_meta → default "student".
+ * Priority: Firebase custom claims → users/{uid}/role → default "student".
  */
-async function resolveRole(user: User): Promise<{ role: AppRole; permissions: AuthPermissions | null }> {
+async function resolveRole(user: User): Promise<AppRole> {
   // 1. Try Firebase custom claims (set by Admin SDK on backend)
   try {
     const idTokenResult = await user.getIdTokenResult(/* forceRefresh */ false);
     const claimRole = idTokenResult.claims.role as string | undefined;
     if (claimRole === "admin") {
-      const permClaim = idTokenResult.claims.permissions as AuthPermissions | undefined;
-      return {
-        role: "admin",
-        permissions: permClaim ?? null,
-      };
+      return "admin";
     }
   } catch {
     // Custom claims unavailable — fall through to DB lookup
   }
 
-  // 2. Try user_admin_meta/{uid}
+  // 2. Try users/{uid}/role
   try {
-    const metaSnap = await get(ref(db, `user_admin_meta/${user.uid}`));
-    if (metaSnap.exists()) {
-      const meta = metaSnap.val();
-      // Any non-student role in DB maps to "admin" in the UI
-      const isAdmin = meta.role && meta.role !== "student";
-      if (isAdmin) {
-        return {
-          role: "admin",
-          permissions: meta.permissions ?? null,
-        };
-      }
+    const metaSnap = await get(ref(db, `users/${user.uid}/role`));
+    if (metaSnap.exists() && metaSnap.val() === "admin") {
+      return "admin";
     }
   } catch {
     // DB read failed (e.g. no rule access) — default to student
   }
 
-  return { role: "student", permissions: null };
+  return "student";
 }
 
 /** Load a minimal profile snapshot from users/{uid}. */
@@ -171,7 +137,6 @@ async function loadProfile(user: User, role: AppRole): Promise<AuthProfile | nul
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole>("student");
-  const [permissions, setPermissions] = useState<AuthPermissions | null>(null);
   const [profile, setProfile] = useState<AuthProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -181,7 +146,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!user) {
         setCurrentUser(null);
         setRole("student");
-        setPermissions(null);
         setProfile(null);
         setLoading(false);
         return;
@@ -190,15 +154,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(user);
 
       try {
-        const { role: resolvedRole, permissions: resolvedPerms } = await resolveRole(user);
+        const resolvedRole = await resolveRole(user);
         setRole(resolvedRole);
-        setPermissions(resolvedPerms);
 
         const resolvedProfile = await loadProfile(user, resolvedRole);
         setProfile(resolvedProfile);
       } catch {
         setRole("student");
-        setPermissions(null);
         setProfile(null);
       } finally {
         setLoading(false);
@@ -249,7 +211,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!currentUser,
     isEmailVerified: currentUser?.emailVerified ?? false,
     role,
-    permissions,
     profile,
     login,
     logout,
@@ -260,12 +221,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used inside <AuthProvider>.");
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return ctx;
+  return context;
 }

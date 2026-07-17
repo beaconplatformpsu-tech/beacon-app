@@ -21,6 +21,7 @@ export interface StudentProfile {
   completionPercentage?: number;
   completedAt?: ISOString;
   updatedAt?: ISOString;
+  accountStatus?: "active" | "inactive" | "suspended";
 }
 
 export interface UserPreferences {
@@ -35,18 +36,4 @@ export interface UserOnboarding {
   hasSelectedCareerPath: boolean;
   completedSteps: string[];
   updatedAt?: ISOString;
-}
-
-export interface UserAdminMeta {
-  role: "admin" | "student";
-  permissions: {
-    canManageContent: boolean;
-    canManageUsers: boolean;
-    canManageSupport: boolean;
-    canViewStats: boolean;
-    canViewPrivateStudentData: boolean;
-    canRunSystemActions: boolean;
-  };
-  accountStatus: "active" | "suspended";
-  emailVerified: boolean;
 }

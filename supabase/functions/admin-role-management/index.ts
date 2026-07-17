@@ -23,11 +23,10 @@ serve(async (req) => {
 
     const callerUid = authResult.payload.uid as string;
     
-    // In our DB structure, the super_admin check is done via user_admin_meta or custom claims.
-    // If custom claims aren't fully set, we fallback to checking the RTDB directly for the caller's role.
-    const meta: any = await import("../_shared/firebaseAdminRest.ts").then(m => m.firebaseDbGet(`user_admin_meta/${callerUid}`));
-    if (!meta || meta.role !== "super_admin") {
-      return new Response(JSON.stringify({ error: "Only super_admin can perform this action." }), {
+    // Check if caller is an admin
+    const callerRole: string | null = await import("../_shared/firebaseAdminRest.ts").then(m => m.firebaseDbGet(`users/${callerUid}/role`));
+    if (callerRole !== "admin") {
+      return new Response(JSON.stringify({ error: "Only admin can perform this action." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 403,
       });
@@ -36,7 +35,7 @@ serve(async (req) => {
     const body = await req.json();
     const { targetUid, role } = body;
 
-    if (!targetUid || !["student", "admin", "super_admin"].includes(role)) {
+    if (!targetUid || !["student", "admin"].includes(role)) {
       return new Response(JSON.stringify({ error: "Invalid parameters." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -44,10 +43,8 @@ serve(async (req) => {
     }
 
     // 1. Update the role in the DB
-    await firebaseDbPatch(`user_admin_meta/${targetUid}`, {
+    await firebaseDbPatch(`users/${targetUid}`, {
       role: role,
-      updatedByAdmin: callerUid,
-      updatedAt: new Date().toISOString()
     });
 
     // 2. Audit log
@@ -60,10 +57,8 @@ serve(async (req) => {
       metadata: { newRole: role }
     });
 
-    // Note: Since we are using RTDB for authorization rules (e.g. root.child('user_admin_meta').child(auth.uid).child('role').val() === 'super_admin'), 
-    // updating it here securely is sufficient to grant the user permissions without needing to set Firebase Custom Claims.
-    // If Custom Claims were strictly required, we would need the Firebase Admin Node.js SDK or a REST equivalent for identitytoolkit:setAccountInfo.
-
+    // Note: Since we are using RTDB for authorization rules, 
+    // updating it here securely is sufficient to grant the user permissions.
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

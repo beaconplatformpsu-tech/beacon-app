@@ -5,7 +5,6 @@
 
 import {
   UserProfile,
-  UserAdminMeta,
   TaskType as Task,
   NoteType as Note,
   SkillType as BaseSkill,
@@ -32,7 +31,6 @@ import {
 // Re-export all validated types
 export type {
   UserProfile,
-  UserAdminMeta,
   Task,
   Note,
   BaseSkill,

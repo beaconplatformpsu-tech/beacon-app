@@ -51,8 +51,8 @@ serve(async (req) => {
       // For CVs and Project Submissions, the path MUST start with their UID,
       // UNLESS they are an admin.
       if (!path.startsWith(`${callerUid}/`)) {
-        const meta: any = await firebaseDbGet(`user_admin_meta/${callerUid}`);
-        if (!meta || (meta.role !== "admin" && meta.role !== "super_admin")) {
+        const role: string | null = await firebaseDbGet(`users/${callerUid}/role`);
+        if (role !== "admin") {
           return new Response(JSON.stringify({ error: "Unauthorized: You can only access your own files." }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 403,

@@ -45,8 +45,8 @@ serve(async (req) => {
     // Path Security Enforcement
     let finalPath = "";
     if (bucket === "resource-files") {
-      const meta: any = await firebaseDbGet(`user_admin_meta/${callerUid}`);
-      if (!meta || (meta.role !== "admin" && meta.role !== "super_admin")) {
+      const role: string | null = await firebaseDbGet(`users/${callerUid}/role`);
+      if (role !== "admin") {
         return new Response(JSON.stringify({ error: "Only admins can upload resource files" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 403,

@@ -169,15 +169,6 @@ export const userProfileSchema = z.object({
 });
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
-export const userAdminMetaSchema = z.object({
-  role: z.enum(["admin", "student"]),
-  accountStatus: z.enum(["active", "suspended"]).default("active"),
-  emailVerified: z.boolean().default(false),
-  createdAt: timestamp.optional(),
-  updatedAt: timestamp.optional(),
-});
-export type UserAdminMeta = z.infer<typeof userAdminMetaSchema>;
-
 // ─────────────────────────────────────────────
 // Tasks
 // ─────────────────────────────────────────────

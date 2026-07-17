@@ -19,9 +19,13 @@ serve(async (req) => {
     }
 
     const callerUid = authResult.payload.uid as string;
-    const meta: any = await firebaseDbGet(`user_admin_meta/${callerUid}`);
-    if (!meta || (meta.role !== "admin" && meta.role !== "super_admin")) {
-      return new Response(JSON.stringify({ error: "Only admins can rebuild indexes." }), { headers: corsHeaders, status: 403 });
+    const role: string | null = await firebaseDbGet(`users/${callerUid}/role`);
+    
+    if (role !== "admin") {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Admins only' }), { 
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const timestamp = new Date().toISOString();

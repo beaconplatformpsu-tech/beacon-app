@@ -107,7 +107,7 @@ export const adminService = {
 
   async updateAccountStatus(adminUid: string, targetUid: string, status: string) {
     if (!adminUid) throw new Error("Unauthorized");
-    const userRef = ref(db, `user_admin_meta/${targetUid}`);
+    const userRef = ref(db, `user_private/${targetUid}/profile`);
     await update(userRef, {
       accountStatus: status,
       updatedByAdmin: adminUid,

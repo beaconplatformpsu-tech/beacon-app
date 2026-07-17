@@ -55,7 +55,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     const usersRef = ref(db, "users");
-    const metaRef = ref(db, "user_admin_meta");
+    const metaRef = ref(db, "user_private");
     let usersData: any = null;
     let metaData: any = null;
 
@@ -63,7 +63,7 @@ export default function AdminUsersPage() {
       if (usersData && metaData) {
         const usersList = Object.keys(usersData).map(key => {
           const profile = usersData[key] || {};
-          const meta = metaData[key] || {};
+          const meta = metaData[key]?.profile || {};
           return {
             uid: key,
             ...profile,
@@ -109,8 +109,6 @@ export default function AdminUsersPage() {
     if (!session?.uid) return;
     const newRole = user.role === "admin" ? "student" : "admin";
     try {
-      // TODO: Super Admin role elevations require Firebase Admin SDK / Cloud Function to set custom claims securely.
-      // Currently, this updates `user_admin_meta` which is sufficient for UI but not fully secure against custom client modifications without custom claims.
       await adminService.updateUserRole(session.uid, user.uid, newRole);
       toast.success(t.adminUsers.roleUpdated, `${user.displayName || user.email} ${t.adminUsers.nowRole} ${newRole}.`);
     } catch (err) {

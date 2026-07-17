@@ -8,7 +8,7 @@ export * from './collections/system';
 import { ID, UID, ISOString } from './collections/base';
 import { Resource, Skill, CareerPath, Category, LearningPath, LearningPathStep, PracticeTask, Quiz, Project, Announcement } from './collections/publicContent';
 import { CareerPathSkillRelation } from './collections/relations';
-import { StudentProfile, UserPreferences, UserOnboarding, UserAdminMeta } from './collections/users';
+import { StudentProfile, UserPreferences, UserOnboarding } from './collections/users';
 import { Task, Note, Bookmark, SkillProgress, SkillEvidence, CareerReadiness, LearningProgress, ProjectSubmission, CVProfile, CVAnalysis, Portfolio, Recommendation, WeeklyPlan, ActivityLogEntry, SupportMessage } from './collections/userPrivate';
 import { PlatformSettings, Stats, SeedMeta, QuizAnswerKey, AdminLogEntry, AIUsageLog, MigrationMeta } from './collections/system';
 
@@ -74,7 +74,6 @@ export interface DatabaseSchema {
     weekly_plans: Record<ID, WeeklyPlan>;
     activity_log: Record<ID, ActivityLogEntry>;
   }>;
-  user_admin_meta: Record<UID, UserAdminMeta>;
   support_messages: Record<ID, SupportMessage>;
   platform_settings: PlatformSettings;
   stats: Stats;

@@ -90,20 +90,14 @@ async function run() {
   check("/system/quiz_answer_keys exists", Boolean(rootChild("system/quiz_answer_keys")));
 
   if (uid) {
-    check(`/users/${uid} exists`, Boolean(rootChild(`users/${uid}`)));
-    check(`/user_admin_meta/${uid} exists`, Boolean(rootChild(`user_admin_meta/${uid}`)));
     check(
-      "user_admin_meta role is super_admin",
-      (rootChild(`user_admin_meta/${uid}`) as Record<string, unknown>)?.role === "super_admin"
+      "users role is admin",
+      (rootChild(`users/${uid}`) as Record<string, unknown>)?.role === "admin"
     );
   } else {
     // Admin user not found — skip uid-dependent checks but count them as failures.
     failed++;
-    console.error("❌ /users/{uid} — skipped (admin user not created yet)");
-    failed++;
-    console.error("❌ /user_admin_meta/{uid} — skipped (admin user not created yet)");
-    failed++;
-    console.error("❌ user_admin_meta role is super_admin — skipped (admin user not created yet)");
+    console.error("❌ users role is admin — skipped (admin user not created yet)");
   }
 
   // ─── Content counts & Stats Match ──────────────────────────────────────────

@@ -6,4 +6,4 @@
  * const { currentUser, role, isEmailVerified, logout } = useAuth();
  */
 export { useAuth } from "@/lib/auth/AuthContext";
-export type { AppRole, AuthPermissions, AuthProfile, AuthContextValue } from "@/lib/auth/AuthContext";
+export type { AppRole, AuthProfile, AuthContextValue } from "@/lib/auth/AuthContext";

@@ -2,14 +2,7 @@ import { getFirebaseAdmin } from "./firebaseAdmin";
 import { getDemoUsersConfig } from "./config";
 import { updateUsersCount } from "./statsHelper";
 
-type StudentPermissions = {
-  canManageContent: false;
-  canManageUsers: false;
-  canManageSupport: false;
-  canViewStats: false;
-  canViewPrivateStudentData: false;
-  canRunSystemActions: false;
-};
+
 
 function getErrorCode(error: unknown): string | undefined {
   if (typeof error === "object" && error !== null && "code" in error) {
@@ -89,18 +82,8 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
     console.log(`UID: ${uid}`);
   }
 
-  const studentPermissions: StudentPermissions = {
-    canManageContent: false,
-    canManageUsers: false,
-    canManageSupport: false,
-    canViewStats: false,
-    canViewPrivateStudentData: false,
-    canRunSystemActions: false,
-  };
-
   await auth.setCustomUserClaims(uid, {
     role: "student",
-    permissions: studentPermissions,
   });
 
   const updates: Record<string, unknown> = {};
@@ -118,6 +101,7 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
       github: "",
       linkedin: "",
       photoURL: "",
+      accountStatus: "active",
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -140,14 +124,7 @@ export async function seedDemoUsers(dryRun: boolean): Promise<void> {
     updatedAt: timestamp,
   };
 
-  updates[`user_admin_meta/${uid}`] = {
-    role: "student",
-    permissions: studentPermissions,
-    accountStatus: "active",
-    emailVerified: true,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  };
+
 
   updates[`user_private/${uid}/tasks/seed_task_react_components`] = {
     id: "seed_task_react_components",

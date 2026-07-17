@@ -49,18 +49,8 @@ async function bootstrapAdmin() {
 
   const timestamp = new Date().toISOString();
 
-  const permissions = {
-    canManageContent: true,
-    canManageUsers: true,
-    canManageSupport: true,
-    canViewStats: true,
-    canViewPrivateStudentData: true,
-    canRunSystemActions: true,
-  };
-
   await auth.setCustomUserClaims(uid, {
-    role: "super_admin",
-    permissions,
+    role: "admin",
   });
 
   await db.ref(`users/${uid}`).set({
@@ -76,6 +66,7 @@ async function bootstrapAdmin() {
       github: "",
       linkedin: "",
       photoURL: "",
+      accountStatus: "active",
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -95,18 +86,8 @@ async function bootstrapAdmin() {
     updatedAt: timestamp,
   });
 
-  await db.ref(`user_admin_meta/${uid}`).set({
-    role: "super_admin",
-    permissions,
-    accountStatus: "active",
-    emailVerified: true,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  });
-
-  console.log("✅ Super Admin custom claims set.");
+  console.log("✅ Admin custom claims set.");
   console.log(`✅ /users/${uid} created.`);
-  console.log(`✅ /user_admin_meta/${uid} created.`);
 
   await updateUsersCount(db);
 
