@@ -45,7 +45,7 @@ function LoginContent() {
   useEffect(() => {
     if (authLoading) return;
     if (currentUser && isEmailVerified) {
-      const isAdmin = role === "admin" || role === "super_admin";
+      const isAdmin = role === "admin";
       router.push(isAdmin ? "/admin" : "/dashboard");
     }
   }, [currentUser, isEmailVerified, authLoading, role, router]);
@@ -203,7 +203,7 @@ function LoginContent() {
             type="submit"
             id="login-submit"
             disabled={loading || !!errors.email || !!errors.password || !email || !password}
-            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
+            className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition shadow-glow hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-100 sm:px-5"
           >
             {loading && !unverifiedUser ? (
               <span className="flex items-center justify-center gap-2 whitespace-nowrap">
@@ -229,7 +229,7 @@ function LoginContent() {
               <button
                 type="button"
                 onClick={handleCheckVerification}
-                className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-semibold hover:bg-emerald-600 transition-colors shadow-sm w-full"
+                className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-600"
               >
                 I verified my email, check again
               </button>
@@ -237,7 +237,7 @@ function LoginContent() {
                 type="button"
                 onClick={handleResendVerification}
                 disabled={resending}
-                className="px-4 py-2 bg-transparent border border-amber-500 text-amber-600 dark:text-amber-400 rounded-lg text-sm font-semibold hover:bg-amber-500/10 transition-colors disabled:opacity-50 w-full"
+                className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-lg border border-amber-500 bg-transparent px-4 py-2 text-sm font-semibold text-amber-600 transition-colors hover:bg-amber-500/10 disabled:opacity-50 dark:text-amber-400"
               >
                 {resending ? (
                   <span className="flex items-center justify-center gap-2">

@@ -23,7 +23,7 @@ async function run() {
   console.log(" Beacon Seed Verification");
   console.log("=========================================\n");
 
-  // ─── Super Admin Auth checks ──────────────────────────────────────────────
+  // ─── Admin Auth checks ──────────────────────────────────────────────
   // Wrapped in try/catch so a missing admin user is reported as a failed check
   // rather than crashing the entire script. This lets the database checks below
   // still run even when seed:bootstrap:admin hasn't been executed yet.
@@ -34,9 +34,9 @@ async function run() {
     const adminUser = await auth.getUserByEmail(config.SEED_ADMIN_EMAIL);
     uid = adminUser.uid;
 
-    check("Super admin auth user exists", true);
-    check("Super admin email is verified", adminUser.emailVerified === true);
-    check("Custom claim role is super_admin", adminUser.customClaims?.role === "super_admin");
+    check("Admin auth user exists", true);
+    check("Admin email is verified", adminUser.emailVerified === true);
+    check("Custom claim role is admin", adminUser.customClaims?.role === "admin");
 
     const claimPermissions = (adminUser.customClaims?.permissions as Record<string, boolean>) || {};
     const requiredPermissions = [
@@ -60,7 +60,7 @@ async function run() {
     if (isNotFound) {
       failed++;
       console.error(
-        `❌ Super admin auth user exists — not found for ${config.SEED_ADMIN_EMAIL}. Run: npm run seed:bootstrap:admin`
+        `❌ Admin auth user exists — not found for ${config.SEED_ADMIN_EMAIL}. Run: npm run seed:bootstrap:admin`
       );
     } else {
       // Unexpected auth error — rethrow so the outer catch can report it.
@@ -93,8 +93,8 @@ async function run() {
     check(`/users/${uid} exists`, Boolean(rootChild(`users/${uid}`)));
     check(`/user_admin_meta/${uid} exists`, Boolean(rootChild(`user_admin_meta/${uid}`)));
     check(
-      "user_admin_meta role is super_admin",
-      (rootChild(`user_admin_meta/${uid}`) as Record<string, unknown>)?.role === "super_admin"
+      "user_admin_meta role is admin",
+      (rootChild(`user_admin_meta/${uid}`) as Record<string, unknown>)?.role === "admin"
     );
   } else {
     // Admin user not found — skip uid-dependent checks but count them as failures.
@@ -103,7 +103,7 @@ async function run() {
     failed++;
     console.error("❌ /user_admin_meta/{uid} — skipped (admin user not created yet)");
     failed++;
-    console.error("❌ user_admin_meta role is super_admin — skipped (admin user not created yet)");
+    console.error("❌ user_admin_meta role is admin — skipped (admin user not created yet)");
   }
 
   // ─── Content counts & Stats Match ──────────────────────────────────────────

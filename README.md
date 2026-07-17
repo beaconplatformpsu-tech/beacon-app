@@ -74,7 +74,7 @@ Useful Seed Commands:
 | `npm run seed:validate` | Alias for `seed:dry`. Runs the same dry-run validation. |
 | `npm run seed:dev` | Write the full public content seed payload to Firebase RTDB. |
 | `npm run seed:reset:dev` | Clear all controlled seed paths, then re-seed from scratch (`--force`). |
-| `npm run seed:bootstrap:admin` | Create or update the Super Admin Auth user and write RBAC metadata. Run this once during first-time setup. |
+| `npm run seed:bootstrap:admin` | Create or update the admin auth user and write the simple admin metadata. Run this once during first-time setup. |
 | `npm run seed:demo:users` | Seed a demo student user (optional — do not run against production). |
 | `npm run seed:verify` | Run post-seed verification checks against the live database. |
 

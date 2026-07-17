@@ -1,5 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@^5.9.6";
 
+declare const Deno: { env: { get(key: string): string | undefined } } | undefined;
+
 // Firebase uses these public keys to sign ID tokens
 const FIREBASE_JWKS_URL = "https://www.googleapis.com/robot/v1/metadata/jwk/securetoken@system.gserviceaccount.com";
 const JWKS = createRemoteJWKSet(new URL(FIREBASE_JWKS_URL));
@@ -17,7 +19,7 @@ export async function verifyFirebaseAuth(req: Request, options?: { requireEmailV
   }
 
   const token = authHeader.split("Bearer ")[1];
-  const projectId = Deno.env.get("FIREBASE_PROJECT_ID");
+  const projectId = typeof Deno !== "undefined" ? Deno.env.get("FIREBASE_PROJECT_ID") : undefined;
 
   if (!projectId) {
     console.error("FIREBASE_PROJECT_ID is not set in Edge Function secrets.");
@@ -35,7 +37,7 @@ export async function verifyFirebaseAuth(req: Request, options?: { requireEmailV
       return { error: "Email address must be verified to perform this action.", status: 403 };
     }
 
-    // payload contains uid, email, email_verified, and any custom claims (like admin/super_admin)
+    // payload contains uid, email, email_verified, and any custom claims (like admin)
     return { payload, status: 200 };
   } catch (error: any) {
     console.error("JWT Verification failed:", error.message);

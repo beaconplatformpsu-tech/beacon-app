@@ -8,7 +8,7 @@
  *  - loading      – true until Firebase restores auth state
  *  - isAuthenticated
  *  - isEmailVerified  – from Firebase Auth (source of truth)
- *  - role         – "student" | "admin" | "super_admin"
+ *  - role         – "student" | "admin"
  *  - permissions  – from user_admin_meta (null for students)
  *  - profile      – basic profile snapshot from users/{uid}
  *  - login / logout / resendVerificationEmail / refreshUser
@@ -30,10 +30,11 @@ import {
 } from "firebase/auth";
 import { ref, get } from "firebase/database";
 import { auth, db } from "@/lib/firebase/config";
+import { normalizeAppRole, type AppRole } from "./roles";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type AppRole = "student" | "admin" | "super_admin";
+export type { AppRole } from "./roles";
 
 export interface AuthPermissions {
   canManageContent: boolean;
@@ -98,34 +99,26 @@ const AuthContext = createContext<AuthContextValue | null>(null);
  * Priority: custom claims → user_admin_meta → default "student".
  */
 async function resolveRole(user: User): Promise<{ role: AppRole; permissions: AuthPermissions | null }> {
-  // 1. Try Firebase custom claims (set by Admin SDK on backend)
   try {
     const idTokenResult = await user.getIdTokenResult(/* forceRefresh */ false);
     const claimRole = idTokenResult.claims.role as string | undefined;
-    if (claimRole === "super_admin" || claimRole === "admin") {
+    const role = normalizeAppRole(claimRole);
+    if (role === "admin") {
       const permClaim = idTokenResult.claims.permissions as AuthPermissions | undefined;
-      return {
-        role: claimRole as AppRole,
-        permissions: permClaim ?? null,
-      };
+      return { role, permissions: permClaim ?? null };
     }
   } catch {
     // Custom claims unavailable — fall through to DB lookup
   }
 
-  // 2. Try user_admin_meta/{uid}
   try {
     const metaSnap = await get(ref(db, `user_admin_meta/${user.uid}`));
     if (metaSnap.exists()) {
       const meta = metaSnap.val();
-      const dbRole: AppRole =
-        meta.role === "super_admin" ? "super_admin"
-        : meta.role === "content_admin" || meta.role === "advisor" || meta.role === "support_admin"
-          ? "admin"
-          : "student";
+      const role = normalizeAppRole(meta?.role);
       return {
-        role: dbRole,
-        permissions: meta.permissions ?? null,
+        role,
+        permissions: role === "admin" ? (meta.permissions ?? null) : null,
       };
     }
   } catch {

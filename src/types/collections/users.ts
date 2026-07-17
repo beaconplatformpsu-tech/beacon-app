@@ -31,7 +31,7 @@ export interface UserOnboarding {
 }
 
 export interface UserAdminMeta {
-  role: "super_admin" | "content_admin" | "advisor" | "support_admin" | "student";
+  role: "admin" | "student";
   permissions: {
     canManageContent: boolean;
     canManageUsers: boolean;

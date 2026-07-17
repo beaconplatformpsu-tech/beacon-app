@@ -13,7 +13,7 @@ async function bootstrapAdmin() {
   const adminPassword = config.SEED_ADMIN_PASSWORD;
   const adminDisplayName = config.SEED_ADMIN_DISPLAY_NAME;
 
-  console.log("⏳ Bootstrapping Beacon Super Admin...");
+  console.log("⏳ Bootstrapping Beacon admin...");
 
   let uid: string;
 
@@ -59,7 +59,7 @@ async function bootstrapAdmin() {
   };
 
   await auth.setCustomUserClaims(uid, {
-    role: "super_admin",
+    role: "admin",
     permissions,
   });
 
@@ -96,7 +96,7 @@ async function bootstrapAdmin() {
   });
 
   await db.ref(`user_admin_meta/${uid}`).set({
-    role: "super_admin",
+    role: "admin",
     permissions,
     accountStatus: "active",
     emailVerified: true,
@@ -104,7 +104,7 @@ async function bootstrapAdmin() {
     updatedAt: timestamp,
   });
 
-  console.log("✅ Super Admin custom claims set.");
+  console.log("✅ Admin custom claims set.");
   console.log(`✅ /users/${uid} created.`);
   console.log(`✅ /user_admin_meta/${uid} created.`);
 

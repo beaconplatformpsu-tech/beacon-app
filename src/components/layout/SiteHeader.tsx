@@ -85,7 +85,7 @@ export function SiteHeader() {
     { href: "/skills", label: t.nav.skillsCareers },
     { href: "/support", label: t.nav.support },
   ];
-  const isAdmin = role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin";
   const adminNav: NavItem[] = [
     { href: "/admin", label: t.nav.adminDashboard, icon: LayoutDashboard },
     { href: "/admin/users", label: t.nav.manageUsers, icon: Users },

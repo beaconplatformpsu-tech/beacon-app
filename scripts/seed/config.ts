@@ -39,7 +39,7 @@ export function getBootstrapAdminConfig() {
     ...getFirebaseSeedConfig(),
     SEED_ADMIN_EMAIL: requireEnv("SEED_ADMIN_EMAIL"),
     SEED_ADMIN_PASSWORD: requireEnv("SEED_ADMIN_PASSWORD"),
-    SEED_ADMIN_DISPLAY_NAME: process.env.SEED_ADMIN_DISPLAY_NAME || "Beacon Super Admin",
+    SEED_ADMIN_DISPLAY_NAME: process.env.SEED_ADMIN_DISPLAY_NAME || "Beacon Admin",
   };
 }
 

@@ -63,7 +63,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
   /activity_log
 
 /user_admin_meta/{uid}
-  role (super_admin | content_admin | advisor | support_admin | student)
+  role (admin | student)
   permissions
   accountStatus
 
@@ -88,7 +88,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 ## 1. Public Content Paths (`/public_content`)
 **Purpose:** Stores globally accessible catalog data like skills, resources, and career paths.
 **Read:** Public (all users, including unauthenticated)
-**Write:** Users with `canManageContent` permissions (e.g., `content_admin`, `super_admin`)
+**Write:** Users with admin privileges
 - This data must NEVER include user-specific progress or metrics.
 - Enums are strictly normalized to lowercase (e.g., `beginner`, `in_progress`, `high`).
 - Arrays like `skillIds` or `careerPathIds` are **required** to ensure index parity.
@@ -115,17 +115,17 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 
 ## 5. User Private Paths (`/user_private/{uid}`)
 **Purpose:** The sole authoritative location for sensitive user progress, AI recommendations, CVs, and tasks.
-**Read:** Profile Owner + Advisors (if `canViewPrivateStudentData` is true) + Super Admins.
-**Write:** Profile Owner + Super Admins.
+**Read:** Profile Owner + Admins.
+**Write:** Profile Owner + Admins.
 - Sub-collections like `/recommendations` and `/cv_analysis` keep AI outputs strictly private.
 - **Data Ownership Rules:** A user completely owns their `/user_private/{uid}` tree. Shared or collaborative nodes must exist at the root level (e.g., `/shared_projects`), not inside a user's private tree.
 - Content Admins and Support Admins cannot access private student data (`cv_analysis`, `notes`, etc.).
 
 ## 6. Admin-Only Paths (`/user_admin_meta/{uid}`)
 **Purpose:** Controls application-level authorization and status.
-**Read:** Owner (to verify own role) + Super Admins.
-**Write:** Super Admins only.
-- Defines roles: `super_admin`, `content_admin`, `advisor`, `support_admin`, `student`.
+**Read:** Owner (to verify own role) + Admins.
+**Write:** Admins only.
+- Defines roles: `admin` and `student`.
 - Granular permissions define explicit capabilities (`canManageContent`, `canManageUsers`, etc.).
 - Default role fallback is `student`.
 - Support Admins can manage support messages but cannot manage users or read private student data.
@@ -133,7 +133,7 @@ This structure enforces the **ETC (Easier To Change)** and **DRY (Don't Repeat Y
 ## 7. System Paths (`/system` & `/platform_settings`)
 **Purpose:** Stores application global state, configuration, and secure logic maps.
 **Read:** Strictly bounded to relevant Admin roles (e.g., `canRunSystemActions`).
-**Write:** Super Admins.
+**Write:** Admins.
 - `/system/quiz_answer_keys`: Secure storage mapping for grading quizzes out of public reach.
 - `/platform_settings/private`: Application integration identifiers.
 

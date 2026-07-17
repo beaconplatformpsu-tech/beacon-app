@@ -127,7 +127,7 @@ function ResetPasswordContent() {
         </div>
         <Link
           href="/auth/forgot-password"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow"
+          className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition shadow-glow hover:opacity-90 sm:px-5"
         >
           Request a New Link
         </Link>
@@ -148,7 +148,7 @@ function ResetPasswordContent() {
         </div>
         <Link
           href="/auth/login"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow"
+          className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition shadow-glow hover:opacity-90 sm:px-5"
         >
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
           Back to Sign In

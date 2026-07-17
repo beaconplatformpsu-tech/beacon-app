@@ -66,7 +66,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   // ── Nav items by role ─────────────────────────────────────────────────────
-  const isAdmin = role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin";
 
   const navItems = isAdmin ? [
     { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard },

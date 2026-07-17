@@ -52,7 +52,7 @@ serve(async (req) => {
       // UNLESS they are an admin.
       if (!path.startsWith(`${callerUid}/`)) {
         const meta: any = await firebaseDbGet(`user_admin_meta/${callerUid}`);
-        if (!meta || (meta.role !== "admin" && meta.role !== "super_admin")) {
+        if (!meta || meta.role !== "admin") {
           return new Response(JSON.stringify({ error: "Unauthorized: You can only access your own files." }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 403,

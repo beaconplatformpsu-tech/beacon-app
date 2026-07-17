@@ -20,7 +20,7 @@ serve(async (req) => {
 
     const callerUid = authResult.payload.uid as string;
     const meta: any = await firebaseDbGet(`user_admin_meta/${callerUid}`);
-    if (!meta || (meta.role !== "admin" && meta.role !== "super_admin")) {
+    if (!meta || meta.role !== "admin") {
       return new Response(JSON.stringify({ error: "Only admins can rebuild indexes." }), { headers: corsHeaders, status: 403 });
     }
 

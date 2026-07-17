@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Lock, Mail, User, GraduationCap, Building2, Check, X as XIcon, FileText, Github, Linkedin, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, User, Check, X as XIcon, Loader2, Eye, EyeOff } from "lucide-react";
 import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile, onAuthStateChanged, signOut, type AuthError } from "firebase/auth";
-import { ref, set, update } from "firebase/database";
+import { ref, update } from "firebase/database";
 import { auth, db } from "@/lib/firebase/config";
 import { useT } from "@/i18n/LanguageProvider";
 import Link from "next/link";
@@ -13,34 +13,18 @@ import Link from "next/link";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NAME_RE = /^[\p{L}\s'.-]+$/u;
 
-const ACADEMIC_LEVEL_KEYS = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate"] as const;
-const DEPARTMENT_KEYS = [
-  "Computer Science",
-  "Computer Engineering",
-  "Information Technology",
-  "Software Engineering",
-  "Information Systems",
-  "Other",
-] as const;
-
 export default function RegisterPage() {
   const t = useT();
   const e = t.auth.errors;
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    academicLevel: "",
-    department: "",
-    bio: "",
-    github: "",
-    linkedin: "",
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -73,7 +57,6 @@ export default function RegisterPage() {
         if (v.length < 2) return e.nameMin;
         if (v.length > 120) return e.nameMax;
         if (!NAME_RE.test(v)) return e.nameInvalid;
-        if (v.trim().split(/\s+/).length < 3) return (e as any).nameWords || "Full name must contain at least 3 words";
         return null;
       case "email":
         if (!v) return e.emailRequired;
@@ -90,16 +73,6 @@ export default function RegisterPage() {
       case "confirmPassword":
         if (!value) return e.confirmRequired;
         if (value !== form.password) return t.auth.passwordsNoMatch;
-        return null;
-      case "academicLevel":
-        return v ? null : e.levelRequired;
-      case "department":
-        return v ? null : e.departmentRequired;
-      case "github":
-        if (v && !v.includes("github.com")) return "Must be a valid GitHub URL";
-        return null;
-      case "linkedin":
-        if (v && !v.includes("linkedin.com")) return "Must be a valid LinkedIn URL";
         return null;
       default:
         return null;
@@ -126,26 +99,6 @@ export default function RegisterPage() {
       "auth/network-request-failed": "Network error. Check your connection.",
     };
     return map[code] ?? (err instanceof Error ? err.message : t.auth.somethingWrong);
-  };
-
-  const handleNextStep = () => {
-    const step1Keys = ["name", "email", "password", "confirmPassword"] as const;
-    const nextTouched = { ...touched };
-    let hasError = false;
-
-    step1Keys.forEach((k) => {
-      nextTouched[k] = true;
-      if (validateField(k, form[k])) hasError = true;
-    });
-
-    setTouched(nextTouched);
-
-    if (hasError) {
-      toast.error(e.fixErrors);
-      return;
-    }
-
-    setStep(2);
   };
 
   const onSubmit = async (ev: FormEvent) => {
@@ -180,11 +133,6 @@ export default function RegisterPage() {
           email: form.email.trim(),
           emailVerified: false,
           role: "student",
-          academicLevel: form.academicLevel,
-          department: form.department,
-          bio: form.bio.trim(),
-          github: form.github.trim(),
-          linkedin: form.linkedin.trim(),
           createdAt: timestamp,
           updatedAt: timestamp,
         }
@@ -213,144 +161,77 @@ export default function RegisterPage() {
           {t.auth.createTitle}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {step === 1 ? t.auth.createSub : "Let's personalize your profile (Optional)"}
+          {t.auth.createSub}
         </p>
-        {/* Step progress indicator removed as per user request */}
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4" noValidate autoComplete="off">
-        {step === 1 && (
-          <div className="space-y-4 animate-in fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-4 animate-in fade-in">
+          <div className="flex flex-col gap-4 xl:flex-row xl:flex-wrap">
+            <div className="w-full xl:flex-1 xl:min-w-[220px]">
               <Field id="name" label={t.auth.fullName} icon={<User className="h-4 w-4" />}
                 value={form.name} onChange={(v) => setField("name", v)} onBlur={() => blur("name")}
                 placeholder={t.auth.fullNamePh} autoComplete="name" error={showError("name") ? errors.name : undefined} />
+            </div>
 
+            <div className="w-full xl:flex-1 xl:min-w-[220px]">
               <Field id="email" type="email" label={t.auth.email} icon={<Mail className="h-4 w-4" />}
                 value={form.email} onChange={(v) => setField("email", v)} onBlur={() => blur("email")}
                 placeholder={t.auth.emailPh} autoComplete="email" error={showError("email") ? errors.email : undefined} />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Field id="password" type="password" label={t.auth.password} icon={<Lock className="h-4 w-4" />}
-                  value={form.password} onChange={(v) => setField("password", v)} onBlur={() => blur("password")}
-                  placeholder={t.auth.passwordPh}
-                  autoComplete="new-password"
-                  showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
-                  error={showError("password") ? errors.password : undefined} />
+            <div className="w-full xl:flex-1 xl:min-w-[220px]">
+              <Field id="password" type="password" label={t.auth.password} icon={<Lock className="h-4 w-4" />}
+                value={form.password} onChange={(v) => setField("password", v)} onBlur={() => blur("password")}
+                placeholder={t.auth.passwordPh}
+                autoComplete="new-password"
+                showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
+                error={showError("password") ? errors.password : undefined} />
 
-                {form.password.length > 0 && (
-                  <div className="mt-2 space-y-2 bg-muted/30 p-3 rounded-lg border border-border">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 flex gap-1">
-                        {[0, 1, 2, 3, 4].map((i) => (
-                          <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < pwScore ? strengthColors[pwScore] : "bg-muted"}`} />
-                        ))}
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground min-w-[3.5rem] text-right rtl:text-left">
-                        {strengthLabels[pwScore]}
-                      </span>
+              {form.password.length > 0 && (
+                <div className="mt-2 space-y-2 bg-muted/30 p-3 rounded-lg border border-border">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 flex gap-1">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < pwScore ? strengthColors[pwScore] : "bg-muted"}`} />
+                      ))}
                     </div>
-                    <ul className="flex flex-col gap-1.5 text-[11px] mt-2">
-                      <PwRule ok={pwChecks.length} label={e.passwordMin} />
-                      <PwRule ok={pwChecks.upper} label={e.passwordUpper} />
-                      <PwRule ok={pwChecks.lower} label={e.passwordLower} />
-                      <PwRule ok={pwChecks.digit} label={e.passwordDigit} />
-                      <PwRule ok={pwChecks.symbol} label={e.passwordSymbol} />
-                    </ul>
+                    <span className="text-xs font-medium text-muted-foreground min-w-[3.5rem] text-right rtl:text-left">
+                      {strengthLabels[pwScore]}
+                    </span>
                   </div>
-                )}
-              </div>
+                  <ul className="flex flex-col gap-1.5 text-[11px] mt-2">
+                    <PwRule ok={pwChecks.length} label={e.passwordMin} />
+                    <PwRule ok={pwChecks.upper} label={e.passwordUpper} />
+                    <PwRule ok={pwChecks.lower} label={e.passwordLower} />
+                    <PwRule ok={pwChecks.digit} label={e.passwordDigit} />
+                    <PwRule ok={pwChecks.symbol} label={e.passwordSymbol} />
+                  </ul>
+                </div>
+              )}
+            </div>
 
-              <div>
-                <Field id="confirmPassword" type="password" label={t.auth.confirmPassword} icon={<Lock className="h-4 w-4" />}
-                  value={form.confirmPassword}
-                  onChange={(v) => setField("confirmPassword", v)}
-                  onBlur={() => blur("confirmPassword")}
-                  placeholder={t.auth.passwordPh} autoComplete="new-password"
-                  showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
-                  error={showError("confirmPassword") ? errors.confirmPassword : undefined}
-                  valid={touched.confirmPassword && !errors.confirmPassword && form.confirmPassword.length > 0} />
-              </div>
+            <div className="w-full xl:flex-1 xl:min-w-[220px]">
+              <Field id="confirmPassword" type="password" label={t.auth.confirmPassword} icon={<Lock className="h-4 w-4" />}
+                value={form.confirmPassword}
+                onChange={(v) => setField("confirmPassword", v)}
+                onBlur={() => blur("confirmPassword")}
+                placeholder={t.auth.passwordPh} autoComplete="new-password"
+                showLabel={t.auth.showPassword} hideLabel={t.auth.hidePassword}
+                error={showError("confirmPassword") ? errors.confirmPassword : undefined}
+                valid={touched.confirmPassword && !errors.confirmPassword && form.confirmPassword.length > 0} />
             </div>
           </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <SelectField id="academicLevel" label={t.auth.academicLevel} icon={<GraduationCap className="h-4 w-4" />}
-                value={form.academicLevel}
-                onChange={(v) => { setField("academicLevel", v); blur("academicLevel"); }}
-                onBlur={() => blur("academicLevel")}
-                placeholder={t.auth.academicLevelPh}
-                options={ACADEMIC_LEVEL_KEYS.map((l) => ({ value: l, label: t.auth.levels[l] }))}
-                error={showError("academicLevel") ? errors.academicLevel : undefined} />
-
-              <SelectField id="department" label={t.auth.department} icon={<Building2 className="h-4 w-4" />}
-                value={form.department}
-                onChange={(v) => { setField("department", v); blur("department"); }}
-                onBlur={() => blur("department")}
-                placeholder={t.auth.departmentPh}
-                options={DEPARTMENT_KEYS.map((d) => ({ value: d, label: t.auth.departments[d] }))}
-                error={showError("department") ? errors.department : undefined} />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="bio" className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Short Bio (Optional)</label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-3 rtl:left-auto rtl:right-3 top-3 text-muted-foreground"><FileText className="h-4 w-4" /></span>
-                <textarea
-                  id="bio"
-                  value={form.bio}
-                  onChange={(e) => setField("bio", e.target.value)}
-                  placeholder="Tell us a bit about your professional interests..."
-                  className="w-full min-h-[100px] rounded-md border border-border bg-background pl-10 pr-4 rtl:pl-4 rtl:pr-10 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field id="github" label="GitHub Profile" icon={<Github className="h-4 w-4" />}
-                value={form.github} onChange={(v) => setField("github", v)} onBlur={() => blur("github")}
-                placeholder="https://github.com/username" error={showError("github") ? errors.github : undefined} />
-
-              <Field id="linkedin" label="LinkedIn Profile" icon={<Linkedin className="h-4 w-4" />}
-                value={form.linkedin} onChange={(v) => setField("linkedin", v)} onBlur={() => blur("linkedin")}
-                placeholder="https://linkedin.com/in/username" error={showError("linkedin") ? errors.linkedin : undefined} />
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="flex justify-center pt-4 border-t border-border mt-8">
-          {step === 1 ? (
-            <button
-              type="button"
-              onClick={handleNextStep}
-              disabled={!form.name || !form.email || !form.password || !form.confirmPassword || !!errors.name || !!errors.email || !!errors.password || !!errors.confirmPassword}
-              className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              Continue <ArrowRight className="h-4 w-4" />
-            </button>
-          ) : (
-            <div className="flex items-center justify-center gap-4 w-full">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="rounded-md bg-muted px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/80 transition"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="submit"
-                disabled={loading || Object.keys(errors).length > 0 || !form.name || !form.email || !form.password || !form.confirmPassword || !form.academicLevel || !form.department}
-                className="flex-1 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
-              >
-                {loading ? <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span> : <span className="whitespace-nowrap">Complete Registration</span>} <Check className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+          <button
+            type="submit"
+            disabled={loading || Object.keys(errors).length > 0 || !form.name || !form.email || !form.password || !form.confirmPassword}
+            className="inline-flex w-fit max-w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition shadow-glow hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-100 sm:px-5"
+          >
+            {loading ? <span className="flex items-center justify-center gap-2 whitespace-nowrap"><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</span> : <span className="whitespace-nowrap">Create Account</span>} <Check className="h-4 w-4" />
+          </button>
         </div>
       </form>
 

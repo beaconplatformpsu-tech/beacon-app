@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { dir } = useLanguage();
   const router = useRouter();
 
-  const isAdmin = role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin";
 
   useEffect(() => {
     if (!loading && (!isAdmin || !isEmailVerified)) {
