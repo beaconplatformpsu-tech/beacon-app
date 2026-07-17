@@ -222,7 +222,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-6">
             <div className="relative group h-24 w-24 rounded-full bg-muted flex items-center justify-center border-4 border-background shadow-sm overflow-hidden shrink-0">
               <Image 
-                src={(profile.photoURL || session?.photoURL) as string || "/default-avatar.svg"} 
+                src={(profile.photoURL || session?.photoURL) as string || "/icon.jpg"} 
                 alt={`${profile.displayName || "User"}'s profile avatar`} 
                 width={96} 
 

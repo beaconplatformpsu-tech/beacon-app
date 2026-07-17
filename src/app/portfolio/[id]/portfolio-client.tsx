@@ -94,7 +94,7 @@ export default function PortfolioClient({ id }: { id: string }) {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 text-center md:text-left">
             <div className="h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden bg-white shrink-0 mx-auto md:mx-0">
               <Image 
-                src={profile.photoURL || "/default-avatar.svg"} 
+                src={profile.photoURL || "/icon.jpg"} 
                 alt={profile.displayName || "Student"} 
                 width={128} 
                 height={128} 
