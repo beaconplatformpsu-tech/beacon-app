@@ -215,17 +215,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       return null;
     } catch (err: unknown) {
-      const code = (err as AuthError)?.code ?? "";
-      const map: Record<string, string> = {
-        "auth/user-not-found": "No account found with that email.",
-        "auth/wrong-password": "Incorrect password. Please try again.",
-        "auth/invalid-credential": "Incorrect email or password.",
-        "auth/invalid-email": "Invalid email address.",
-        "auth/too-many-requests": "Too many attempts. Please try again later.",
-        "auth/network-request-failed": "Network error. Check your connection.",
-        "auth/user-disabled": "This account has been disabled.",
-      };
-      return map[code] ?? (err instanceof Error ? err.message : "Something went wrong.");
+      if (err && typeof err === "object" && "code" in err) {
+        return (err as AuthError).code;
+      }
+      return err instanceof Error ? err.message : "Something went wrong.";
     }
   }, []);
 

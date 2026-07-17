@@ -278,6 +278,16 @@ const en = {
     },
     // shared
     emailAlreadyInUse: "An account with this email already exists.",
+    firebaseErrors: {
+      userNotFound: "No account found with that email.",
+      wrongPassword: "Incorrect password. Please try again.",
+      invalidCredential: "Incorrect email or password.",
+      invalidEmail: "Invalid email address.",
+      tooManyRequests: "Too many attempts. Please try again later.",
+      networkError: "Network error. Check your connection.",
+      userDisabled: "This account has been disabled.",
+      default: "Something went wrong.",
+    },
     errors: {
       nameRequired: "Full name is required",
       nameMin: "Name must be at least 2 characters",
@@ -1084,7 +1094,17 @@ const ar: Dict = {
       }
     },
     // shared
-    emailAlreadyInUse: "توجد حساب بهذا البريد مسبقاً.",
+    emailAlreadyInUse: "يوجد حساب مسجل بهذا البريد الإلكتروني مسبقاً.",
+    firebaseErrors: {
+      userNotFound: "لم يتم العثور على حساب بهذا البريد الإلكتروني.",
+      wrongPassword: "كلمة المرور غير صحيحة. حاول مرة أخرى.",
+      invalidCredential: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      invalidEmail: "البريد الإلكتروني غير صالح.",
+      tooManyRequests: "محاولات كثيرة. يرجى المحاولة لاحقاً.",
+      networkError: "خطأ في الشبكة. تحقق من اتصالك.",
+      userDisabled: "تم تعطيل هذا الحساب.",
+      default: "حدث خطأ ما.",
+    },
     errors: {
       nameRequired: "الاسم الكامل مطلوب",
       nameMin: "يجب ألا يقل الاسم عن حرفين",

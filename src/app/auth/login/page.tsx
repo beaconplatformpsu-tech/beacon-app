@@ -83,7 +83,16 @@ function LoginContent() {
     const errMsg = await login(email.trim(), password);
 
     if (errMsg) {
-      toast.error(errMsg);
+      const map: Record<string, string | undefined> = {
+        "auth/user-not-found": t.auth.firebaseErrors?.userNotFound,
+        "auth/wrong-password": t.auth.firebaseErrors?.wrongPassword,
+        "auth/invalid-credential": t.auth.firebaseErrors?.invalidCredential,
+        "auth/invalid-email": t.auth.firebaseErrors?.invalidEmail,
+        "auth/too-many-requests": t.auth.firebaseErrors?.tooManyRequests,
+        "auth/network-request-failed": t.auth.firebaseErrors?.networkError,
+        "auth/user-disabled": t.auth.firebaseErrors?.userDisabled,
+      };
+      toast.error(map[errMsg] || t.auth.firebaseErrors?.default || errMsg);
       setLoading(false);
       return;
     }
