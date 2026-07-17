@@ -18,6 +18,8 @@ import { BrandLogo } from "@/components/shared/BrandLogo";
 import { UserDropdown } from "@/components/shared/UserDropdown";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { NotificationsDropdown } from "@/components/shared/NotificationsDropdown";
+import { ref, get } from "firebase/database";
+import { db } from "@/lib/firebase/config";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
@@ -44,6 +46,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [session, loading, isEmailVerified, router, toast, t.layout]);
 
+  // ── Profile-completion guard (students only) ───────────────────────────────
+  useEffect(() => {
+    if (loading || !session || !isEmailVerified) return;
+    if (role === "admin") return; // admins are never redirected to complete-profile
+
+    get(ref(db, `users/${session.uid}/profileCompleted`)).then((snap) => {
+      const isCompleted = snap.exists() && snap.val() === true;
+      
+      // profileCompleted is false or missing → redirect to complete-profile
+      if (!isCompleted && pathname !== "/complete-profile") {
+        router.push("/complete-profile");
+      } 
+      // profileCompleted is true but user is on complete-profile → redirect to dashboard
+      else if (isCompleted && pathname === "/complete-profile") {
+        router.push("/dashboard");
+      }
+    }).catch(() => {
+      // Cannot read — don't block the user
+    });
+  }, [session, loading, isEmailVerified, role, pathname, router]);
+
   // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
@@ -66,7 +89,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   // ── Nav items by role ─────────────────────────────────────────────────────
-  const isAdmin = role === "admin" || role === "super_admin";
+  const isAdmin = role === "admin";
 
   const navItems = isAdmin ? [
     { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard },

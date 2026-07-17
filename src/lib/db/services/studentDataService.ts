@@ -18,30 +18,46 @@ export function useStudentProfile(uid: string | undefined) {
       return;
     }
 
-    const dbRef = ref(db, `users/${uid}`);
-    const unsubscribe = onValue(dbRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const raw = snapshot.val();
-        setProfile({
-          uid,
-          email: raw.email || "",
-          displayName: raw.displayName || "",
-          bio: raw.bio || "",
-          major: raw.major || "",
-          academicLevel: raw.academicLevel || "",
-          graduationYear: raw.graduationYear || new Date().getFullYear() + 4,
-          preferredCareerPathId: raw.preferredCareerPathId || undefined,
-          github: raw.github || "",
-          linkedin: raw.linkedin || "",
-          photoURL: raw.photoURL || "",
-        });
-      } else {
-        setProfile(null);
+    let publicData: any = null;
+    let privateProfileData: any = null;
+
+    const checkComplete = () => {
+      if (publicData !== null && privateProfileData !== null) {
+        if (publicData === false) { // user doesn't exist
+          setProfile(null);
+        } else {
+          setProfile({
+            uid,
+            email: publicData.email || "",
+            displayName: publicData.name || publicData.displayName || "",
+            bio: privateProfileData.bio || "",
+            major: privateProfileData.specialization || privateProfileData.major || "",
+            academicLevel: privateProfileData.currentLevel || privateProfileData.academicLevel || "",
+            graduationYear: privateProfileData.graduationYear || new Date().getFullYear() + 4,
+            preferredCareerPathId: publicData.preferredCareerPathId || undefined,
+            github: privateProfileData.links?.github || privateProfileData.github || "",
+            linkedin: privateProfileData.links?.linkedin || privateProfileData.linkedin || "",
+            photoURL: publicData.photoURL || "",
+          });
+        }
+        setLoading(false);
       }
-      setLoading(false);
+    };
+
+    const unsubPublic = onValue(ref(db, `users/${uid}`), (snapshot) => {
+      publicData = snapshot.exists() ? snapshot.val() : false;
+      checkComplete();
     });
 
-    return () => unsubscribe();
+    const unsubPrivate = onValue(ref(db, `user_private/${uid}/profile`), (snapshot) => {
+      privateProfileData = snapshot.exists() ? snapshot.val() : {};
+      checkComplete();
+    });
+
+    return () => {
+      unsubPublic();
+      unsubPrivate();
+    };
   }, [uid]);
 
   return { profile, loading };

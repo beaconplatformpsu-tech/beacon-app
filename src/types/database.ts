@@ -8,7 +8,7 @@ export * from './collections/system';
 import { ID, UID, ISOString } from './collections/base';
 import { Resource, Skill, CareerPath, Category, LearningPath, LearningPathStep, PracticeTask, Quiz, Project, Announcement } from './collections/publicContent';
 import { CareerPathSkillRelation } from './collections/relations';
-import { UserProfile, UserPreferences, UserOnboarding, UserAdminMeta } from './collections/users';
+import { StudentProfile, UserPreferences, UserOnboarding, UserAdminMeta } from './collections/users';
 import { Task, Note, Bookmark, SkillProgress, SkillEvidence, CareerReadiness, LearningProgress, ProjectSubmission, CVProfile, CVAnalysis, Portfolio, Recommendation, WeeklyPlan, ActivityLogEntry, SupportMessage } from './collections/userPrivate';
 import { PlatformSettings, Stats, SeedMeta, QuizAnswerKey, AdminLogEntry, AIUsageLog, MigrationMeta } from './collections/system';
 
@@ -48,13 +48,17 @@ export interface DatabaseSchema {
     learning_path_steps: Record<ID, Record<ID, LearningPathStep>>;
   };
   users: Record<UID, {
-    profile: UserProfile;
-    preferences: UserPreferences;
-    onboarding: UserOnboarding;
+    uid: string;
+    name?: string;
+    email: string;
+    role: "student" | "admin";
+    emailVerified: boolean;
+    profileCompleted: boolean;
     createdAt: ISOString;
     updatedAt: ISOString;
   }>;
   user_private: Record<UID, {
+    profile?: StudentProfile;
     tasks: Record<ID, Task>;
     notes: Record<ID, Note>;
     bookmarks: Record<ID, Bookmark>;

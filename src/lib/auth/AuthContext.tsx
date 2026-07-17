@@ -8,7 +8,7 @@
  *  - loading      – true until Firebase restores auth state
  *  - isAuthenticated
  *  - isEmailVerified  – from Firebase Auth (source of truth)
- *  - role         – "student" | "admin" | "super_admin"
+ *  - role         – "student" | "admin"
  *  - permissions  – from user_admin_meta (null for students)
  *  - profile      – basic profile snapshot from users/{uid}
  *  - login / logout / resendVerificationEmail / refreshUser
@@ -33,7 +33,8 @@ import { auth, db } from "@/lib/firebase/config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type AppRole = "student" | "admin" | "super_admin";
+/** Only two roles exist in this platform: student and admin. */
+export type AppRole = "student" | "admin";
 
 export interface AuthPermissions {
   canManageContent: boolean;
@@ -47,10 +48,10 @@ export interface AuthPermissions {
 export interface AuthProfile {
   uid: string;
   email: string;
+  /** Resolved from users/{uid}.name then users/{uid}.displayName then Firebase Auth displayName */
   displayName: string;
   role: AppRole;
-  academicLevel?: string;
-  department?: string;
+  profileCompleted: boolean;
   photoURL?: string;
 }
 
@@ -95,17 +96,18 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
  * Resolve the app role for a Firebase user.
- * Priority: custom claims → user_admin_meta → default "student".
+ * Only two roles are supported: "admin" and "student".
+ * Priority: Firebase custom claims → user_admin_meta → default "student".
  */
 async function resolveRole(user: User): Promise<{ role: AppRole; permissions: AuthPermissions | null }> {
   // 1. Try Firebase custom claims (set by Admin SDK on backend)
   try {
     const idTokenResult = await user.getIdTokenResult(/* forceRefresh */ false);
     const claimRole = idTokenResult.claims.role as string | undefined;
-    if (claimRole === "super_admin" || claimRole === "admin") {
+    if (claimRole === "admin") {
       const permClaim = idTokenResult.claims.permissions as AuthPermissions | undefined;
       return {
-        role: claimRole as AppRole,
+        role: "admin",
         permissions: permClaim ?? null,
       };
     }
@@ -118,15 +120,14 @@ async function resolveRole(user: User): Promise<{ role: AppRole; permissions: Au
     const metaSnap = await get(ref(db, `user_admin_meta/${user.uid}`));
     if (metaSnap.exists()) {
       const meta = metaSnap.val();
-      const dbRole: AppRole =
-        meta.role === "super_admin" ? "super_admin"
-        : meta.role === "content_admin" || meta.role === "advisor" || meta.role === "support_admin"
-          ? "admin"
-          : "student";
-      return {
-        role: dbRole,
-        permissions: meta.permissions ?? null,
-      };
+      // Any non-student role in DB maps to "admin" in the UI
+      const isAdmin = meta.role && meta.role !== "student";
+      if (isAdmin) {
+        return {
+          role: "admin",
+          permissions: meta.permissions ?? null,
+        };
+      }
     }
   } catch {
     // DB read failed (e.g. no rule access) — default to student
@@ -141,20 +142,18 @@ async function loadProfile(user: User, role: AppRole): Promise<AuthProfile | nul
     const snap = await get(ref(db, `users/${user.uid}`));
     if (snap.exists()) {
       const data = snap.val();
-      // users/{uid} may be a flat object (seed style) or nested with profile key
-      const flat = data.profile ?? data;
       return {
         uid: user.uid,
-        email: user.email ?? flat.email ?? "",
-        displayName: user.displayName ?? flat.displayName ?? flat.fullName ?? "User",
+        email: user.email ?? data.email ?? "",
+        // Prefer the RTDB `name` field (spec), fall back to displayName or Firebase Auth
+        displayName: data.name ?? data.displayName ?? user.displayName ?? "User",
         role,
-        academicLevel: flat.academicLevel ?? undefined,
-        department: flat.department ?? undefined,
-        photoURL: user.photoURL ?? flat.photoURL ?? undefined,
+        profileCompleted: data.profileCompleted === true,
+        photoURL: user.photoURL ?? data.photoURL ?? undefined,
       };
     }
   } catch {
-    // Missing or inaccessible profile — return minimal
+    // Missing or inaccessible profile — return minimal fallback
   }
 
   // Fallback: build from Firebase Auth data only
@@ -163,6 +162,7 @@ async function loadProfile(user: User, role: AppRole): Promise<AuthProfile | nul
     email: user.email ?? "",
     displayName: user.displayName ?? "User",
     role,
+    profileCompleted: false,
   };
 }
 
@@ -244,8 +244,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     if (!currentUser) return;
     await reload(currentUser);
-    // Force re-evaluate by triggering a state update
-    setCurrentUser({ ...currentUser } as User);
+    // onAuthStateChanged will fire again with the updated user
+    setCurrentUser(auth.currentUser);
   }, [currentUser]);
 
   // ── Context value ────────────────────────────────────────────────────────

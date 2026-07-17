@@ -45,8 +45,7 @@ function LoginContent() {
   useEffect(() => {
     if (authLoading) return;
     if (currentUser && isEmailVerified) {
-      const isAdmin = role === "admin" || role === "super_admin";
-      router.push(isAdmin ? "/admin" : "/dashboard");
+      router.push(role === "admin" ? "/admin" : "/dashboard");
     }
   }, [currentUser, isEmailVerified, authLoading, role, router]);
 
@@ -93,7 +92,7 @@ function LoginContent() {
     const user = auth.currentUser;
     if (user && !user.emailVerified) {
       setUnverifiedUser(user);
-      toast.error("Please verify your email before logging in.");
+      toast.error(t.auth.emailNotVerified || "Please verify your email before logging in.");
       setLoading(false);
       return;
     }
@@ -112,9 +111,9 @@ function LoginContent() {
       await sendEmailVerification(unverifiedUser, {
         url: `${window.location.origin}/auth/login`,
       });
-      toast.success("Verification email resent. Please check your inbox.");
+      toast.success(t.auth.verificationSent || "Verification email resent. Please check your inbox.");
     } catch {
-      toast.error("Failed to resend verification email. Please try again later.");
+      toast.error(t.auth.somethingWrong, { description: t.auth.tryAgainLater || "Failed to resend. Please try again later." });
     } finally {
       setResending(false);
     }
@@ -125,14 +124,13 @@ function LoginContent() {
     try {
       await unverifiedUser.reload();
       if (unverifiedUser.emailVerified) {
-        toast.success("Email verified successfully! You are now logged in.");
-        // The onAuthStateChanged listener should pick this up, but we can force it
-        window.location.href = "/dashboard";
+        toast.success(t.auth.emailVerifiedToast || "Email verified! Redirecting…");
+        router.push(role === "admin" ? "/admin" : "/dashboard");
       } else {
-        toast.error("Email is still not verified. Please check your inbox.");
+        toast.info(t.auth.notVerifiedYet || "Email is still not verified. Please check your inbox.");
       }
-    } catch (err) {
-      toast.error("Error checking verification status.");
+    } catch {
+      toast.error(t.auth.somethingWrong);
     }
   };
 

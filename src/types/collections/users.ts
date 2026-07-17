@@ -1,18 +1,25 @@
 import { ISOString, UID, ID } from "./base";
 
-export interface UserProfile {
-  uid: UID;
-  email: string;
-  displayName?: string;
+export type CSStudyLevel = "foundation" | "year_1" | "year_2" | "year_3" | "year_4" | "capstone" | "job_prep";
+
+export interface StudentProfile {
   bio?: string;
-  major?: string;
-  academicLevel?: string;
-  graduationYear?: number;
-  preferredCareerPathId?: ID;
-  github?: string;
-  linkedin?: string;
-  photoURL?: string;
-  createdAt?: ISOString;
+  specialization?: string;
+  technicalInterests?: string[];
+  targetSkills?: string[];
+  currentLevel?: CSStudyLevel; // Computer Science study stage
+  learningGoals?: string[];
+  education?: Record<string, any>; // can type further if needed
+  courses?: Record<string, any>;
+  experience?: Record<string, any>;
+  links?: {
+    github?: string;
+    linkedin?: string;
+    portfolio?: string;
+  };
+  preferredLanguage?: "en" | "ar";
+  completionPercentage?: number;
+  completedAt?: ISOString;
   updatedAt?: ISOString;
 }
 
@@ -31,7 +38,7 @@ export interface UserOnboarding {
 }
 
 export interface UserAdminMeta {
-  role: "super_admin" | "content_admin" | "advisor" | "support_admin" | "student";
+  role: "admin" | "student";
   permissions: {
     canManageContent: boolean;
     canManageUsers: boolean;

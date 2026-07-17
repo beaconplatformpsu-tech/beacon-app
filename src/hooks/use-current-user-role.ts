@@ -7,7 +7,7 @@
 import { useAuth } from "@/lib/auth/AuthContext";
 import type { User } from "firebase/auth";
 
-export type AppRole = "admin" | "super_admin" | "student";
+export type AppRole = "admin" | "student";
 
 export function useCurrentUserRole(): {
   session: User | null;

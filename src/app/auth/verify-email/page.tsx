@@ -1,26 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MailCheck, RefreshCw, Loader2, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useCustomToast } from "@/hooks/use-custom-toast";
+import { useT } from "@/i18n/LanguageProvider";
 
 export default function VerifyEmailPage() {
-  const { currentUser, resendVerificationEmail, refreshUser, logout } = useAuth();
+  const { currentUser, resendVerificationEmail, refreshUser, logout, loading, role } = useAuth();
   const router = useRouter();
+  const toast = useCustomToast();
+  const t = useT();
   const [resending, setResending] = useState(false);
   const [checking, setChecking] = useState(false);
 
   const email = currentUser?.email ?? "";
 
+  // Guard: if no user is logged in at all, send to login
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      router.replace("/auth/login");
+    }
+  }, [loading, currentUser, router]);
+
   const handleResend = async () => {
     setResending(true);
     try {
       await resendVerificationEmail();
-      toast.success("Verification email sent! Check your inbox.");
+      toast.success(t.auth.verificationSent || "Verification email sent!", t.auth.checkInbox || "Check your inbox.");
     } catch {
-      toast.error("Failed to resend. Please wait a moment and try again.");
+      toast.error(t.auth.somethingWrong, t.auth.tryAgainLater || "Please wait a moment and try again.");
     } finally {
       setResending(false);
     }
@@ -30,16 +40,18 @@ export default function VerifyEmailPage() {
     setChecking(true);
     try {
       await refreshUser();
-      // Give Firebase a moment to propagate
-      await new Promise((r) => setTimeout(r, 500));
-      if (currentUser?.emailVerified) {
-        toast.success("Email verified! Redirecting…");
-        router.push("/dashboard");
+      // Small delay to let Firebase propagate the verification state
+      await new Promise((r) => setTimeout(r, 800));
+      // Re-read the freshest value from auth
+      const fresh = (await import("@/lib/firebase/config")).auth.currentUser;
+      if (fresh?.emailVerified) {
+        toast.success(t.auth.emailVerifiedToast || "Email verified! Redirecting…");
+        router.push(role === "admin" ? "/admin" : "/dashboard");
       } else {
-        toast.info("Not verified yet. Please click the link in your email.");
+        toast.info(t.auth.notVerifiedYet || "Not verified yet. Please click the link in your email.");
       }
     } catch {
-      toast.error("Could not refresh. Please try again.");
+      toast.error(t.auth.somethingWrong, t.auth.tryAgainLater || "Please try again.");
     } finally {
       setChecking(false);
     }
@@ -49,6 +61,9 @@ export default function VerifyEmailPage() {
     await logout();
     router.push("/auth/login");
   };
+
+  // Show nothing while checking auth state to avoid flash
+  if (loading || !currentUser) return null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background flex items-center justify-center px-6">
@@ -70,22 +85,24 @@ export default function VerifyEmailPage() {
           {/* Heading */}
           <div className="space-y-2">
             <h1 className="font-display text-2xl font-bold text-foreground">
-              Verify your email
+              {t.auth.verifyEmailTitle || "Verify your email"}
             </h1>
             <p className="text-sm text-muted-foreground">
-              We sent a verification link to{" "}
-              <span className="font-semibold text-foreground break-all">{email}</span>.
-              Click the link to activate your account.
+              {t.auth.verifyEmailSub || "We sent a verification link to"}{" "}
+              <span className="font-semibold text-foreground break-all">{email}</span>.{" "}
+              {t.auth.clickLinkToActivate || "Click the link to activate your account."}
             </p>
           </div>
 
           {/* Info box */}
-          <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 text-left space-y-1">
-            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">Before you continue:</p>
+          <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4 text-start space-y-1">
+            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+              {t.auth.beforeContinue || "Before you continue:"}
+            </p>
             <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
-              <li>Open your email inbox</li>
-              <li>Click the verification link from Beacon</li>
-              <li>Return here and click <strong>&quot;I verified my email&quot;</strong></li>
+              <li>{t.auth.openInbox || "Open your email inbox"}</li>
+              <li>{t.auth.clickVerificationLink || "Click the verification link from Beacon"}</li>
+              <li>{t.auth.returnAndCheck || `Return here and click "I verified my email"`}</li>
             </ul>
           </div>
 
@@ -97,9 +114,9 @@ export default function VerifyEmailPage() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-60"
             >
               {checking ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Checking…</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.checking || "Checking…"}</>
               ) : (
-                <><RefreshCw className="h-4 w-4" /> I verified my email</>
+                <><RefreshCw className="h-4 w-4" /> {t.auth.iVerifiedEmail || "I verified my email"}</>
               )}
             </button>
 
@@ -109,9 +126,9 @@ export default function VerifyEmailPage() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-6 py-3 text-sm font-medium text-foreground hover:bg-muted transition disabled:opacity-50"
             >
               {resending ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.sending || "Sending…"}</>
               ) : (
-                "Resend verification email"
+                t.auth.resendVerification || "Resend verification email"
               )}
             </button>
           </div>
@@ -123,7 +140,7 @@ export default function VerifyEmailPage() {
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
             >
               <LogOut className="h-4 w-4" />
-              Sign out and use a different account
+              {t.auth.signOutDifferentAccount || "Sign out and use a different account"}
             </button>
           </div>
         </div>

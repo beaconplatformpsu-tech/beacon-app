@@ -45,7 +45,7 @@ export function UserDropdown({ buttonClassName, textClassName, iconClassName }: 
           <DropdownMenuTrigger asChild>
             <button className={buttonClassName || "flex items-center gap-2 rounded-full border border-primary-foreground/10 bg-primary-foreground/5 pl-1 pr-3 py-1 hover:bg-primary-foreground/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-foreground/20 rtl:pl-3 rtl:pr-1"}>
               <Avatar className="h-7 w-7 border border-primary-foreground/20">
-                <AvatarImage src={session.photoURL || ""} alt={session.displayName || "User Avatar"} />
+                <AvatarImage src={session.photoURL || "/defultavatar.png"} alt={session.displayName || "User Avatar"} />
                 <AvatarFallback className="bg-primary/80 text-primary-foreground text-xs font-semibold">
                   {session.displayName ? session.displayName.charAt(0).toUpperCase() : <UserIcon className="h-3 w-3" />}
                 </AvatarFallback>
