@@ -253,12 +253,15 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading || !isFormValid}
-            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-1/2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
           >
-            {loading
-              ? <><Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}</>
-              : <><span>{t.auth.createBtn}</span> <ArrowRight className="h-4 w-4 rtl:rotate-180" /></>
-            }
+            {loading ? (
+              <span className="flex items-center justify-center gap-2 whitespace-nowrap">
+                <Loader2 className="h-4 w-4 animate-spin" /> {t.auth.pleaseWait}
+              </span>
+            ) : (
+              t.auth.createBtn
+            )}
           </button>
         </div>
       </form>

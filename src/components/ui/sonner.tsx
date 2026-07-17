@@ -37,7 +37,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           icon: "text-white [&>svg]:w-6 [&>svg]:h-6 shrink-0 me-3",
           actionButton: "bg-white text-primary rounded-md px-2 py-1 text-xs font-semibold",
           cancelButton: "bg-white/20 text-white rounded-md px-2 py-1 text-xs",
-          closeButton: "!absolute !top-1/2 !-translate-y-1/2 !end-2 !bg-transparent opacity-60 hover:opacity-100 transition-opacity !text-white !border-0 [&>svg]:w-4 [&>svg]:h-4 !w-8 !h-8 !flex !items-center !justify-center cursor-pointer",
+          closeButton: "!absolute !top-1/2 !-translate-y-1/2 !right-2 rtl:!right-auto rtl:!left-2 !bg-transparent opacity-60 hover:opacity-100 transition-opacity !text-white !border-0 [&>svg]:w-4 [&>svg]:h-4 !w-8 !h-8 !flex !items-center !justify-center cursor-pointer",
         },
       }}
       {...props}
