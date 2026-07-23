@@ -183,7 +183,7 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full">
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <h1 className="font-display text-2xl md:text-3xl text-foreground">
           {t.auth.createTitle}
         </h1>
@@ -246,7 +246,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading || !isFormValid}
-            className="w-auto px-10 rounded-md bg-primary py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
+            className="w-fit px-10 rounded-md bg-primary py-3 text-sm font-medium text-primary-foreground hover:opacity-90 transition shadow-glow disabled:opacity-100 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2 whitespace-nowrap">

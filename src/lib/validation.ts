@@ -154,20 +154,39 @@ export const userProfileSchema = z.object({
   uid: z.string().min(1),
   email: z.string().email(),
   displayName: z.string().max(100).optional(),
-  name: z.string().max(100).optional(),
-  bio: z.string().max(1000).optional(),
-  major: z.string().max(255).optional(),
-  academicLevel: z.string().max(100).optional(),
-  currentLevel: z.string().max(100).optional(),
-  graduationYear: z.number().int().optional(),
-  preferredCareerPathId: z.string().optional(),
-  github: httpsUrl.optional(),
-  linkedin: httpsUrl.optional(),
   photoURL: httpsUrl.optional(),
   createdAt: timestamp.optional(),
+  studyProgram: z.string().max(255).optional(),
+  academicStage: z.enum(["foundation", "year_1", "year_2", "year_3", "year_4", "graduate"]).optional(),
+  primaryGoal: z.string().max(255).optional(),
+  secondaryGoals: z.array(z.string()).optional(),
+  technicalInterestIds: z.array(z.string()).optional(),
+  targetSkillIds: z.array(z.string()).optional(),
+  bio: z.string().max(1000).optional(),
+  education: z.record(z.any()).optional(),
+  courses: z.record(z.any()).optional(),
+  experience: z.record(z.any()).optional(),
+  links: z.object({
+    github: httpsUrl.optional(),
+    linkedin: httpsUrl.optional(),
+    portfolio: httpsUrl.optional(),
+  }).optional(),
+  preferredLanguage: z.enum(["en", "ar"]).optional(), // DEPRECATED: Migrate to preferences
+  completionPercentage: z.number().min(0).max(100).optional(),
+  onboardingVersion: z.string().optional(),
+  preferredCareerPathId: z.string().optional(),
+  completedAt: timestamp.optional(),
   updatedAt: timestamp.optional(),
 });
 export type UserProfile = z.infer<typeof userProfileSchema>;
+
+export const studentPreferencesSchema = z.object({
+  language: z.enum(["ar", "en"]).default("en"),
+  theme: z.enum(["light", "dark", "system"]).default("system"),
+  emailNotifications: z.boolean().default(true),
+  updatedAt: timestamp.optional(),
+});
+export type StudentPreferences = z.infer<typeof studentPreferencesSchema>;
 
 // ─────────────────────────────────────────────
 // Tasks

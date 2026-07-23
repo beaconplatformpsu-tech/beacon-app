@@ -8,8 +8,8 @@ export * from './collections/system';
 import { ID, UID, ISOString } from './collections/base';
 import { Resource, Skill, CareerPath, Category, LearningPath, LearningPathStep, PracticeTask, Quiz, Project, Announcement } from './collections/publicContent';
 import { CareerPathSkillRelation } from './collections/relations';
-import { StudentProfile, UserPreferences, UserOnboarding } from './collections/users';
-import { Task, Note, Bookmark, SkillProgress, SkillEvidence, CareerReadiness, LearningProgress, ProjectSubmission, CVProfile, CVAnalysis, Portfolio, Recommendation, WeeklyPlan, ActivityLogEntry, SupportMessage } from './collections/userPrivate';
+import { PublicUser, AppRole } from './collections/users';
+import { StudentProfile, UserPreferences, UserOnboarding, Task, Note, Bookmark, SkillProgress, SkillEvidence, CareerReadiness, LearningProgress, ProjectSubmission, CVProfile, CVAnalysis, Portfolio, Recommendation, WeeklyPlan, ActivityLogEntry, SupportMessage } from './collections/userPrivate';
 import { PlatformSettings, Stats, SeedMeta, QuizAnswerKey, AdminLogEntry, AIUsageLog, MigrationMeta } from './collections/system';
 
 // ─────────────────────────────────────────────
@@ -51,7 +51,7 @@ export interface DatabaseSchema {
     uid: string;
     name?: string;
     email: string;
-    role: "student" | "admin";
+    role: AppRole;
     emailVerified: boolean;
     profileCompleted: boolean;
     createdAt: ISOString;

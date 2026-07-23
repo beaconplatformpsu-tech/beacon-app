@@ -3,8 +3,8 @@ import { Resource } from '@/features/resources/types';
 
 describe('RecommendationEngine', () => {
   const mockCareerPathSkills = [
-    { skillId: 's1', minimumProficiencyLevel: 'Intermediate', priority: 'Core' },
-    { skillId: 's2', minimumProficiencyLevel: 'Advanced', priority: 'Core' }
+    { skillId: 's1', minimumProficiencyLevel: 'Intermediate', importanceLevel: 'core' },
+    { skillId: 's2', minimumProficiencyLevel: 'Advanced', importanceLevel: 'core' }
   ];
 
   const mockSkills = {

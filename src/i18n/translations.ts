@@ -29,14 +29,33 @@ const en = {
     about: "About",
     contact: "Contact us",
     features: "Features",
+    // Overview
     dashboard: "Dashboard",
+    recommendations: "Recommendations",
+    // Academic
     academicTasks: "Academic Tasks",
+    planner: "Weekly Planner",
+    practiceTasks: "Practice Tasks",
+    projects: "Projects",
+    // Skills & Learning
     skillsCareers: "Technical Skills",
+    learningPaths: "Learning Paths",
+    resources: "Resources",
+    // Career
     career: "Career Preparation",
+    // Personal Tools
+    bookmarks: "Bookmarks",
+    cvBuilder: "CV Builder",
+    portfolio: "Portfolio",
+    // Help
     support: "Academic Support",
+    notifications: "Notifications",
+    // Account
     privateNotes: "Private Notes",
-    feedback: "Feedback",
     profile: "My Profile",
+    settings: "Settings",
+    feedback: "Feedback",
+    // Admin
     adminDashboard: "Admin Dashboard",
     manageUsers: "Manage Users",
     adminTasks: "Academic Tasks",
@@ -47,6 +66,13 @@ const en = {
     adminAnalytics: "System Analytics",
     adminMessages: "Feedback & Messages",
     platformSettings: "Platform Settings",
+    // Groups
+    groupOverview: "Overview",
+    groupAcademic: "Academic",
+    groupSkills: "Skills & Learning",
+    groupCareer: "Career",
+    groupTools: "Personal Tools",
+    groupHelp: "Help",
   },
   actions: {
     signIn: "Sign in",
@@ -891,14 +917,33 @@ const ar: Dict = {
     about: "من نحن",
     contact: "تواصل معنا",
     features: "المميزات",
+    // Overview
     dashboard: "لوحة التحكم",
+    recommendations: "التوصيات",
+    // Academic
     academicTasks: "المهام الأكاديمية",
+    planner: "المخطط الأسبوعي",
+    practiceTasks: "مهام تدريبية",
+    projects: "المشاريع",
+    // Skills & Learning
     skillsCareers: "المهارات التقنية",
+    learningPaths: "مسارات التعلم",
+    resources: "الموارد",
+    // Career
     career: "التحضير المهني",
+    // Personal Tools
+    bookmarks: "المحفوظات",
+    cvBuilder: "بناء السيرة الذاتية",
+    portfolio: "المعرض",
+    // Help
     support: "الدعم الأكاديمي",
+    notifications: "الإشعارات",
+    // Account
     privateNotes: "ملاحظات خاصة",
-    feedback: "التقييم",
     profile: "الملف الشخصي",
+    settings: "الإعدادات",
+    feedback: "التقييم",
+    // Admin
     adminDashboard: "لوحة المسؤول",
     manageUsers: "إدارة المستخدمين",
     adminTasks: "المهام الأكاديمية",
@@ -909,6 +954,13 @@ const ar: Dict = {
     adminAnalytics: "تحليلات النظام",
     adminMessages: "التعليقات والرسائل",
     platformSettings: "إعدادات المنصة",
+    // Groups
+    groupOverview: "نظرة عامة",
+    groupAcademic: "الأكاديمي",
+    groupSkills: "المهارات والتعلم",
+    groupCareer: "المسار المهني",
+    groupTools: "أدواتي",
+    groupHelp: "المساعدة",
   },
   actions: {
     signIn: "تسجيل الدخول",

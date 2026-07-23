@@ -12,18 +12,27 @@ type Ctx = {
 const LanguageContext = createContext<Ctx | null>(null);
 const STORAGE_KEY = "beacon.lang";
 
+import { useAuth } from "@/lib/auth/AuthContext";
+import { updateStudentPreferences, useStudentPreferences } from "@/lib/db/services/studentDataService";
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
+  const { currentUser } = useAuth();
+  const { preferences } = useStudentPreferences(currentUser?.uid);
 
-  // Read persisted preference on mount (client only)
+  // Read persisted preference from DB when loaded, fallback to localStorage
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
-      if (saved === "ar" || saved === "en") setLangState(saved);
-    } catch {
-      // ignore
+    if (preferences?.language) {
+      setLangState(preferences.language as Lang);
+    } else {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
+        if (saved === "ar" || saved === "en") setLangState(saved);
+      } catch {
+        // ignore
+      }
     }
-  }, []);
+  }, [preferences?.language]);
 
   // Reflect on <html> for native RTL/LTR support
   useEffect(() => {
@@ -35,12 +44,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
-    try {
-      localStorage.setItem(STORAGE_KEY, l);
-    } catch {
-      // ignore
+    if (currentUser) {
+      updateStudentPreferences(currentUser.uid, { language: l });
+    } else {
+      try {
+        localStorage.setItem(STORAGE_KEY, l);
+      } catch {
+        // ignore
+      }
     }
-  }, []);
+  }, [currentUser]);
 
   const toggle = useCallback(() => {
     setLang(lang === "en" ? "ar" : "en");

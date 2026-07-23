@@ -26,6 +26,7 @@ import {
   ResourceType,
   SourceType,
   SkillProficiency,
+  StudentPreferences,
 } from "./validation";
 
 // Re-export all validated types
@@ -52,6 +53,7 @@ export type {
   ResourceType,
   SourceType,
   SkillProficiency,
+  StudentPreferences,
 };
 
 // Backwards-compatible alias (some features still use this name)

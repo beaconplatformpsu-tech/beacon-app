@@ -1,4 +1,44 @@
 import { BaseEntity, ISOString, ID, UID, FileReference } from "./base";
+import { CSStudyLevel } from "./users";
+
+export interface StudentProfile {
+  studyProgram?: string;
+  academicStage?: CSStudyLevel;
+  primaryGoal?: string;
+  secondaryGoals?: string[];
+  technicalInterestIds?: string[];
+  targetSkillIds?: string[];
+  bio?: string;
+  education?: Record<string, any>;
+  courses?: Record<string, any>;
+  experience?: Record<string, any>;
+  links?: {
+    github?: string;
+    linkedin?: string;
+    portfolio?: string;
+  };
+  preferredLanguage?: "en" | "ar";
+  completionPercentage?: number;
+  onboardingVersion?: string;
+  preferredCareerPathId?: string;
+  completedAt?: ISOString;
+  updatedAt?: ISOString;
+  accountStatus?: "active" | "inactive" | "suspended";
+}
+
+export interface UserPreferences {
+  theme: "light" | "dark" | "system";
+  language: "en" | "ar";
+  emailNotifications: boolean;
+  updatedAt?: ISOString;
+}
+
+export interface UserOnboarding {
+  hasCompletedProfile: boolean;
+  hasSelectedCareerPath: boolean;
+  completedSteps: string[];
+  updatedAt?: ISOString;
+}
 
 export interface Bookmark {
   entityType: "resource" | "project" | "quiz" | "career_path" | "learning_path";

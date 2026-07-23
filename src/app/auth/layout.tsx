@@ -20,12 +20,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <LanguageToggle />
       </div>
 
-      <div className={`relative mx-auto flex min-h-screen flex-col px-6 py-10 justify-center transition-all duration-500 w-full ${isSignup ? "max-w-3xl" : "max-w-md"}`}>
+      <div className="relative mx-auto flex min-h-screen flex-col px-6 py-10 justify-center transition-all duration-500 w-full max-w-md">
 
-        <div className={`rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-500 mx-auto w-full`}>
-          <div className="mb-2 flex flex-col items-center gap-3">
-            <div className="flex items-center justify-center rounded-full bg-background shadow-sm border border-border/50 p-2">
-              <BrandLogo showText={false} imageClass="h-12 w-12 rounded-full ring-0 shadow-none" />
+        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-500 mx-auto w-full">
+          <div className="mb-1 flex flex-col items-center gap-3">
+            <div className="flex items-center justify-center rounded-full bg-background shadow-sm border border-border/50 p-1.5 overflow-hidden">
+              <BrandLogo showText={false} imageClass="h-12 w-12 rounded-full ring-0 shadow-none object-cover" />
             </div>
           </div>
           

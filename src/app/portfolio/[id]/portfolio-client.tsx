@@ -107,22 +107,22 @@ export default function PortfolioClient({ id }: { id: string }) {
                   {profile.displayName || t.portfolio.defaultName}
                 </h1>
                 <p className="text-xl text-muted-foreground mt-2 flex items-center justify-center md:justify-start gap-2">
-                  <GraduationCap className="h-5 w-5" /> {profile.major || t.portfolio.defaultMajor} &bull; {t.portfolio.classOf.replace("{year}", String(profile.graduationYear))}
+                  <GraduationCap className="h-5 w-5" /> {profile.studyProgram || t.portfolio.defaultMajor} &bull; {profile.academicStage ? profile.academicStage.replace("_", " ") : t.portfolio.classOf.replace("{year}", "TBD")}
                 </p>
               </div>
               <p className="text-foreground/80 max-w-2xl leading-relaxed mx-auto md:mx-0">
                 {profile.bio || t.portfolio.defaultBio}
               </p>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-                {profile.github && (
-                  <a href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`} target="_blank" rel="noreferrer">
+                {profile.links?.github && (
+                  <a href={profile.links.github.startsWith('http') ? profile.links.github : `https://${profile.links.github}`} target="_blank" rel="noreferrer">
                     <Badge variant="outline" className="px-3 py-1.5 hover:bg-primary/5 cursor-pointer gap-1.5 text-sm">
                       <Github className="h-4 w-4" /> GitHub
                     </Badge>
                   </a>
                 )}
-                {profile.linkedin && (
-                  <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`} target="_blank" rel="noreferrer">
+                {profile.links?.linkedin && (
+                  <a href={profile.links.linkedin.startsWith('http') ? profile.links.linkedin : `https://${profile.links.linkedin}`} target="_blank" rel="noreferrer">
                     <Badge variant="outline" className="px-3 py-1.5 hover:bg-primary/5 cursor-pointer gap-1.5 text-sm text-blue-600 dark:text-blue-400 border-blue-500/30">
                       <Linkedin className="h-4 w-4" /> LinkedIn
                     </Badge>

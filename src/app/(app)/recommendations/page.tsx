@@ -74,10 +74,10 @@ export default function RecommendationsPage() {
     
     try {
 
-      // Fetch user context
-      const userSnap = await get(ref(db, `users/${session.uid}`));
-      const userData = userSnap.val() || {};
-      const preferredCareerPathId = userData.preferredCareerPathId;
+      // Fetch user context — preferredCareerPathId lives in the private profile
+      const privateProfileSnap = await get(ref(db, `user_private/${session.uid}/profile`));
+      const privateProfile = privateProfileSnap.val() || {};
+      const preferredCareerPathId = privateProfile.preferredCareerPathId;
 
       if (!preferredCareerPathId) {
         throw new Error("Please set a career goal in your profile first to get tailored recommendations.");

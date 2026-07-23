@@ -122,12 +122,9 @@ describe('Zod Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('fails on invalid role', () => {
+    it('fails on missing uid', () => {
       const invalidProfile = {
-        uid: 'u2',
         email: 'test@example.com',
-        role: 'superadmin', // Invalid
-        emailVerified: true
       };
 
       const result = userProfileSchema.safeParse(invalidProfile);
@@ -141,10 +138,12 @@ describe('Zod Validation Schemas', () => {
     it('validates a correct resource', () => {
       const validResource = {
         id: 'r1',
+        slug: 'learn-react',
         title: 'Learn React',
         url: 'https://react.dev',
         resourceType: 'Documentation',
-        audienceLevel: 'Beginner',
+        sourceType: 'external',
+        difficultyLevel: 'Beginner',
         isFree: true
       };
 
@@ -155,8 +154,10 @@ describe('Zod Validation Schemas', () => {
     it('fails on invalid url scheme', () => {
       const invalidResource = {
         id: 'r2',
+        slug: 'bad-url',
         title: 'Bad URL Resource',
         url: 'http://react.dev', // Must be https
+        sourceType: 'external',
         resourceType: 'Documentation'
       };
 

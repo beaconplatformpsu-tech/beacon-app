@@ -1,24 +1,10 @@
 // @ts-ignore
-import { renderHook, waitFor } from '@testing-library/react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { get, ref } from 'firebase/database';
+import { renderHook } from '@testing-library/react';
+import { useCurrentUserRole } from '../use-current-user-role';
+import { useAuth } from '@/lib/auth/AuthContext';
 
-const { useCurrentUserRole } = jest.requireActual('../use-current-user-role');
-
-jest.mock('firebase/auth', () => ({
-  getAuth: jest.fn(),
-  onAuthStateChanged: jest.fn()
-}));
-
-jest.mock('firebase/database', () => ({
-  getDatabase: jest.fn(),
-  ref: jest.fn((db, path) => path),
-  get: jest.fn()
-}));
-
-jest.mock('@/lib/firebase/config', () => ({
-  auth: {},
-  db: {}
+jest.mock('@/lib/auth/AuthContext', () => ({
+  useAuth: jest.fn()
 }));
 
 describe('useCurrentUserRole', () => {
@@ -26,65 +12,49 @@ describe('useCurrentUserRole', () => {
     jest.clearAllMocks();
   });
 
-  it('returns loading true initially and handles no user', async () => {
-    (onAuthStateChanged as jest.Mock).mockImplementation((auth, callback) => {
-      callback(null);
-      return jest.fn(); // unsubscribe
+  it('returns loading true initially and handles no user', () => {
+    (useAuth as jest.Mock).mockReturnValueOnce({
+      currentUser: null,
+      role: null,
+      loading: true
     });
 
     const { result } = renderHook(() => useCurrentUserRole());
     
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-    
+    expect(result.current.loading).toBe(true);
     expect(result.current.user).toBeNull();
     expect(result.current.role).toBeNull();
     expect(result.current.session).toBeNull();
   });
 
-  it('fetches role for authenticated user', async () => {
+  it('returns role for authenticated user', () => {
     const mockUser = { uid: 'u1', email: 'test@test.com' };
     
-    (onAuthStateChanged as jest.Mock).mockImplementation((auth, callback) => {
-      callback(mockUser);
-      return jest.fn();
-    });
-
-    (get as jest.Mock).mockResolvedValue({
-      exists: () => true,
-      val: () => 'admin'
+    (useAuth as jest.Mock).mockReturnValueOnce({
+      currentUser: mockUser,
+      role: 'admin',
+      loading: false
     });
 
     const { result } = renderHook(() => useCurrentUserRole());
     
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-    
+    expect(result.current.loading).toBe(false);
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.role).toBe('admin');
   });
   
-  it('defaults to student if role does not exist', async () => {
+  it('defaults to student if role does not exist', () => {
     const mockUser = { uid: 'u1', email: 'test@test.com' };
     
-    (onAuthStateChanged as jest.Mock).mockImplementation((auth, callback) => {
-      callback(mockUser);
-      return jest.fn();
-    });
-
-    (get as jest.Mock).mockResolvedValue({
-      exists: () => false,
-      val: () => null
+    (useAuth as jest.Mock).mockReturnValueOnce({
+      currentUser: mockUser,
+      role: 'student',
+      loading: false
     });
 
     const { result } = renderHook(() => useCurrentUserRole());
     
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-    
+    expect(result.current.loading).toBe(false);
     expect(result.current.role).toBe('student');
   });
 });

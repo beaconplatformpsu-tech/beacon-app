@@ -4,8 +4,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, CheckSquare, BookOpen, GraduationCap, HeartHandshake,
-  LockKeyhole, LogOut, Settings, MessageSquare, Home, Menu, X,
+  LockKeyhole, LogOut, Settings, MessageSquare, Menu, X,
   Newspaper, Mountain, Users, ChevronLeft, ChevronRight,
+  Sparkles, Calendar, Code2, FolderGit2, Map, FileSearch,
+  BookMarked, FileText, LayoutTemplate, Bell, ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCustomToast } from "@/hooks/use-custom-toast";
@@ -21,6 +23,100 @@ import { NotificationsDropdown } from "@/components/shared/NotificationsDropdown
 import { ref, get } from "firebase/database";
 import { db } from "@/lib/firebase/config";
 
+// ─── Type Definitions ────────────────────────────────────────────────────────
+type NavItem = {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  exactMatch?: boolean;
+};
+
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+// ─── NavLink ─────────────────────────────────────────────────────────────────
+function NavLink({
+  item,
+  pathname,
+  isCollapsed,
+  onClick,
+}: {
+  item: NavItem;
+  pathname: string;
+  isCollapsed: boolean;
+  onClick?: () => void;
+}) {
+  const isActive = item.exactMatch
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(item.href + "/");
+
+  return (
+    <Link
+      href={item.href}
+      prefetch={true}
+      onClick={onClick}
+      title={isCollapsed ? item.label : undefined}
+      aria-current={isActive ? "page" : undefined}
+      className={[
+        "group flex items-center py-2.5 text-sm font-semibold rounded-xl transition-all duration-200",
+        isCollapsed ? "justify-center px-0 mx-1" : "gap-3 px-3",
+        isActive
+          ? "bg-slate-50 dark:bg-slate-950 text-primary shadow-sm"
+          : "text-primary-foreground/75 hover:bg-primary-foreground/10 hover:text-primary-foreground",
+      ].join(" ")}
+    >
+      <item.icon
+        className={[
+          "h-[18px] w-[18px] transition-transform duration-200 shrink-0",
+          isActive ? "scale-110 text-primary" : "group-hover:scale-105",
+          isActive && !isCollapsed ? "text-primary" : "",
+        ].join(" ")}
+      />
+      {!isCollapsed && (
+        <span className="truncate leading-snug">{item.label}</span>
+      )}
+    </Link>
+  );
+}
+
+// ─── NavGroupSection ─────────────────────────────────────────────────────────
+function NavGroupSection({
+  group,
+  pathname,
+  isCollapsed,
+  onNavClick,
+}: {
+  group: NavGroup;
+  pathname: string;
+  isCollapsed: boolean;
+  onNavClick: () => void;
+}) {
+  return (
+    <div className="space-y-0.5">
+      {!isCollapsed && (
+        <p className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/40 select-none">
+          {group.label}
+        </p>
+      )}
+      {isCollapsed && (
+        <div className="mx-auto w-6 h-px bg-primary-foreground/20 my-3" />
+      )}
+      {group.items.map((item) => (
+        <NavLink
+          key={item.href}
+          item={item}
+          pathname={pathname}
+          isCollapsed={isCollapsed}
+          onClick={onNavClick}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── AppLayout ────────────────────────────────────────────────────────────────
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { currentUser: session, role, loading, isEmailVerified, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,17 +145,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // ── Profile-completion guard (students only) ───────────────────────────────
   useEffect(() => {
     if (loading || !session || !isEmailVerified) return;
-    if (role === "admin") return; // admins are never redirected to complete-profile
+    if (role === "admin") return;
 
     get(ref(db, `users/${session.uid}/profileCompleted`)).then((snap) => {
       const isCompleted = snap.exists() && snap.val() === true;
-      
-      // profileCompleted is false or missing → redirect to complete-profile
       if (!isCompleted && pathname !== "/complete-profile") {
         router.push("/complete-profile");
-      } 
-      // profileCompleted is true but user is on complete-profile → redirect to dashboard
-      else if (isCompleted && pathname === "/complete-profile") {
+      } else if (isCompleted && pathname === "/complete-profile") {
         router.push("/dashboard");
       }
     }).catch(() => {
@@ -88,11 +180,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     router.push("/auth/login");
   };
 
-  // ── Nav items by role ─────────────────────────────────────────────────────
   const isAdmin = role === "admin";
 
-  const navItems = isAdmin ? [
-    { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard },
+  // ── Admin nav (flat list, no groups) ──────────────────────────────────────
+  const adminNavItems: NavItem[] = [
+    { label: t.nav.adminDashboard, href: "/admin", icon: LayoutDashboard, exactMatch: true },
     { label: t.nav.manageUsers, href: "/admin/users", icon: Users },
     { label: t.nav.adminTasks, href: "/admin/tasks", icon: CheckSquare },
     { label: t.nav.adminSkills, href: "/admin/skills", icon: BookOpen },
@@ -102,33 +194,70 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { label: t.nav.adminAnalytics, href: "/admin/analytics", icon: Newspaper },
     { label: t.nav.adminMessages, href: "/admin/messages", icon: MessageSquare },
     { label: t.nav.platformSettings, href: "/admin/settings", icon: Settings },
-  ] : [
-    { label: t.nav.home, href: "/", icon: Home },
-    { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard },
-    { label: t.nav.academicTasks, href: "/tasks", icon: CheckSquare },
-    { label: t.nav.skillsCareers, href: "/skills", icon: BookOpen },
-    { label: t.nav.career, href: "/career", icon: GraduationCap },
-    { label: t.nav.support, href: "/support", icon: HeartHandshake },
-    { label: t.nav.privateNotes, href: "/notes", icon: LockKeyhole },
   ];
 
-  // Sidebar width
+  // ── Student nav (grouped) ─────────────────────────────────────────────────
+  const studentNavGroups: NavGroup[] = [
+    {
+      label: t.nav.groupOverview,
+      items: [
+        { label: t.nav.dashboard, href: "/dashboard", icon: LayoutDashboard, exactMatch: true },
+        { label: t.nav.recommendations, href: "/recommendations", icon: Sparkles },
+        { label: t.nav.notifications, href: "/notifications", icon: Bell },
+      ],
+    },
+    {
+      label: t.nav.groupAcademic,
+      items: [
+        { label: t.nav.academicTasks, href: "/tasks", icon: CheckSquare },
+        { label: t.nav.planner, href: "/planner", icon: Calendar },
+        { label: t.nav.practiceTasks, href: "/practice-tasks", icon: Code2 },
+        { label: t.nav.projects, href: "/projects", icon: FolderGit2 },
+      ],
+    },
+    {
+      label: t.nav.groupSkills,
+      items: [
+        { label: t.nav.skillsCareers, href: "/skills", icon: BookOpen },
+        { label: t.nav.learningPaths, href: "/learning-paths", icon: Map },
+        { label: t.nav.resources, href: "/resources", icon: FileSearch },
+      ],
+    },
+    {
+      label: t.nav.groupCareer,
+      items: [
+        { label: t.nav.career, href: "/career", icon: GraduationCap },
+      ],
+    },
+    {
+      label: t.nav.groupTools,
+      items: [
+        { label: t.nav.privateNotes, href: "/notes", icon: LockKeyhole },
+        { label: t.nav.bookmarks, href: "/bookmarks", icon: BookMarked },
+        { label: t.nav.cvBuilder, href: "/cv-builder", icon: FileText },
+        { label: t.nav.portfolio, href: "/portfolio", icon: LayoutTemplate },
+        { label: t.nav.settings, href: "/settings", icon: Settings },
+      ],
+    },
+    {
+      label: t.nav.groupHelp,
+      items: [
+        { label: t.nav.support, href: "/support", icon: HeartHandshake },
+      ],
+    },
+  ];
+
+  // ── Sidebar width ─────────────────────────────────────────────────────────
   const sidebarW = isCollapsed ? "w-[4.5rem]" : "w-64";
 
-  // Sidebar visibility classes for mobile (toggle open/close)
-  // In LTR sidebar is on the left (start), slides in from left
-  // In RTL sidebar is on the right (start), slides in from right
+  // Mobile slide direction: LTR → slide from left, RTL → slide from right
   const sidebarVisibility = sidebarOpen
     ? "translate-x-0"
     : dir === "rtl"
       ? "translate-x-full"
       : "-translate-x-full";
 
-  // Desktop: sidebar is always visible (translate-x-0)
-  // The "start-0" already puts it on the correct edge in both LTR & RTL
-
-  // Collapse chevron icon — flip logic: in LTR, collapsed=ChevronRight (expand), expanded=ChevronLeft (collapse)
-  //                                     in RTL,  collapsed=ChevronLeft (expand), expanded=ChevronRight (collapse)
+  // Collapse toggle icon
   const CollapseIcon = isCollapsed
     ? (dir === "rtl" ? ChevronLeft : ChevronRight)
     : (dir === "rtl" ? ChevronRight : ChevronLeft);
@@ -147,7 +276,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* ── TOP HEADER ────────────────────────────────────────────────────── */}
+      {/* ── TOP HEADER ─────────────────────────────────────────────────────── */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between bg-primary px-4 md:px-6 shadow-md">
         {/* Start Side: Hamburger & Logo */}
         <div className="flex items-center gap-3 min-w-0">
@@ -161,18 +290,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* Logo: desktop only (sidebar already shows logo) */}
-          <div className="hidden lg:flex items-center min-w-0">
+          {/* Logo */}
+          <div className="flex items-center min-w-0">
             <BrandLogo
-              textClass="text-primary-foreground text-xl md:text-2xl font-bold truncate"
+              textClass="text-primary-foreground text-xl md:text-2xl font-bold truncate hidden lg:inline-block"
               imageClass="h-10 w-10 md:h-12 md:w-12 shrink-0"
-            />
-          </div>
-          {/* Logo: mobile */}
-          <div className="flex lg:hidden items-center min-w-0">
-            <BrandLogo
-              textClass="text-primary-foreground text-lg font-bold truncate"
-              imageClass="h-10 w-10 shrink-0"
             />
           </div>
         </div>
@@ -205,7 +327,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           sidebarVisibility,
         ].join(" ")}
       >
-        {/* Desktop collapse toggle — anchored outside the sidebar on the trailing edge */}
+        {/* Desktop collapse toggle */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -229,40 +351,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 space-y-1.5 overflow-y-auto pt-6 pb-4 scrollbar-white px-2">
-          {navItems.map((item) => {
-            const isActive = item.href === "/" || item.href === "/admin"
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch={true}
-                onClick={() => setSidebarOpen(false)}
-                title={isCollapsed ? item.label : undefined}
-                className={[
-                  "group flex items-center py-3 text-sm font-bold rounded-2xl transition-all duration-200",
-                  isCollapsed ? "justify-center px-0" : "gap-3 px-4",
-                  isActive
-                    ? "bg-slate-50 dark:bg-slate-950 text-primary shadow-sm"
-                    : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground",
-                ].join(" ")}
-              >
-                <item.icon
-                  className={[
-                    "h-5 w-5 transition-transform duration-200 shrink-0",
-                    isActive ? "scale-110" : "group-hover:scale-110",
-                  ].join(" ")}
+        {/* Nav — scrollable */}
+        <nav
+          className="flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-4 px-2 scrollbar-thin scrollbar-thumb-primary-foreground/20"
+          aria-label="Student navigation"
+        >
+          {isAdmin ? (
+            // Admin: flat list
+            <div className="space-y-0.5 pt-2">
+              {adminNavItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  isCollapsed={isCollapsed}
+                  onClick={() => setSidebarOpen(false)}
                 />
-                {!isCollapsed && (
-                  <span className="truncate leading-snug">{item.label}</span>
-                )}
-              </Link>
-            );
-          })}
+              ))}
+            </div>
+          ) : (
+            // Student: grouped
+            <div className="space-y-0">
+              {studentNavGroups.map((group) => (
+                <NavGroupSection
+                  key={group.label}
+                  group={group}
+                  pathname={pathname}
+                  isCollapsed={isCollapsed}
+                  onNavClick={() => setSidebarOpen(false)}
+                />
+              ))}
+            </div>
+          )}
         </nav>
 
         {/* Sign-out footer */}
@@ -271,25 +391,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             variant="ghost"
             onClick={() => setShowSignOutConfirm(true)}
             className={[
-              "w-full rounded-2xl text-primary-foreground/80 hover:text-white hover:bg-destructive font-bold transition-all",
-              isCollapsed ? "justify-center px-0" : "justify-start gap-3 px-4",
+              "w-full rounded-xl text-primary-foreground/75 hover:text-white hover:bg-destructive font-semibold transition-all",
+              isCollapsed ? "justify-center px-0" : "justify-start gap-3 px-3",
             ].join(" ")}
             title={isCollapsed ? t.layout.signOut : undefined}
           >
-            <LogOut className="h-5 w-5 shrink-0 rtl:rotate-180" />
+            <LogOut className="h-[18px] w-[18px] shrink-0 rtl:rotate-180" />
             {!isCollapsed && <span className="truncate">{t.layout.signOut}</span>}
           </Button>
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ──────────────────────────────────────────────────── */}
-      {/*
-        Tailwind logical properties:
-          ps-* = padding-inline-start  → left in LTR, right in RTL
-        So `lg:ps-64` gives left padding on LTR and right padding on RTL.
-        When collapsed, `lg:ps-[4.5rem]`.
-        No need for extra rtl: overrides — logical properties handle it.
-      */}
       <main
         className={[
           "flex-1 flex flex-col pt-16 transition-all duration-300 relative z-10 min-h-screen",

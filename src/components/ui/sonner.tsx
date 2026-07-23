@@ -27,17 +27,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: false,
         classNames: {
           toast:
-            "group toast relative overflow-hidden pointer-events-auto flex w-full items-center gap-4 rounded-xl px-5 py-5 shadow-xl border-0 min-h-[70px]",
-          success: "!bg-emerald-600 !text-white [--toast-progress-color:rgba(255,255,255,0.4)]",
-          error: "!bg-red-500 !text-white [--toast-progress-color:rgba(255,255,255,0.4)]",
-          info: "!bg-sky-500 !text-white [--toast-progress-color:rgba(255,255,255,0.4)]",
-          warning: "!bg-amber-500 !text-white [--toast-progress-color:rgba(255,255,255,0.4)]",
-          title: "text-[15px] font-medium [unicode-bidi:plaintext] text-start",
-          description: "text-sm opacity-90 [unicode-bidi:plaintext] text-start",
-          icon: "text-white [&>svg]:w-6 [&>svg]:h-6 shrink-0 me-3",
-          actionButton: "bg-white text-primary rounded-md px-2 py-1 text-xs font-semibold",
-          cancelButton: "bg-white/20 text-white rounded-md px-2 py-1 text-xs",
-          closeButton: "!absolute !top-1/2 !-translate-y-1/2 [inset-inline-end:0.5rem_!important] [left:auto_!important] [right:auto_!important] !bg-transparent opacity-60 hover:opacity-100 transition-opacity !text-white !border-0 [&>svg]:w-4 [&>svg]:h-4 !w-8 !h-8 !flex !items-center !justify-center cursor-pointer",
+            "group toast relative overflow-hidden pointer-events-auto flex w-full items-center gap-4 rounded-xl p-6 shadow-xl border-0 min-h-[85px] [&>[data-icon]]:me-4 [&>[data-content]]:me-10",
+          success: "!bg-emerald-600 !text-white [--toast-progress-color:rgba(255,255,255,0.5)]",
+          error: "!bg-red-500 !text-white [--toast-progress-color:rgba(255,255,255,0.5)]",
+          info: "!bg-sky-500 !text-white [--toast-progress-color:rgba(255,255,255,0.5)]",
+          warning: "!bg-amber-500 !text-white [--toast-progress-color:rgba(255,255,255,0.5)]",
+          title: "text-base font-semibold [unicode-bidi:plaintext] text-start",
+          description: "text-sm opacity-90 mt-1 [unicode-bidi:plaintext] text-start leading-relaxed",
+          icon: "text-white [&>svg]:w-6 [&>svg]:h-6 shrink-0",
+          actionButton: "bg-white text-primary rounded-md px-3 py-1.5 text-xs font-semibold hover:bg-white/90 transition-colors",
+          cancelButton: "bg-white/20 text-white rounded-md px-3 py-1.5 text-xs hover:bg-white/30 transition-colors",
+          closeButton: "rtl:!left-3 rtl:!right-auto ltr:!right-3 ltr:!left-auto !absolute !top-1/2 !-translate-y-1/2 !bg-transparent opacity-60 hover:opacity-100 transition-opacity !text-white !border-0 [&>svg]:w-4 [&>svg]:h-4 !w-8 !h-8 !flex !items-center !justify-center cursor-pointer hover:bg-white/10 rounded-md",
         },
       }}
       {...props}

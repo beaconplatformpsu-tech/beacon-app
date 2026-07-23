@@ -5,17 +5,20 @@ import { useState } from "react";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { AppProgressBar } from "next-nprogress-bar";
 import { AuthProvider } from "@/lib/auth/AuthContext";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </LanguageProvider>
+      </AuthProvider>
       <AppProgressBar
         height="3px"
         color="#38bdf8"

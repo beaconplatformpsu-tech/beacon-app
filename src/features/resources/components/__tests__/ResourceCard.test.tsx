@@ -99,11 +99,11 @@ describe('ResourceCard', () => {
 
     render(<ResourceCard resource={mockResource} />);
     
-    const saveBtn = screen.getByRole('button', { name: /save to plan/i });
+    const saveBtn = screen.getByRole('button', { name: /save/i });
     fireEvent.click(saveBtn);
     
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith(t.contact.error, t.resources.saveFailed);
+      expect(mockToastError).toHaveBeenCalledWith(t.contact.error, "Failed to toggle bookmark.");
       expect(saveBtn).toHaveTextContent(t.resources.saveToPlan);
     });
   });

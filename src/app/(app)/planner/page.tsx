@@ -4,15 +4,15 @@ import { useLanguage, useT } from "@/i18n/LanguageProvider";
 import { StudentPageContainer, StudentPageHeader, EmptyState } from "@/components/shared/student";
 import { Wrench } from "lucide-react";
 
-export default function ProjectsPage() {
+export default function PlannerPage() {
   const { dir } = useLanguage();
   const t = useT();
 
   return (
     <StudentPageContainer>
       <StudentPageHeader
-        title={t.nav?.projects || "Projects"}
-        description={dir === "rtl" ? "المشاريع." : "Projects."}
+        title={t.nav?.planner || "Weekly Planner"}
+        description={dir === "rtl" ? "خطط لمهامك الأسبوعية هنا." : "Plan your weekly tasks here."}
         icon={<Wrench className="w-5 h-5" />}
       />
       <div className="mt-8">

@@ -175,7 +175,10 @@ export function SiteHeader() {
               {!loading && (
                 session ? (
                   <div className="flex items-center gap-2">
-                    <NotificationsDropdown />
+                    <NotificationsDropdown 
+                      buttonClassName="flex items-center justify-center rounded-full border max-md:border-primary-foreground/30 md:border-border/50 max-md:bg-primary-foreground/10 md:bg-background h-9 w-9 max-md:hover:bg-primary-foreground/20 md:hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer relative"
+                      iconClassName="h-4 w-4 max-md:text-primary-foreground/70 md:text-muted-foreground"
+                    />
                     <UserDropdown 
                       buttonClassName="flex items-center gap-2 rounded-full border max-md:border-primary-foreground/30 md:border-border/50 max-md:bg-primary-foreground/10 md:bg-background pl-2 pr-3 py-1 max-md:hover:bg-primary-foreground/20 md:hover:bg-accent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                       textClassName="text-sm font-medium max-md:text-primary-foreground md:text-foreground max-w-[100px] truncate"

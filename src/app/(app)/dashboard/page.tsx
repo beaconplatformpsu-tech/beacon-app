@@ -3,46 +3,42 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { 
-  CheckSquare, BookOpen, Clock, TrendingUp, Sparkles, ChevronRight, 
-  Target, LayoutDashboard, Plus, Search, AlertTriangle, GraduationCap, Award, Crown, Zap, Flame
+  CheckSquare, BookOpen, Clock, Target, Plus, Search, 
+  GraduationCap, Zap, Activity, FileText, ChevronRight, 
+  AlertCircle, Briefcase, Award, ArrowRight, User
 } from "lucide-react";
 import { useCurrentUserRole } from "@/hooks/use-current-user-role";
-import { useT } from "@/i18n/LanguageProvider";
-import dynamic from "next/dynamic";
-import { format, isPast, isToday } from "date-fns";
+import { useT, useLanguage } from "@/i18n/LanguageProvider";
+import { format, isPast, isToday, addHours, isWithinInterval } from "date-fns";
 
-// New DB Services
-import { useStudentPrivateData, useStudentSkills, useStudentProfile } from "@/lib/db/services/studentDataService";
-import { usePublicCareerPaths } from "@/lib/db/services/publicContentService";
+import { useStudentPrivateData, useStudentProfile, useStudentSkills } from "@/lib/db/services/studentDataService";
+import { usePublicCareerPaths, usePublicSkills } from "@/lib/db/services/publicContentService";
 
-// UI Components
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const ProficiencyChart = dynamic(() => import("@/components/charts/ProficiencyChart"), { 
-  ssr: false, 
-  loading: () => <Skeleton className="h-full w-full rounded-xl" /> 
-});
+import { StudentPageContainer, StudentPageHeader, EmptyState, SectionCard, StatCard } from "@/components/shared/student";
 
 export default function DashboardPage() {
-  const { session } = useCurrentUserRole();
+  const { session, loading: sessionLoading } = useCurrentUserRole();
+  const { dir } = useLanguage();
   const t = useT();
   const tDash = t.dashboard as any;
 
   // Data fetching
   const { profile, loading: loadingProfile } = useStudentProfile(session?.uid);
   const { skills, loading: loadingSkills } = useStudentSkills(session?.uid);
-  const { tasks, notes, recommendations, careerReadiness, loading: loadingPrivateData } = useStudentPrivateData(session?.uid);
-  const { careerPaths, loading: loadingCareerPaths } = usePublicCareerPaths();
+  const { 
+    tasks, careerReadiness, learningProgress, projectSubmissions, 
+    activityLog, weeklyPlans, quizAttempts, loading: loadingPrivateData 
+  } = useStudentPrivateData(session?.uid);
 
-  const loading = loadingProfile || loadingSkills || loadingPrivateData || loadingCareerPaths;
+  const { careerPaths, loading: loadingCareerPaths } = usePublicCareerPaths();
+  const { skillsMap, loading: loadingPublicSkills } = usePublicSkills();
+
+  const loading = loadingProfile || loadingSkills || loadingPrivateData || loadingCareerPaths || loadingPublicSkills || sessionLoading;
 
   // Derived Data
-  const currentLevelKey = profile?.currentLevel || "foundation";
-  const levelInfo = tDash?.levels?.[currentLevelKey];
-
   const preferredCareerPath = useMemo(() => {
     if (!profile?.preferredCareerPathId) return null;
     return careerPaths.find(p => p.id === profile.preferredCareerPathId) || null;
@@ -58,283 +54,368 @@ export default function DashboardPage() {
     pendingTasks
       .filter(t => t.dueDate && !isPast(new Date(t.dueDate)))
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-      .slice(0, 4),
+      .slice(0, 3),
   [pendingTasks]);
 
-  const proficiencyData = useMemo(() => [
-    { name: tDash?.beginner || "Beginner", value: skills.filter(s => s.proficiency === "Beginner").length, color: "#94a3b8" },
-    { name: tDash?.intermediate || "Intermediate", value: skills.filter(s => s.proficiency === "Intermediate").length, color: "#3b82f6" },
-    { name: tDash?.advanced || "Advanced", value: skills.filter(s => s.proficiency === "Advanced").length, color: "#8b5cf6" },
-    { name: tDash?.expert || "Expert", value: skills.filter(s => s.proficiency === "Expert").length, color: "#ec4899" },
-  ], [skills, tDash]);
+  const completedTasksThisWeek = useMemo(() => {
+    const oneWeekAgo = addHours(new Date(), -24 * 7);
+    return tasks.filter(t => t.status === "Completed" && t.updatedAt && new Date(t.updatedAt) > oneWeekAgo).length;
+  }, [tasks]);
 
-  const latestRec = useMemo(() => recommendations[0], [recommendations]);
+  // Determine Next Best Action
+  const nextBestAction = useMemo(() => {
+    const overdueTask = overdueTasks[0];
+    if (overdueTask) {
+      return { 
+        title: dir === 'rtl' ? "مهمة متأخرة" : "Overdue Task", 
+        desc: overdueTask.title, 
+        link: "/tasks", 
+        reason: dir === 'rtl' ? "هذه المهمة تجاوزت الموعد النهائي." : "This task is past its deadline.",
+        icon: AlertCircle,
+        color: "text-destructive",
+        bg: "bg-destructive/10"
+      };
+    }
 
-  const completedTasksCount = tasks.length - pendingTasks.length;
-  
-  // Gamification Logic
-  const totalXP = useMemo(() => (skills.length * 100) + (completedTasksCount * 50), [skills.length, completedTasksCount]);
-  const level = useMemo(() => Math.floor(totalXP / 500) + 1, [totalXP]);
-  const xpProgress = totalXP % 500;
-  const progressPercent = (xpProgress / 500) * 100;
+    const dueSoon = pendingTasks.find(t => t.dueDate && isWithinInterval(new Date(t.dueDate), { start: new Date(), end: addHours(new Date(), 48) }));
+    if (dueSoon) {
+      return { 
+        title: dir === 'rtl' ? "موعد تسليم قريب" : "Upcoming Deadline", 
+        desc: dueSoon.title, 
+        link: "/tasks", 
+        reason: dir === 'rtl' ? "تستحق خلال 48 ساعة." : "Due within 48 hours.",
+        icon: Clock,
+        color: "text-amber-500",
+        bg: "bg-amber-500/10"
+      };
+    }
 
-  const stats = useMemo(() => [
-    { label: tDash?.pendingTasks || "Active Quests", value: loading ? "-" : pendingTasks.length, icon: Flame, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-    { label: tDash?.acquiredSkills || "Skills Mastered", value: loading ? "-" : skills.length, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-    { label: tDash?.savedNotes || "Knowledge Found", value: loading ? "-" : notes.length, icon: BookOpen, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "border-indigo-500/20" },
-  ], [loading, pendingTasks.length, skills.length, notes.length, tDash]);
+    // Check profile completion
+    if (!profile?.bio || !profile?.primaryGoal || !profile?.preferredCareerPathId) {
+      return { 
+        title: dir === 'rtl' ? "إكمال الملف الشخصي" : "Complete Profile", 
+        desc: dir === 'rtl' ? "أضف أهدافك ومسارك" : "Add goals & career path", 
+        link: "/profile", 
+        reason: dir === 'rtl' ? "ملف شخصي كامل يساعدنا في تخصيص تجربتك." : "A complete profile helps us personalize your experience.",
+        icon: User,
+        color: "text-blue-500",
+        bg: "bg-blue-500/10"
+      };
+    }
+
+    // Target skill no recent activity (Simplified heuristic)
+    const targetSkillIds = profile?.targetSkillIds || [];
+    if (targetSkillIds.length > 0) {
+      const targetSkillId = targetSkillIds[0];
+      const skillName = skillsMap[targetSkillId]?.title || "a skill";
+      return {
+        title: dir === 'rtl' ? "تطوير مهارة" : "Develop Skill",
+        desc: `${dir === 'rtl' ? "تعلم" : "Learn"} ${skillName}`,
+        link: "/skills",
+        reason: dir === 'rtl' ? "لم تقم بنشاط في هذه المهارة مؤخراً." : "No recent activity for this target skill.",
+        icon: Zap,
+        color: "text-purple-500",
+        bg: "bg-purple-500/10"
+      }
+    }
+
+    // Fallback
+    return { 
+      title: dir === 'rtl' ? "اكتشف المهارات" : "Explore Skills", 
+      desc: dir === 'rtl' ? "تعلم قدرات جديدة" : "Discover new abilities", 
+      link: "/skills", 
+      reason: dir === 'rtl' ? "لقد أنجزت كل شيء! حان وقت النمو." : "You're all caught up! Time to grow.",
+      icon: Search,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10"
+    };
+  }, [overdueTasks, pendingTasks, profile, skillsMap, dir]);
+
+  // Support Message
+  const supportMessage = useMemo(() => {
+    if (overdueTasks.length > 0) {
+      return dir === 'rtl' ? "قم بتصحيح المهام خطوة بخطوة. لا تستسلم." : "Debug the task one small step at a time.";
+    }
+    if (completedTasksThisWeek > 3) {
+      return dir === 'rtl' ? "التزام رائع! كل خطوة تقربك للهدف." : "One clean commit is still progress. Great job this week!";
+    }
+    return dir === 'rtl' ? "الاستراحة القصيرة تساعد على العودة بتركيز أعلى." : "Take a short compile break, then return to the smallest next action.";
+  }, [overdueTasks.length, completedTasksThisWeek, dir]);
+
+  // CV Readiness
+  const cvReadiness = useMemo(() => {
+    let score = 0;
+    if (profile?.bio) score += 20;
+    if (profile?.academicStage) score += 20;
+    if (profile?.links?.github || profile?.links?.linkedin) score += 20;
+    if (skills.length > 0) score += 20;
+    if (Object.keys(projectSubmissions).length > 0) score += 20;
+    return score;
+  }, [profile, skills, projectSubmissions]);
+
+  if (loading) {
+    return (
+      <StudentPageContainer>
+        <div className="space-y-6">
+          <Skeleton className="h-32 w-full rounded-2xl" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Skeleton className="h-64 rounded-2xl md:col-span-2" />
+            <Skeleton className="h-64 rounded-2xl" />
+          </div>
+        </div>
+      </StudentPageContainer>
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-12">
-      {/* HERO LEVEL BANNER */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary to-indigo-600 p-8 text-white shadow-2xl shadow-primary/20 mb-8 border border-white/20">
-        <div className="absolute top-0 end-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 rtl:-translate-x-1/4"></div>
-        <div className="absolute bottom-0 start-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/4 -translate-x-1/4 rtl:translate-x-1/4"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 shadow-inner">
-              <Crown className="h-12 w-12 text-yellow-300 drop-shadow-md" />
-              <div className="absolute -bottom-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400 text-xs font-bold text-yellow-950 border-2 border-white shadow-lg">
-                Lvl {level}
+    <StudentPageContainer>
+      {/* 4. PERSONALIZED WELCOME */}
+      <div className="mb-8 p-8 rounded-3xl bg-gradient-to-br from-primary/10 to-indigo-500/10 border border-primary/20 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h1 className="text-3xl font-bold font-display text-foreground mb-2">
+            {dir === 'rtl' ? "مرحباً، " : "Welcome, "}{profile?.displayName || "Explorer"}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
+            {profile?.academicStage && (
+              <span className="flex items-center gap-1 bg-background px-3 py-1 rounded-full border">
+                <GraduationCap className="w-4 h-4" /> {profile.academicStage}
+              </span>
+            )}
+            {profile?.primaryGoal && (
+              <span className="flex items-center gap-1 bg-background px-3 py-1 rounded-full border">
+                <Target className="w-4 h-4" /> {profile.primaryGoal}
+              </span>
+            )}
+          </div>
+        </div>
+        {/* 12. ACADEMIC AND WELLBEING COMPANION */}
+        <div className="bg-background/80 backdrop-blur border rounded-2xl p-4 max-w-sm w-full md:w-auto shadow-sm">
+          <p className="text-sm font-medium italic text-foreground flex gap-2">
+            <span className="text-primary text-lg leading-none">&quot;</span>
+            {supportMessage}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        {/* LEFT COLUMN */}
+        <div className="xl:col-span-2 space-y-6">
+          
+          {/* 5. NEXT BEST ACTION */}
+          <SectionCard 
+            title={dir === 'rtl' ? "الخطوة التالية الموصى بها" : "Next Best Action"} 
+            className="border-primary/30 shadow-md bg-gradient-to-r from-primary/5 to-transparent"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-xl ${nextBestAction.bg} ${nextBestAction.color}`}>
+                  <nextBestAction.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">{nextBestAction.title}</h3>
+                  <p className="text-foreground font-medium">{nextBestAction.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{nextBestAction.reason}</p>
+                </div>
               </div>
+              <Button asChild className="shrink-0 rounded-xl">
+                <Link href={nextBestAction.link}>
+                  {dir === 'rtl' ? "تنفيذ الإجراء" : "Take Action"} 
+                  <ArrowRight className="w-4 h-4 ms-2 rtl:rotate-180" />
+                </Link>
+              </Button>
             </div>
-            <div>
-              <h1 className="text-3xl font-display font-bold tracking-tight">
-                {loading ? <Skeleton className="h-8 w-48 bg-white/20" /> : (tDash?.welcome?.replace("{name}", profile?.displayName || session?.displayName || "Explorer") || `Welcome back, Explorer!`)}
-              </h1>
-              <p className="mt-2 text-white/80 max-w-lg">
-                {levelInfo?.desc || tDash?.commandCenter || "Ready for your next quest? Keep learning and climbing the ranks!"}
-              </p>
-            </div>
+          </SectionCard>
+
+          {/* 6. ACADEMIC OVERVIEW */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SectionCard title={dir === 'rtl' ? "المهام الأكاديمية" : "Academic Overview"} className="border-primary/20">
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 bg-muted/50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-black text-amber-500">{overdueTasks.length}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">{dir === 'rtl' ? "متأخرة" : "Overdue"}</p>
+                </div>
+                <div className="flex-1 bg-muted/50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-black text-primary">{upcomingTasks.length}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">{dir === 'rtl' ? "قريباً" : "Soon"}</p>
+                </div>
+                <div className="flex-1 bg-muted/50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-black text-emerald-500">{completedTasksThisWeek}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">{dir === 'rtl' ? "مكتملة هذا الأسبوع" : "Done This Wk"}</p>
+                </div>
+              </div>
+
+              {pendingTasks.length === 0 ? (
+                <EmptyState 
+                  icon={<CheckSquare className="w-8 h-8 text-muted-foreground" />}
+                  title={dir === 'rtl' ? "لا يوجد مهام" : "No active tasks"}
+                  description={dir === 'rtl' ? "قائمتك فارغة تماماً." : "Your task list is clear."}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {upcomingTasks.map(task => (
+                    <div key={task.id} className="flex justify-between items-center p-3 rounded-xl border bg-card hover:bg-muted/50 transition-colors">
+                      <div>
+                        <p className="font-medium text-sm line-clamp-1">{task.title}</p>
+                        <p className="text-xs text-muted-foreground">Due: {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "None"}</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">{task.priority}</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+
+            {/* 7. SKILLS & LEARNING */}
+            <SectionCard title={dir === 'rtl' ? "المهارات والتعلم" : "Skills & Learning"} className="border-primary/20">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">{dir === 'rtl' ? "المهارات المستهدفة:" : "Target Skills:"}</span>
+                  <span className="font-bold">{profile?.targetSkillIds?.length || 0}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">{dir === 'rtl' ? "مهارات قيد التعلم:" : "In Progress:"}</span>
+                  <span className="font-bold">{skills.filter(s => s.progress && s.progress > 0 && s.progress < 100).length}</span>
+                </div>
+                
+                {Object.keys(learningProgress).length > 0 ? (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-xs font-bold uppercase text-muted-foreground mb-2">
+                      {dir === 'rtl' ? "نشاط التعلم الأخير" : "Recent Learning"}
+                    </p>
+                    <p className="text-sm font-medium">Path active</p>
+                  </div>
+                ) : (
+                  <EmptyState 
+                    icon={<BookOpen className="w-8 h-8 text-muted-foreground" />}
+                    title={dir === 'rtl' ? "لا يوجد مسار تعلم" : "No active learning"}
+                    description={dir === 'rtl' ? "ابدأ بمسار لتعلم مهارة جديدة." : "Start a path to build your skills."}
+                  />
+                )}
+              </div>
+            </SectionCard>
           </div>
           
-          <div className="flex-1 w-full md:max-w-xs bg-black/20 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
-            <div className="flex justify-between text-sm font-medium mb-2">
-              <span className="text-white/90">Level Progress</span>
-              <span className="text-yellow-300 font-bold">{xpProgress} / 500 XP</span>
-            </div>
-            <div className="h-3 w-full bg-black/30 rounded-full overflow-hidden border border-white/5">
-              <div 
-                className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 transition-all duration-1000 ease-out relative"
-                style={{ width: `${progressPercent}%` }}
-              >
-                <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/30 blur-sm"></div>
+          {/* 13. RECENT ACTIVITY */}
+          <SectionCard title={dir === 'rtl' ? "النشاط الأخير" : "Recent Activity"}>
+            {activityLog.length === 0 ? (
+              <EmptyState 
+                icon={<Activity className="w-8 h-8 text-muted-foreground" />}
+                title={dir === 'rtl' ? "لا يوجد نشاط" : "No recent activity"}
+                description={dir === 'rtl' ? "سجل نشاطاتك سيظهر هنا." : "Your actions will appear here."}
+              />
+            ) : (
+              <div className="space-y-3">
+                {activityLog.slice(0, 3).map(log => (
+                  <div key={log.id} className="flex items-center gap-3 text-sm border-b pb-3 last:border-0 last:pb-0">
+                    <div className="w-2 h-2 rounded-full bg-sky-500" />
+                    <span className="text-muted-foreground min-w-[80px]">{log.createdAt ? format(new Date(log.createdAt), "MMM d, HH:mm") : ""}</span>
+                    <span className="font-medium">{log.actionType}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-            <p className="text-xs text-white/60 mt-2 text-end">
-              {500 - xpProgress} XP to Level {level + 1}
-            </p>
-          </div>
+            )}
+          </SectionCard>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mb-8">
-        <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border hover:bg-primary/10 hover:border-primary/30 transition-all hover:scale-105">
-          <Link href="/tasks"><Plus className="w-4 h-4" /> {tDash?.addTask || "New Quest"}</Link>
-        </Button>
-        <Button asChild variant="outline" size="sm" className="gap-2 rounded-xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-border hover:bg-primary/10 hover:border-primary/30 transition-all hover:scale-105">
-          <Link href="/notes"><Plus className="w-4 h-4" /> {tDash?.addNote || "Save Knowledge"}</Link>
-        </Button>
-        <Button asChild size="sm" className="gap-2 rounded-xl shadow-glow hover:scale-105 transition-all">
-          <Link href="/resources"><Search className="w-4 h-4" /> {tDash?.exploreResources || "Discover Resources"}</Link>
-        </Button>
-      </div>
+        {/* RIGHT COLUMN */}
+        <div className="space-y-6">
+          
+          {/* 8. CAREER PREPARATION */}
+          <SectionCard title={dir === 'rtl' ? "الإعداد المهني" : "Career Preparation"}>
+            {!preferredCareerPath ? (
+              <EmptyState 
+                icon={<Target className="w-8 h-8 text-muted-foreground" />}
+                title={dir === 'rtl' ? "لم يتم تحديد مسار" : "No Path Selected"}
+                description={dir === 'rtl' ? "اختر مسارك المهني لتخصيص خطتك." : "Choose a career path to tailor your plan."}
+                action={<Button asChild className="rounded-xl mt-4"><Link href="/career">{dir === 'rtl' ? "تصفح المسارات" : "Explore Paths"}</Link></Button>}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl">
+                  <p className="text-xs font-bold text-emerald-600 uppercase mb-1">{dir === 'rtl' ? "المسار المختار" : "Chosen Path"}</p>
+                  <p className="font-bold text-lg">{preferredCareerPath.title}</p>
+                </div>
+                
+                {careerReadiness[preferredCareerPath.id] ? (
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{dir === 'rtl' ? "الجاهزية" : "Readiness"}</span>
+                      <span className="font-bold">{careerReadiness[preferredCareerPath.id].score}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${careerReadiness[preferredCareerPath.id].score}%` }} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center py-2 bg-muted/30 rounded-lg">
+                    {dir === 'rtl' ? "لم يتم حساب الجاهزية بعد. أكمل تقييمات المهارات أولاً." : "Readiness not calculated yet. Complete skill assessments to begin."}
+                  </div>
+                )}
+                
+                <Button asChild variant="outline" className="w-full mt-2">
+                  <Link href={`/career/${preferredCareerPath.id}`}>
+                    {dir === 'rtl' ? "عرض المسار المهني" : "View Career Path"}
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </SectionCard>
 
-      {/* STAGE FOCUS CARD */}
-      {!loading && levelInfo && (
-        <div className="relative overflow-hidden rounded-3xl border border-primary/30 shadow-xl shadow-primary/5 bg-gradient-to-r from-primary/10 via-background to-background p-6 mb-8 hover:border-primary/50 transition-colors">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1">
-                <GraduationCap className="w-3 h-3" /> {levelInfo.title}
-              </p>
-              <h3 className="text-xl font-bold text-foreground max-w-lg">{levelInfo.desc}</h3>
-            </div>
-            <Button asChild size="sm" className="hidden sm:flex rounded-xl shadow-glow mt-4 sm:mt-0">
-                <Link href={levelInfo.link}>{levelInfo.action} <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* NO CAREER PATH EMPTY STATE */}
-      {!loading && !preferredCareerPath && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 p-8 text-center mb-8 shadow-xl shadow-indigo-500/5 group hover:border-indigo-500/40 transition-colors">
-          <div className="h-20 w-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-indigo-500/30 transition-all duration-500">
-            <Target className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">{tDash?.setCareerGoal || "Choose Your Class & Destiny"}</h2>
-          <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-            {tDash?.setCareerGoalDesc || "Select a target career path to unlock personalized skill trees, customized quests, and tailored learning resources."}
-          </p>
-          <Button asChild className="rounded-xl shadow-glow shadow-indigo-500/30"><Link href="/career">{tDash?.exploreCareerPaths || "Explore Career Paths"}</Link></Button>
-        </div>
-      )}
-
-      {/* SELECTED CAREER PATH SUMMARY */}
-      {!loading && preferredCareerPath && (
-        <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 shadow-xl shadow-emerald-500/5 bg-gradient-to-r from-emerald-500/10 via-background to-background p-6 mb-8 hover:border-emerald-500/50 transition-colors">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Target className="w-3 h-3" /> Chosen Destiny
-              </p>
-              <h3 className="text-2xl font-bold text-foreground">{preferredCareerPath.title}</h3>
-              <p className="text-muted-foreground">{preferredCareerPath.industryDomain}</p>
-            </div>
-            <Button variant="outline" asChild size="sm" className="hidden sm:flex rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10">
-                <Link href={`/career/${preferredCareerPath.id}`}>View Map <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ACADEMIC HUD */}
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
-        {stats.map((stat, idx) => (
-          <div key={idx} className={`relative overflow-hidden rounded-3xl border bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6 shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${stat.border}`}>
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-transparent to-black/5 dark:to-white/5 rounded-full blur-xl pointer-events-none" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${stat.bg} ${stat.color} shadow-inner`}>
-                <stat.icon className="h-7 w-7" />
+          {/* 9. PROJECT & ASSESSMENT STATUS */}
+          <SectionCard title={dir === 'rtl' ? "المشاريع والتقييمات" : "Projects & Assessments"}>
+            <div className="space-y-4">
+              <div className="border-b pb-3">
+                <p className="text-xs font-bold uppercase text-muted-foreground mb-1">{dir === 'rtl' ? "آخر مشروع" : "Latest Project"}</p>
+                {Object.values(projectSubmissions).length > 0 ? (
+                  <p className="font-medium text-sm">Project submitted and under review.</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{dir === 'rtl' ? "لا يوجد مشاريع" : "No projects started."}</p>
+                )}
               </div>
               <div>
-                <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-                {loading ? (
-                  <Skeleton className="h-8 w-12 mt-1" />
+                <p className="text-xs font-bold uppercase text-muted-foreground mb-1">{dir === 'rtl' ? "آخر تقييم" : "Latest Quiz"}</p>
+                {Object.values(quizAttempts).length > 0 ? (
+                  <p className="font-medium text-sm">Recent assessment completed.</p>
                 ) : (
-                  <p className="text-3xl font-black">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground">{dir === 'rtl' ? "لم يتم إنجاز تقييمات" : "No quizzes attempted."}</p>
                 )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          </SectionCard>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* ACTION CENTER */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-3xl border border-border bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl overflow-hidden h-full">
-            <div className="border-b border-border/50 px-6 py-4 flex flex-row items-center justify-between bg-black/5 dark:bg-white/5">
-              <h2 className="flex items-center gap-2 text-lg font-bold">
-                <Flame className="w-5 h-5 text-amber-500" /> Active Quests
-              </h2>
-              <Button variant="ghost" size="sm" asChild aria-label="View all urgent tasks" className="rounded-xl">
-                <Link href="/tasks">View All <ChevronRight className="w-4 h-4 ms-1 rtl:rotate-180" /></Link>
-              </Button>
+          {/* 10. CV READINESS */}
+          <SectionCard title={dir === 'rtl' ? "جاهزية السيرة الذاتية" : "Profile Readiness for CV"}>
+            <div className="space-y-3 mb-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span>{dir === 'rtl' ? "اكتمال الملف" : "Profile Completion"}</span>
+                <span className="font-bold">{cvReadiness}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 mb-4">
+                <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${cvReadiness}%` }} />
+              </div>
             </div>
-            <div className="p-0">
-              {loading ? (
-                <div className="p-6 space-y-4">
-                  <Skeleton className="h-16 w-full rounded-2xl" />
-                  <Skeleton className="h-16 w-full rounded-2xl" />
-                </div>
-              ) : pendingTasks.length === 0 ? (
-                <div className="p-12 text-center text-muted-foreground flex flex-col items-center">
-                  <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                    <CheckSquare className="w-8 h-8 opacity-50" />
-                  </div>
-                  <p className="font-medium text-foreground">You&apos;re all caught up!</p>
-                  <p className="text-sm">Enjoy your downtime, or pick up a new skill.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border/50">
-                  {overdueTasks.map(task => (
-                    <div key={task.id} className="p-4 px-6 flex items-center justify-between bg-destructive/10 hover:bg-destructive/20 transition-colors cursor-pointer group">
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1 h-3 w-3 rounded-full bg-destructive animate-pulse" />
-                        <div>
-                          <h4 className="font-bold text-destructive group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{task.title}</h4>
-                          <p className="text-xs text-destructive/70 font-medium">{task.courseName} • Critical: Due {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "Unknown"}</p>
-                        </div>
-                      </div>
-                      <Badge variant="destructive" className="rounded-full animate-bounce shadow-glow shadow-destructive/50">Urgent</Badge>
-                    </div>
-                  ))}
-                  {upcomingTasks.map(task => (
-                    <div key={task.id} className="p-4 px-6 flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group">
-                      <div className="flex items-start gap-4">
-                        <div className={`mt-1 h-3 w-3 rounded-full ${task.priority === "High" ? "bg-amber-500" : task.priority === "Medium" ? "bg-sky-500" : "bg-emerald-500"}`} />
-                        <div>
-                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{task.title}</h4>
-                          <p className="text-xs text-muted-foreground font-medium">{task.courseName} • Time Left: Due {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "Unknown"}</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="rounded-full bg-background">
-                        {task.priority}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* SIDEBAR: NEXT STEPS & SKILLS */}
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-xl overflow-hidden">
-            <div className="border-b border-border/50 px-6 py-4 bg-emerald-500/5">
-              <h2 className="flex items-center gap-2 text-lg font-bold">
-                <Target className="w-5 h-5 text-emerald-500" /> Skill Mastery
-              </h2>
-            </div>
-            <div className="p-6">
-              {loading ? (
-                <Skeleton className="h-[200px] w-full rounded-2xl" />
-              ) : skills.length === 0 ? (
-                <div className="h-[200px] flex flex-col items-center justify-center text-muted-foreground text-sm text-center">
-                  <Zap className="w-8 h-8 mb-2 opacity-50" />
-                  <p>Equip skills to unlock<br/>your mastery chart.</p>
-                </div>
-              ) : (
-                <div className="h-[250px]">
-                  <ProficiencyChart data={proficiencyData} />
-                </div>
-              )}
-            </div>
+            <Button asChild variant="outline" className="w-full text-xs">
+              <Link href="/profile">
+                {dir === 'rtl' ? "تحديث الملف الشخصي" : "Update Profile"}
+              </Link>
+            </Button>
+          </SectionCard>
+
+          {/* 11. QUICK ACTIONS */}
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm" className="rounded-xl flex-1 min-w-[120px]">
+              <Link href="/tasks"><Plus className="w-4 h-4 me-1" /> {tDash?.addTask || "Add Task"}</Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm" className="rounded-xl flex-1 min-w-[120px]">
+              <Link href="/skills"><Search className="w-4 h-4 me-1" /> {tDash?.exploreSkills || "Browse Skills"}</Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm" className="rounded-xl flex-1 min-w-[120px]">
+              <Link href="/resources"><BookOpen className="w-4 h-4 me-1" /> {dir === 'rtl' ? "تصفح المصادر" : "Browse Resources"}</Link>
+            </Button>
           </div>
 
-          <div className="relative rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-background to-amber-500/5 shadow-xl shadow-amber-500/5 overflow-hidden">
-            <div className="absolute -end-10 -top-10 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
-            <div className="border-b border-amber-500/20 px-6 py-4 relative z-10">
-              <h2 className="flex items-center gap-2 text-lg font-bold">
-                <Sparkles className="w-5 h-5 text-amber-500" /> Intelligent Next Step
-              </h2>
-            </div>
-            <div className="p-6 relative z-10">
-              {loading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-full rounded" />
-                  <Skeleton className="h-4 w-5/6 rounded" />
-                </div>
-              ) : latestRec ? (
-                <div className="space-y-4">
-                  <p className="text-sm font-medium leading-relaxed">{latestRec.explanation}</p>
-                  
-                  {latestRec.missingSkills && latestRec.missingSkills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {latestRec.missingSkills.map((skill: string) => (
-                        <Badge key={skill} variant="outline" className="text-[10px] rounded-full border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <Button asChild size="sm" className="w-full mt-4 rounded-xl shadow-glow shadow-amber-500/30 hover:scale-105 transition-transform bg-amber-500 hover:bg-amber-600 text-white">
-                    <Link href="/recommendations">Accept Mission</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-sm text-muted-foreground text-center py-6">
-                  Keep grinding! I&apos;ll reveal new missions and resources when you&apos;re ready.
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
-    </div>
+    </StudentPageContainer>
   );
 }

@@ -28,7 +28,7 @@ const PREDEFINED_SKILLS = [
   "Machine Learning", "Cybersecurity Basics", "UI Design", "Java", "C++"
 ];
 
-const CURRENT_LEVELS: CSStudyLevel[] = ["foundation", "year_1", "year_2", "year_3", "year_4", "capstone", "job_prep"];
+const CURRENT_LEVELS: CSStudyLevel[] = ["foundation", "year_1", "year_2", "year_3", "year_4", "graduate"];
 
 const MAIN_GOALS = [
   "Improve academic performance",
@@ -225,11 +225,12 @@ export default function CompleteProfilePage() {
     try {
       await saveStudentProfile(currentUser.uid, {
         bio: bio.trim(),
-        specialization: specialization.trim(),
-        technicalInterests: interests,
-        targetSkills: skills,
-        currentLevel: (currentLevel as CSStudyLevel) || undefined,
-        learningGoals: [mainGoal],
+        studyProgram: specialization.trim(),
+        technicalInterestIds: interests,
+        targetSkillIds: skills,
+        academicStage: (currentLevel as CSStudyLevel) || undefined,
+        primaryGoal: mainGoal,
+        secondaryGoals: [],
         education: {
           primary: {
             title: backgroundItem.trim()

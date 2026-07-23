@@ -1,6 +1,7 @@
 import { ref, get, set, update } from "firebase/database";
 import { db } from "@/lib/firebase/config";
-import type { StudentProfile, CSStudyLevel } from "@/types/collections/users";
+import type { CSStudyLevel } from "@/types/collections/users";
+import type { StudentProfile } from "@/types/collections/userPrivate";
 
 export function mapLegacyLevel(level: string | undefined): CSStudyLevel | undefined {
   if (!level) return undefined;
@@ -9,8 +10,8 @@ export function mapLegacyLevel(level: string | undefined): CSStudyLevel | undefi
   if (l === "sophomore" || l === "second_year") return "year_2";
   if (l === "junior" || l === "third_year") return "year_3";
   if (l === "senior" || l === "fourth_year") return "year_4";
-  if (l === "graduate_or_job_prep" || l === "graduate") return "job_prep";
-  if (l === "foundation" || l === "year_1" || l === "year_2" || l === "year_3" || l === "year_4" || l === "capstone" || l === "job_prep") {
+  if (l === "graduate_or_job_prep" || l === "graduate") return "graduate";
+  if (l === "foundation" || l === "year_1" || l === "year_2" || l === "year_3" || l === "year_4" || l === "graduate") {
     return l as CSStudyLevel;
   }
   return undefined; // Unknown old value -> safe fallback
@@ -20,11 +21,25 @@ export async function getStudentProfile(uid: string): Promise<StudentProfile | n
   try {
     const snap = await get(ref(db, `user_private/${uid}/profile`));
     if (snap.exists()) {
-      const profile = snap.val() as StudentProfile;
-      if (profile.currentLevel) {
-        profile.currentLevel = mapLegacyLevel(profile.currentLevel as string);
-      }
-      return profile;
+      const profile = snap.val() as any; // any to handle legacy reads
+      
+      // Perform inline migrations
+      const migratedProfile: StudentProfile = {
+        ...profile,
+        academicStage: mapLegacyLevel(profile.academicStage || profile.currentLevel),
+        primaryGoal: profile.primaryGoal || (profile.learningGoals ? profile.learningGoals[0] : undefined),
+        secondaryGoals: profile.secondaryGoals || (profile.learningGoals ? profile.learningGoals.slice(1) : undefined),
+        technicalInterestIds: profile.technicalInterestIds || profile.technicalInterests,
+        targetSkillIds: profile.targetSkillIds || profile.targetSkills,
+      };
+
+      // Clean up legacy fields from memory (they stay in DB until overwritten)
+      delete (migratedProfile as any).currentLevel;
+      delete (migratedProfile as any).learningGoals;
+      delete (migratedProfile as any).technicalInterests;
+      delete (migratedProfile as any).targetSkills;
+
+      return migratedProfile;
     }
     return null;
   } catch (error) {
@@ -78,8 +93,8 @@ export function calculateProfileCompletion(profile: Partial<StudentProfile>): nu
   };
 
   check(profile.bio);
-  check(profile.specialization);
-  check(profile.currentLevel);
+  check(profile.studyProgram);
+  check(profile.academicStage);
   // links
   totalFields++;
   if (profile.links?.github || profile.links?.linkedin || profile.links?.portfolio) {
